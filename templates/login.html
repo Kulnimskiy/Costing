@@ -1,0 +1,12 @@
+{% extends "layout.html" %}
+
+{% block title %} Login {% endblock %}
+
+{% block body %}
+    <form action="/login" method="post">
+        <input type="text" placeholder="login" name="login"><br>
+        <input type="password" placeholder="password" name="password"><br>
+        <button type="submit"> Log In</button>
+    </form>
+    <h5 style="color: red;">{{ error }}</h5>
+{% endblock %}

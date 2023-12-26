@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Costing: {% block title %} {% endblock %}</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div>
+        {% if session.id %}
+            <h1> How did you get in?</h1>
+        {% else %}
+        <ul>
+            <li><a href="/login">Login</a>&nbsp; &nbsp;</li>
+            <li><a href="/signup">Sign Up</a></li>
+        </ul>
+        {% endif %}
+    </div>
+    {% block body %}{% endblock %}
+</body>
+</html>
