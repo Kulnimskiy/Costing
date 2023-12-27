@@ -1,9 +1,11 @@
-from flask import Blueprint, render_template, request, redirect, session
+from flask import Blueprint, render_template, request, redirect, session, flash, url_for
+from flask_login import login_user, logout_user
+from werkzeug.security import generate_password_hash, check_password_hash
+from .models import User
+from . import db
+from .helpers import password_checker
 
 auth = Blueprint("auth", __name__)
-
-users = []
-regestered = []
 
 
 @auth.route("/signup", methods=["GET", "POST"])
@@ -13,18 +15,32 @@ def signup():
         company_inn_ = request.form.get("company_inn")
         login_ = request.form.get("login")
         email_ = request.form.get("email")
-        password_ = request.form.get("password")
-        password_confirm_ = request.form.get("password_confirm")
+        password_ = password_checker(request.form.get("password"))
+        password_confirm_ = password_checker(request.form.get("password_confirm"))
         if not all([company_name_, company_inn_, login_, email_, password_, password_confirm_]):
             return render_template("signup.html", error="Fill in all the fields")
         if password_confirm_ != password_:
             return render_template("signup.html", error="Passwords are different")
-        regestered.append({"company_name": company_name_,
-                           "company_inn": company_inn_,
-                           "login": login_,
-                           "email": email_,
-                           "password": password_})
-        print(regestered, session.get("user"))
+
+        # check if the user is already in the db
+        user_login = User.query.filter_by(login=login_).first()
+        if user_login:
+            return render_template("signup.html", error="login already exists")
+        user_inn = User.query.filter_by(company_inn=company_inn_).first()
+        if user_inn:
+            flash("Your company has already signed up!")
+            return redirect("/signup")
+
+        # create a new user if everything has been filled correctly
+        new_user = User(company_name=company_name_,
+                        company_inn=company_inn_,
+                        login=login_,
+                        email=email_,
+                        password=generate_password_hash(password_))
+
+        # add the user to the db
+        db.session.add(new_user)
+        db.session.commit()
         return redirect("/login")
     return render_template("signup.html")
 
@@ -34,11 +50,13 @@ def login():
     if request.method == "POST":
         login_ = request.form.get("login")
         password_ = request.form.get("password")
-        session["user"] = login_
+        remember = True if request.form.get("remember") else False
+        user = User.query.filter_by(login=login_).first()
         if not login_ or not password_:
             return render_template("login.html", error="incorrect login or password")
-        users.append((login_, password_))
-        print(users, session.get("user"))
+        if not user or not check_password_hash(user.password, password_):
+            return render_template("login.html", error="incorrect login or password")
+        login_user(user, remember=remember)
         return redirect("/")
     else:
         return render_template("login.html")
@@ -46,5 +64,5 @@ def login():
 
 @auth.route("/logout")
 def logout():
-    session.clear()
+    logout_user()
     return redirect("/login")

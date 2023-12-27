@@ -1,3 +1,6 @@
 #error {
     color: red;
 }
+.navbar-nav {
+    font-size: small;
+}

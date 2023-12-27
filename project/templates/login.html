@@ -7,6 +7,12 @@
         <form action="/login" method="post">
             <input name="login" type="text" class="form-control w-50 p-2 mb-1 " placeholder="Username" aria-label="Username" aria-describedby="addon-wrapping">
             <input name="password" type="password" class="form-control w-50 p-2 mb-1" placeholder="Password" aria-label="Username" aria-describedby="addon-wrapping">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" value="remember" id="flexCheckDefault" name="remember">
+              <label class="form-check-label" for="flexCheckDefault">
+                Remember
+              </label>
+            </div>
             <h6 id="error">{{ error }}</h6>
             <button class="btn btn-success mt-1" type="submit">Log In</button>
         </form>
