@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, session, redirect
 from . import db
 
 main = Blueprint("main", __name__)
@@ -6,6 +6,8 @@ main = Blueprint("main", __name__)
 
 @main.route("/")
 def index():
+    if session.get("user") is None:
+        return redirect("/login")
     return render_template("homepage.html")
 
 
@@ -15,20 +17,20 @@ def profile():
 
 
 @main.route("/company-goods")
-def profile():
+def company_goods():
     return "Company’s goods and prices"
 
 
 @main.route("/competitor-monitoring")
-def profile():
+def competitor_monitoring():
     return "Competitors and their monitored goods"
 
 
 @main.route("/comparison")
-def profile():
+def comparison():
     return "Comparison of the prices between you and your competitors"
 
 
 @main.route("/price-looker")
-def profile():
+def price_looker():
     return "Company profile"
