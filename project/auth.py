@@ -3,7 +3,7 @@ from flask_login import login_user, logout_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from .models import User
 from . import db
-from .helpers import password_checker
+from .helpers import password_checker, email_checker, inn_checker
 
 auth = Blueprint("auth", __name__)
 
@@ -12,24 +12,36 @@ auth = Blueprint("auth", __name__)
 def signup():
     if request.method == "POST":
         company_name_ = request.form.get("company_name")
-        company_inn_ = request.form.get("company_inn")
-        login_ = request.form.get("login")
-        email_ = request.form.get("email")
-        password_ = password_checker(request.form.get("password"))
-        password_confirm_ = password_checker(request.form.get("password_confirm"))
-        if not all([company_name_, company_inn_, login_, email_, password_, password_confirm_]):
-            return render_template("signup.html", error="Fill in all the fields")
-        if password_confirm_ != password_:
-            return render_template("signup.html", error="Passwords are different")
 
-        # check if the user is already in the db
-        user_login = User.query.filter_by(login=login_).first()
-        if user_login:
-            return render_template("signup.html", error="login already exists")
+        # check if the company is already in the db
+        company_inn_ = inn_checker(request.form.get("company_inn"))
+        if not company_inn_:
+            flash("Your inn isn' valid")
+            return redirect("/signup")
         user_inn = User.query.filter_by(company_inn=company_inn_).first()
         if user_inn:
             flash("Your company has already signed up!")
             return redirect("/signup")
+
+        # check if the user is already in the db
+        login_ = request.form.get("login")
+        user_login = User.query.filter_by(login=login_).first()
+        if user_login:
+            return render_template("signup.html", error="login already exists")
+
+        # validate the email
+        email_ = email_checker(request.form.get("email"))
+        if not email_:
+            return render_template("signup.html", error="Your email isn't valid")
+
+        # check if the password satisfies the requirements
+        password_ = password_checker(request.form.get("password"))
+        password_confirm_ = password_checker(request.form.get("password_confirm"))
+        if password_confirm_ != password_:
+            return render_template("signup.html", error="Passwords are different")
+
+        if not all([company_name_, company_inn_, login_, email_, password_, password_confirm_]):
+            return render_template("signup.html", error="Fill in all the fields")
 
         # create a new user if everything has been filled correctly
         new_user = User(company_name=company_name_,
@@ -47,6 +59,7 @@ def signup():
 
 @auth.route("/login", methods=["GET", "POST"])
 def login():
+    session.clear()
     if request.method == "POST":
         login_ = request.form.get("login")
         password_ = request.form.get("password")
