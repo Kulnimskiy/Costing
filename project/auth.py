@@ -3,7 +3,7 @@ from flask_login import login_user, logout_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from .models import User
 from . import db
-from .helpers import password_checker, email_checker, inn_checker
+from .helpers import password_checker, email_checker, inn_checker, login_checker
 
 auth = Blueprint("auth", __name__)
 
@@ -61,7 +61,7 @@ def signup():
 def login():
     session.clear()
     if request.method == "POST":
-        login_ = request.form.get("login")
+        login_ = login_checker(request.form.get("login"))
         password_ = request.form.get("password")
         remember = True if request.form.get("remember") else False
         user = User.query.filter_by(login=login_).first()
@@ -79,3 +79,23 @@ def login():
 def logout():
     logout_user()
     return redirect("/login")
+
+
+@auth.route("/checklogin/<cur_login>")
+def check_login(cur_login):
+    cur_login = login_checker(cur_login)
+    if not cur_login:
+        return "1"  # the login doesn't satisfy the requirements
+    if User.query.filter_by(login=cur_login).first():
+        return "2"  # the login already exists
+    return "0"  # the login is fine
+
+
+@auth.route("/checkinn/<cur_inn>")
+def check_inn(cur_inn):
+    cur_inn = inn_checker(cur_inn)
+    if not cur_inn:
+        return "1"  # the inn doesn't satisfy the requirements
+    if User.query.filter_by(company_inn=cur_inn).first():
+        return "2"  # the inn already exists
+    return "0"  # the inn is fine

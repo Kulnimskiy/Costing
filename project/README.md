@@ -3,11 +3,11 @@ https://www.digitalocean.com/community/tutorials/how-to-add-authentication-to-yo
 
 to do:
 - finish up the registration pages front end
-- ajax script to check if the current login is available
 - js script to check the password as the user types it and say if it is valid and visualize it
+- ajax script to check if the current login and inn is available (Done)
 
-loign requirements: (Done)
-- len >= 6
+login requirements: (Done)
+- len >= 3
 - unique
 
 to do:

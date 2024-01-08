@@ -25,16 +25,25 @@ def password_checker(password: str):
     return False
 
 
-def inn_checker(inn: str):
+def inn_checker(inn_: str):
     """for testing purposes the algorithm of checking if the inn exists is not implemented"""
-    inn = str(inn).strip()
+    inn_ = str(inn_).strip()
     people_len = 10
     company_len = 12
-    if len(inn) != people_len and len(inn) != company_len:
+    if len(inn_) != people_len and len(inn_) != company_len:
         return False
-    if any(not digit.isdigit() for digit in inn):
+    if any(not digit.isdigit() for digit in inn_):
         return False
-    return int(inn)
+    return int(inn_)
+
+
+def login_checker(login):
+    login = str(login).strip()
+    no_space_req = all(not symbol.isspace() for symbol in login)
+    length_req = len(login) >= 3
+    if all([login, no_space_req, length_req]):
+        return login
+    return False
 
 
 if __name__ == "__main__":
