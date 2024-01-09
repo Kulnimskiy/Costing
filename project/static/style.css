@@ -4,3 +4,11 @@
 .navbar-nav {
     font-size: small;
 }
+#login_pic {
+    width: 100%;
+    max-width: 450px;
+    border-radius: 60%;
+}
+#login_pic:hover {
+    box-shadow: 0 0 2px 3px #399;
+}
