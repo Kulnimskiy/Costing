@@ -1,8 +1,13 @@
-useful links
-https://www.digitalocean.com/community/tutorials/how-to-add-authentication-to-your-app-with-flask-login
-need new to do;
 
 
+
+task:
+- you need a simple profile to see that the info about the logged user is correctly shown
+- load up additional info about the user using a web scraper 
+
+THE BEGINNING OF THE MAIN PART
+
+ENOUGH FOR THE AUTHENTICATION PART 
 to do:
 - finish up the registration pages front end (Done)
 - js script to check the password as the user types it and say if it is valid and visualize it (Done)
@@ -27,3 +32,8 @@ password requirements: (Done)
 
 to do (Done):
 - password checker function (Done)
+
+I did not start writing this from the very beginning!
+
+useful links
+https://www.digitalocean.com/community/tutorials/how-to-add-authentication-to-your-app-with-flask-login

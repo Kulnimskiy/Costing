@@ -22,8 +22,9 @@
                         <span class="navbar-toggler-icon"></span>
                     </button>
                     <div class="collapse navbar-collapse" id="navbarSupportedContent">
+
+                        {% if current_user._id %}
                         <ul class="navbar-nav me-auto">
-                            {% if current_user._id %}
                             <li class="nav-item">
                                 <a class="nav-link" href="/profile">Profile</a>
                             </li>
@@ -36,20 +37,24 @@
                             <li class="nav-item">
                                 <a class="nav-link" href="/logout">Log out</a>
                             </li>
+                        </ul>
+                        <form class="d-flex" role="search" action="/price-looker">
+                            <input class="form-control me-1" type="search" placeholder="Search" aria-label="Search">
+                            <button class="btn btn-outline-success" type="submit">Search</button>
+                        </form>
 
-                            {% else %}
+                        {% else %}
+
+                        <ul class="navbar-nav me-auto">
                             <li class="nav-item">
                                 <a class="nav-link" href="/login">Login</a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" href="/signup">Sign Up</a>
                             </li>
-                            {% endif %}
                         </ul>
-                        <form class="d-flex" role="search" action="/price-looker">
-                            <input class="form-control me-1" type="search" placeholder="Search" aria-label="Search">
-                            <button class="btn btn-outline-success" type="submit">Search</button>
-                        </form>
+                        {% endif %}
+
                     </div>
                 </div>
             </nav>
