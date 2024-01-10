@@ -19,8 +19,8 @@ def password_checker(password: str):
     no_space_req = all(not symbol.isspace() for symbol in password)
     upper_req = any(symbol.isupper() for symbol in password)
     lower_req = any(symbol.islower() for symbol in password)
-    alpha_req = any(symbol.isalpha() for symbol in password)
-    if all([no_space_req, length_req, number_req, upper_req, lower_req, alpha_req]):
+    # alpha_req = any(symbol.isalpha() for symbol in password)  ## you don't need this as u have the upper and lower req
+    if all([no_space_req, length_req, number_req, upper_req, lower_req]):  # alpha_req is removed
         return password
     return False
 

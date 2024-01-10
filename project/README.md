@@ -1,9 +1,11 @@
 useful links
 https://www.digitalocean.com/community/tutorials/how-to-add-authentication-to-your-app-with-flask-login
+need new to do;
+
 
 to do:
-- finish up the registration pages front end
-- js script to check the password as the user types it and say if it is valid and visualize it
+- finish up the registration pages front end (Done)
+- js script to check the password as the user types it and say if it is valid and visualize it (Done)
 - ajax script to check if the current login and inn is available (Done)
 
 login requirements: (Done)

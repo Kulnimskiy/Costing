@@ -3,26 +3,34 @@
 {% block title %} Signup {% endblock %}
 
 {% block body %}
-    <div class="mx-auto pt-3">
-        <form action="/signup" method="post">
-            <input type="text" name="company_name" placeholder="Company" autofocus autocomplete="off" class="form-control w-50 p-2 mb-1" >
-            <input type="text" name="company_inn" id="company_inn" placeholder="Company's INN" autocomplete="off" class="form-control w-50 p-2 mb-1 ">
-            <small id="company_inn_status"></small>
-            <input type="text" name="login" id="login" placeholder="Login" autocomplete="off" class="form-control w-50 p-2 mb-1">
-            <small id="login_status"></small>
-            <input type="email" name="email" placeholder="Email" autocomplete="off" class="form-control w-50 p-2 mb-1">
-            <input type="password" name="password" placeholder="Password" autocomplete="off" class="form-control w-50 p-2 mb-1">
-            <input type="password" name="password_confirm" placeholder="Password again" autocomplete="off" class="form-control w-50 p-2 mb-1">
-            <h6 id="error">{{ error }}</h6>
-            <button type="submit" class="btn btn-success w-50">Sign Up</button>
-        </form>
-        {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            <div class="notification">
-                {{ messages[0] }}. Go to <a href="{{ url_for('auth.login') }}">login page</a>.
+    <div class="container-md align-items-center">
+        <div class="row">
+            <div class="mx-auto pt-3 w-50">
+                <form action="/signup" method="post">
+                    <input type="text" name="company_name" placeholder="Company" autofocus autocomplete="off" class="form-control p-2 mb-1">
+                    <input type="text" name="company_inn" id="company_inn" placeholder="Company's INN" autocomplete="off" class="form-control p-2 mb-1 ">
+                    <div class="font-italic" id="company_inn_status"></div>
+                    <input type="text" name="login" id="login" placeholder="Login" autocomplete="off" class="form-control p-2 mb-1">
+                    <div class="font-italic" id="login_status"></div>
+                    <input type="email" name="email" placeholder="Email" autocomplete="off" class="form-control p-2 mb-1">
+                    <input type="password" name="password" id="password" placeholder="Password" autocomplete="off" class="form-control p-2 mb-1">
+                    <div class="pw-strength">
+                        <span class="font-italic"></span>
+                        <span></span>
+                    </div>
+                    <input type="password" name="password_confirm" placeholder="Password again" autocomplete="off" class="form-control p-2 mb-1">
+                    <div class="font-weight-bold" id="error">{{ error }}</div>
+                    <button type="submit" class="btn btn-success w-100">Sign Up</button>
+                </form>
+                {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <div class="notification">
+                        {{ messages[0] }}. Go to <a href="{{ url_for('auth.login') }}">login page</a>.
+                    </div>
+                {% endif %}
+                {% endwith %}
             </div>
-        {% endif %}
-        {% endwith %}
+        </div>
     </div>
     <script src="/static/signup.js" crossorigin="anonymous"></script>
 
