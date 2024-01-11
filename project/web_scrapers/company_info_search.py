@@ -43,6 +43,7 @@ class Company:
 
         if self.page:
             company_info = {
+                "website": operate(look, "Веб-сайт"),
                 "organization": operate(lambda: self.page.find("h1", class_="organization-name").text),
                 "ogrn": operate(lambda: self.page.find(id="copy-ogrn").text),
                 "registration_date": operate(look, "Дата регистрации"),
@@ -55,7 +56,7 @@ class Company:
 
 
 if __name__ == "__main__":
-    inn = 7727741653
+    inn = 4704041900
     AGV = Company(inn)
     print(AGV.get_full_info())
     # print(AGV.get_full_info())

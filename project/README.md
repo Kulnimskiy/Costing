@@ -1,9 +1,16 @@
 
 
 
-task:
-- you need a simple profile to see that the info about the logged user is correctly shown
-- load up additional info about the user using a web scraper 
+initial tasks for the profile page:
+- save the data in a new table "companies" with the corresponding keys. Foreign key is inn!
+- - create a model
+- - remake all the instances
+- - create a function to save the data
+- if the data in the table hasn't been refreshed for a week or if there are no data, reload them.
+- if the field in his profile is empty, let the user add the info oneself
+- you need a simple profile to see that the info about the logged user is correctly shown (Done)
+- load up additional info about the user using a web scraper (Done)
+
 
 THE BEGINNING OF THE MAIN PART
 

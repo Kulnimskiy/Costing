@@ -13,3 +13,8 @@ class User(UserMixin, db.Model):
     # UserMixin looks for and id column using get_id(). We got _id attr instead
     def get_id(self):
         return self._id
+
+
+class Companies(db.Model):
+    _inn = db.Column("inn", db.Integer, primary_key=True)
+
