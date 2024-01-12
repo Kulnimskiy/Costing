@@ -1,7 +1,6 @@
 from flask import Blueprint, render_template, session, redirect
 from flask_login import login_required, current_user
-from . import db
-from .web_scrapers.company_info_search import Company
+from .db_manager import load_company_data
 
 main = Blueprint("main", __name__)
 
@@ -10,8 +9,8 @@ main = Blueprint("main", __name__)
 @login_required
 def index():
     # get the info about the user from the obj current_user like current_user._id
-    company = Company(current_user.company_inn)
-    company_info = company.get_full_info()
+    _inn = current_user.company_inn
+    company_info = load_company_data(_inn)
     if company_info:
         website_link = "https://" + company_info["website"] if company_info["website"] else None
         return render_template("homepage.html", user=current_user, company_info=company_info, website=website_link)

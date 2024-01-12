@@ -5,6 +5,7 @@ from .models import User
 from . import db
 from .helpers import password_checker, email_checker, inn_checker, login_checker
 
+
 auth = Blueprint("auth", __name__)
 
 

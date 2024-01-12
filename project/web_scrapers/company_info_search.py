@@ -37,15 +37,16 @@ class Company:
                 print(e)
                 return None
 
-        company_info = {
-            "website": operate(look, "Веб-сайт"),
-            "organization": operate(lambda: self.page.find("h1", class_="organization-name").text),
-            "ogrn": operate(lambda: self.page.find(id="copy-ogrn").text),
-            "registration_date": Company.format_date(operate(look, "Дата регистрации")),
-            "sphere": operate(look, "Вид деятельности"),
-            "address": operate(look, "Юридический адрес"),
-            "workers_number": operate(lambda info: look(info).split()[0], "Среднесписочная численность работников"),
-            "CEO": operate(lambda: self.page.find("img", width="92")["title"])}
+        company_info = {"inn": self.inn,
+                        "website": operate(look, "Веб-сайт"),
+                        "organization": operate(lambda: self.page.find("h1", class_="organization-name").text),
+                        "ogrn": operate(lambda: self.page.find(id="copy-ogrn").text),
+                        "registration_date": Company.format_date(operate(look, "Дата регистрации")),
+                        "sphere": operate(look, "Вид деятельности"),
+                        "address": operate(look, "Юридический адрес"),
+                        "workers_number": operate(lambda info: look(info).split()[0],
+                                                  "Среднесписочная численность работников"),
+                        "ceo": operate(lambda: self.page.find("img", width="92")["title"])}
         return company_info
 
     @staticmethod
@@ -66,7 +67,7 @@ class Company:
                 "декабря": "11"}
             day, month, year, etc = date.split()
             month = months[month]
-            return ".".join([i.strip() for i in [day, month, year]])
+            return "-".join([i.strip() for i in [day, month, year]])
         except (ValueError, KeyError) as e:
             print(e)
             return None

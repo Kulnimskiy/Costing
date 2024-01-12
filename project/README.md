@@ -3,11 +3,12 @@ CHECK HOW TO ADD NEW MODELS TO AN EXISTING DB
 
 initial tasks for the profile page:
 - save the data in a new table "companies" with the corresponding keys. Foreign key is inn!
-- - create a model
-- - remake all the instances
-- - create a function to save the data
-- if the data in the table hasn't been refreshed for a week or if there are no data, reload them.
-- if the field in his profile is empty, let the user add the info oneself
+- - create a model (Done)
+- - remake all the instances (Done)
+- - create a function to save the data (Done)
+- if the data in the table hasn't been refreshed for a set period of time or if there are no data, reload them. (Done)
+- if the field in HIS profile is empty, let the user add the info oneself or change it.
+- If he wants to add the info about his competitors, he can change only fields with NONE in it
 - you need a simple profile to see that the info about the logged user is correctly shown (Done)
 - load up additional info about the user using a web scraper (Done)
 
@@ -45,7 +46,8 @@ I did not start writing this from the very beginning!
 useful links
 https://www.digitalocean.com/community/tutorials/how-to-add-authentication-to-your-app-with-flask-login
 to create the tables in db
-    flask --app .\project\app.py shell 
-    db.create_all()
-
+from project import create_app, db                                
+>>> app = create_app()
+>>> with app.app_context():
+...     db.create_all()
 

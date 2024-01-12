@@ -1,5 +1,5 @@
 from email_validator import validate_email, EmailNotValidError
-import datetime
+from datetime import datetime
 
 
 def email_checker(email):
@@ -45,6 +45,10 @@ def login_checker(login):
     if all([login, no_space_req, length_req]):
         return login
     return False
+
+
+def get_cur_date():
+    return datetime.today().strftime("%d.%m.%Y")
 
 
 if __name__ == "__main__":
