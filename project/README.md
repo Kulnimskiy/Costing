@@ -1,5 +1,5 @@
 
-
+CHECK HOW TO ADD NEW MODELS TO AN EXISTING DB
 
 initial tasks for the profile page:
 - save the data in a new table "companies" with the corresponding keys. Foreign key is inn!
@@ -44,3 +44,8 @@ I did not start writing this from the very beginning!
 
 useful links
 https://www.digitalocean.com/community/tutorials/how-to-add-authentication-to-your-app-with-flask-login
+to create the tables in db
+    flask --app .\project\app.py shell 
+    db.create_all()
+
+

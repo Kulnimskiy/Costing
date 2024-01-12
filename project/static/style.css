@@ -6,17 +6,21 @@
     text-align: center;
     margin-bottom: 3px;
 }
+
 .navbar-nav {
     font-size: small;
 }
+
 #login_pic {
     width: 100%;
     max-width: 450px;
     border-radius: 60%;
 }
+
 #login_pic:hover {
     box-shadow: 0 0 2px 3px #399;
 }
+
 .pw-strength {
     position: relative;
     width: 100%;
@@ -27,6 +31,7 @@
     background: #f2f2f2;
     display: none;
 }
+
 .pw-strength span:nth-child(1) {
     position: relative;
     font-size: small;
@@ -37,11 +42,11 @@
 
 .pw-strength span:nth-child(2) {
     position: absolute;
-    top: 0px;
-    left: 0px;
-    width: 0%;
+    top: 0;
+    left: 0;
+    width: 0;
     height: 100%;
-    border_radius: 5px;
+    border-radius: 5px;
     z-index: 2;
     transition: all 300ms ease-in-out;
 }

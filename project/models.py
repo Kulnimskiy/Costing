@@ -17,4 +17,13 @@ class User(UserMixin, db.Model):
 
 class Companies(db.Model):
     _inn = db.Column("inn", db.Integer, primary_key=True)
+    website = db.Column(db.String(100))
+    organization = db.Column(db.String(200))
+    ogrn = db.Column(db.Integer())
+    registration_date = db.Column(db.String(100))
+    sphere = db.Column(db.String(400))
+    address = db.Column(db.String(400))
+    workers_number = db.Column(db.Integer())
+    ceo = db.Column(db.String(100))
+    info_loading_date = db.Column(db.String(100))
 

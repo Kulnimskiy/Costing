@@ -9,12 +9,13 @@ main = Blueprint("main", __name__)
 @main.route("/")
 @login_required
 def index():
-    print(current_user.__dict__)
+    # get the info about the user from the obj current_user like current_user._id
     company = Company(current_user.company_inn)
     company_info = company.get_full_info()
-    website_link = "http://" + company_info["website"] if company_info["website"] else None
-    # get the info about the user from the obj current_user like current_user._id
-    return render_template("homepage.html", user=current_user, company_info=company_info, website=website_link)
+    if company_info:
+        website_link = "https://" + company_info["website"] if company_info["website"] else None
+        return render_template("homepage.html", user=current_user, company_info=company_info, website=website_link)
+    return render_template("homepage.html", user=current_user, company_info=company_info)
 
 
 @main.route("/profile")
