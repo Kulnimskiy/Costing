@@ -68,7 +68,7 @@ class Company:
             day, month, year, etc = date.split()
             month = months[month]
             return "-".join([i.strip() for i in [day, month, year]])
-        except (ValueError, KeyError) as e:
+        except (ValueError, KeyError, AttributeError) as e:
             print(e)
             return None
 

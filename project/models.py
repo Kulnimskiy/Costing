@@ -17,7 +17,7 @@ class User(UserMixin, db.Model):
 
 class Companies(db.Model):
     _inn = db.Column("inn", db.Integer, primary_key=True)
-    website = db.Column(db.String(100))
+    website = db.Column(db.String(200))
     organization = db.Column(db.String(200))
     ogrn = db.Column(db.Integer())
     registration_date = db.Column(db.String(100))
@@ -27,3 +27,10 @@ class Companies(db.Model):
     ceo = db.Column(db.String(100))
     info_loading_date = db.Column(db.String(100))
 
+
+class Competitors(db.Model):
+    connection_id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, nullable=False)
+    competitor_inn = db.Column(db.Integer, nullable=False)
+    competitor_nickname = db.Column(db.String(100))
+    competitor_website = db.Column(db.String(200))

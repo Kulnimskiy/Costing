@@ -1,6 +1,9 @@
 
 CHECK HOW TO ADD NEW MODELS TO AN EXISTING DB
 
+to do:
+- create a button "request prices connection" next to a competitor
+
 initial tasks for the profile page:
 - save the data in a new table "companies" with the corresponding keys. Foreign key is inn!
 - - create a model (Done)

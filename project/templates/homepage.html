@@ -1,57 +1,56 @@
 {% extends "layout.html" %}
 
-{% block title %}Costing: Homepage{% endblock %}
+{% block title %} Login {% endblock %}
 
 {% block body %}
 <div class="container-md mt-4">
-        <div class="row">
-                <div class="col col-5">
-                        <div class="card border-light mb-3" style="max-width: 18rem;">
-                                <div class="card-header text-white bg-success">
-                                        <h5>
-                                                Welcome,
-                                                {% if company_info.organization %}
-                                                {{company_info.organization}}!
-                                                {% else %}
-                                                {{user.company_name}}!
-                                                {% endif %}
-                                        </h5>
-                                </div>
-                                <div class="card-body bg-light">
-                                        <b>Email:</b>
-                                        <div class="card-text">{{ user.email }}</div>
-                                        <b>INN: </b>
-                                        <div class="card-text">{{ user.company_inn }}</div>
-                                        <b>OGRN: </b>
-                                        <div class="card-text">{{ company_info.ogrn }}</div>
-                                        <b>Registration date: </b>
-                                        <div class="card-text">{{ company_info.registration_date }}</div>
-                                        <b>Sphere:</b>
-                                        <div class="card-text">{{ company_info.sphere }}</div>
-                                        <b>Address:</b>
-                                        <div class="card-text">{{ company_info.address }}</div>
-                                        <b>Workers number:</b>
-                                        <div class="card-text">{{ company_info.workers_number }}</div>
-                                        <b>CEO:</b>
-                                        <div class="card-text">{{ company_info.ceo }}</div>
-                                        <b>Website:</b>
-                                        <div class="card-text">
-                                                {% if company_info.website %}
-                                                <a class="link" href={{website}} target="_blank">{{ company_info.website }} </a>
-                                                {% else %}
-                                                None
-                                                {% endif %}
-                                        </div>
-                                </div>
-                        </div>
+    <div class="row">
+        <div class="col col-5">
+            <div class="card border-light mb-3" style="max-width: 18rem;">
+                <div class="card-header text-white bg-success">
+                    <h5>
+                        Welcome,
+                        {% if company_info.organization %}
+                        {{company_info.organization}}!
+                        {% else %}
+                        {{user.company_name}}!
+                        {% endif %}
+                    </h5>
                 </div>
-                <div class="col col-7">
-                        <img class="joke" src="static/images/joke.png">
-                        <p></p>
-                        <button class="btn btn-success">Add your goods</button>
-                        <button class="btn btn-success">Add competitors</button>
+                <div class="card-body bg-light">
+                    <b>Email:</b>
+                    <div class="card-text">{{ user.email }}</div>
+                    <b>INN: </b>
+                    <div class="card-text">{{ user.company_inn }}</div>
+                    <b>OGRN: </b>
+                    <div class="card-text">{{ company_info.ogrn }}</div>
+                    <b>Registration date: </b>
+                    <div class="card-text">{{ company_info.registration_date }}</div>
+                    <b>Sphere:</b>
+                    <div class="card-text">{{ company_info.sphere }}</div>
+                    <b>Address:</b>
+                    <div class="card-text">{{ company_info.address }}</div>
+                    <b>Workers number:</b>
+                    <div class="card-text">{{ company_info.workers_number }}</div>
+                    <b>CEO:</b>
+                    <div class="card-text">{{ company_info.ceo }}</div>
+                    <b>Website:</b>
+                    <div class="card-text">
+                        {% if company_info.website %}
+                        <a class="link" href={{website}} target="_blank">{{ company_info.website }} </a>
+                        {% else %}
+                        None
+                        {% endif %}
+                    </div>
                 </div>
+            </div>
         </div>
+        <div class="col col-7">
+            <img class="joke" src="static/images/joke.png">
+            <p></p>
+            <button class="btn btn-success">Add your goods</button>
+            <button class="btn btn-success">Add competitors</button>
+        </div>
+    </div>
 </div>
-
 {% endblock %}

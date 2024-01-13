@@ -1,5 +1,5 @@
 from . import db
-from .models import Companies, User
+from .models import Companies, User, Competitors
 from .web_scrapers.company_info_search import Company
 from datetime import datetime
 from .helpers import get_cur_date
@@ -16,7 +16,6 @@ def load_company_data(_inn):
         last_load_date = datetime.strptime(company.info_loading_date, "%Y-%m-%d %H:%M:%S")
         days_passed = (cur_date - last_load_date).days
         if days_passed >= days_between_reload:
-
             # update the company info
             company_info = Company(_inn).get_full_info()
             company.inn = company_info["inn"]
@@ -34,9 +33,9 @@ def load_company_data(_inn):
             # need to get that again after the commit
             company = Companies.query.filter_by(_inn=_inn).first()
             print("CHANGE", company.__dict__)
-            return company.__dict__
+            return company
         print("GET", company.__dict__)
-        return company.__dict__
+        return company
 
     # if the company hasn't been added yet, we add it
     company_info = Company(_inn).get_full_info()
@@ -53,3 +52,39 @@ def load_company_data(_inn):
     db.session.add(new_company)
     db.session.commit()
     return company_info
+
+
+def db_add_competitor(user_id, comp_inn, comp_nickname=None, website=None):
+    competitor_already_added = Competitors.query.filter_by(competitor_inn=comp_inn, user_id=user_id).first()
+    if competitor_already_added:
+        print(competitor_already_added)
+        print("Competitor is already in the table")
+        return competitor_already_added
+
+    company_exists = Companies.query.filter_by(_inn=comp_inn).first()
+    if company_exists:
+        print("The company exists already in the table")
+        comp_nickname = comp_nickname if comp_nickname else company_exists.organization
+        website = website if website else company_exists.website
+        new_competitor = Competitors(user_id=user_id,
+                                     competitor_inn=comp_inn,
+                                     competitor_nickname=comp_nickname,
+                                     competitor_website=website)
+        db.session.add(new_competitor)
+        db.session.commit()
+        return 0
+    print("adding a company")
+    # if there is no company no competitor with this inn and
+    company = load_company_data(comp_inn)
+    comp_nickname = comp_nickname if comp_nickname else company["organization"]
+    website = website if website else company["website"]
+    new_competitor = Competitors(user_id=user_id,
+                                 competitor_inn=comp_inn,
+                                 competitor_nickname=comp_nickname,
+                                 competitor_website=website)
+    db.session.add(new_competitor)
+    db.session.commit()
+
+
+def db_get_competitors(user_id):
+    return Competitors.query.filter_by(user_id=user_id)
