@@ -1,6 +1,13 @@
 
 CHECK HOW TO ADD NEW MODELS TO AN EXISTING DB
 
+Search page:
+- need parsers for an item's page and a search page of the main competitors of stomart
+- 
+
+
+
+
 to do:
 - create a button "request prices connection" next to a competitor
 

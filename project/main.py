@@ -1,7 +1,9 @@
-from flask import Blueprint, render_template, session, redirect, request
+from flask import Blueprint, render_template, session, redirect, request, url_for
 from flask_login import login_required, current_user
-from .db_manager import load_company_data, db_add_competitor, db_get_competitors
+from .db_manager import load_company_data, db_add_competitor, db_get_competitors, db_delete_competitor, \
+    get_all_competitors
 from .helpers import inn_checker
+
 main = Blueprint("main", __name__)
 
 
@@ -37,8 +39,8 @@ def competitor_monitoring():
         _inn = inn_checker(request.form.get("inn"))
         company = request.form.get("company")
         website = request.form.get("website")
-        db_add_competitor(current_user.company_inn, comp_inn=_inn, comp_nickname=company, website=website)
-        competitors = db_get_competitors(current_user.company_inn)
+        db_add_competitor(current_user.get_id(), comp_inn=_inn, comp_nickname=company, website=website)
+        competitors = db_get_competitors(current_user.get_id())
         return render_template("competitor-monitoring.html", competitors=competitors)
     competitors = db_get_competitors(current_user.company_inn)
     return render_template("competitor-monitoring.html", competitors=competitors)
@@ -54,3 +56,11 @@ def comparison():
 @login_required
 def price_looker():
     return "Company profile"
+
+
+@main.route("/profile/delete_competitor/<com_inn>", methods=["POST"])
+def delete_competitor(com_inn):
+    com_inn = inn_checker(com_inn)
+    get_all_competitors()
+    # db_delete_competitor(user_id=current_user.company_inn, com_inn=com_inn)
+    return redirect(url_for("main.competitor_monitoring"))

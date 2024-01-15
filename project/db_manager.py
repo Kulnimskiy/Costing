@@ -57,7 +57,7 @@ def load_company_data(_inn):
 def db_add_competitor(user_id, comp_inn, comp_nickname=None, website=None):
     competitor_already_added = Competitors.query.filter_by(competitor_inn=comp_inn, user_id=user_id).first()
     if competitor_already_added:
-        print(competitor_already_added)
+        print(competitor_already_added.__dict__)
         print("Competitor is already in the table")
         return competitor_already_added
 
@@ -88,3 +88,18 @@ def db_add_competitor(user_id, comp_inn, comp_nickname=None, website=None):
 
 def db_get_competitors(user_id):
     return Competitors.query.filter_by(user_id=user_id)
+
+
+def db_delete_competitor(user_id, com_inn):
+    company = Competitors.query.filter_by(user_id=user_id, competitor_inn=com_inn).first()
+    if company:
+        print(company)
+        db.session.delete(company)
+        db.session.commit()
+    return
+
+
+def get_all_competitors():
+    users = Competitors.query.all()
+    for user in users:
+        print(user.__dict__)
