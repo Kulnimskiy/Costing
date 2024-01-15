@@ -64,3 +64,10 @@
     height: auto;
     border-radius: 10px;
 }
+
+.delete-btn {
+    position: relative;
+    text-align: center;
+    height: 25px;
+    width: auto;
+}
