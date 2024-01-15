@@ -51,7 +51,8 @@ def load_company_data(_inn):
                             info_loading_date=cur_date_str)
     db.session.add(new_company)
     db.session.commit()
-    return company_info
+    company = Companies.query.filter_by(_inn=_inn).first()
+    return company
 
 
 def db_add_competitor(user_id, comp_inn, comp_nickname=None, website=None):
@@ -76,8 +77,8 @@ def db_add_competitor(user_id, comp_inn, comp_nickname=None, website=None):
     print("adding a company")
     # if there is no company no competitor with this inn and
     company = load_company_data(comp_inn)
-    comp_nickname = comp_nickname if comp_nickname else company["organization"]
-    website = website if website else company["website"]
+    comp_nickname = comp_nickname if comp_nickname else company.organization
+    website = website if website else company.website
     new_competitor = Competitors(user_id=user_id,
                                  competitor_inn=comp_inn,
                                  competitor_nickname=comp_nickname,
