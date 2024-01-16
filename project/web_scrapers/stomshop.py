@@ -15,29 +15,48 @@ class Stomshop:
                               "url": the_offer.get("url", None)}
                 items_lst.append(found_item)
             return items_lst
-        except requests.exceptions.RequestException as e:
-            raise SystemExit(e)
-
-    @staticmethod
-    def get_item_info(link: str):
-        if "https://stomshop.pro/" not in link:
-            print("Wrong link")
-            return None
-        item = {}
-        try:
-            req = requests.get(link).text
-            doc = BeautifulSoup(req, "html.parser")
-            item["name"] = doc.find(class_="h2 text-center content-title content-title-copy-parent").find(
-                "h1").get_text()
-            price = doc.find(class_="autocalc-product-price").get_text()
-            item["price"] = int("".join([i for i in price if i.isdigit()]))
-            item["link"] = link
-            return item
         except (requests.exceptions.RequestException, AttributeError) as e:
             print(e)
             return None
 
+    @staticmethod
+    def get_item_info(link: str):
+        if "https://stomshop.pro" not in link:
+            print("Wrong link")
+            return None
+        try:
+            req = requests.get(link).text
+            doc = BeautifulSoup(req, "html.parser")
+            name = operate(
+                lambda: doc.find(class_="h2 text-center content-title content-title-copy-parent").find(
+                    "h1").get_text())
+
+            # when there is no such item
+            if not name:
+                print("There is no items")
+                return None
+
+            price = operate(lambda: doc.find(class_="autocalc-product-price").get_text())
+            price = operate(lambda: int("".join([i for i in price if i.isdigit()])))
+            return {"name": name, "price": price, "link": link}
+        except (requests.exceptions.RequestException, AttributeError, ValueError) as e:
+            print(e)
+            return None
+
+
+# function to process the result from parsing
+def operate(operation, info=None):
+    """function to process the result from parsing"""
+    try:
+        if info:
+            result = operation(info)
+            return result
+        return operation()
+    except (AttributeError, TypeError, ValueError) as e:
+        print(e)
+        return None
+
 
 if __name__ == "__main__":
-    search = "https://stomsh.pro/tosi-foshan-tx-414-9c"
+    search = "https://stomshop.pro/tosi-foshan-tx-414-9c"
     print(Stomshop.get_item_info(search))
