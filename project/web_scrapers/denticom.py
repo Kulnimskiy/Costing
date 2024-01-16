@@ -12,8 +12,7 @@ class Denticom:
             base_url = f"https://dentikom.ru/catalog/?q={self.item}"
             req = requests.get(base_url).text
             doc = BeautifulSoup(req, "html.parser")
-            catalog = doc.find(id="catalog-products")
-            items = catalog.find_all(class_="item")
+            items = doc.find_all(class_="item")
             for thing in items:
                 name = str(thing.find(class_="name").text).strip()
                 price = str(thing.find(class_="price").text).strip()
