@@ -32,7 +32,7 @@ class Denticom:
 
     @staticmethod
     def get_item_info(link: str):
-        if Denticom.BASE_URL in link:
+        if Denticom.BASE_URL not in link:
             print("Wrong link")
             return None
         try:
@@ -67,5 +67,5 @@ def operate(operation, info=None):
 
 
 if __name__ == "__main__":
-    item = "https://dentikom.ru/catalog/Dental-Units/6220-surgery/"
-    print(Denticom.get_item_info(item))
+    item = "стул"
+    print(Denticom.search_relevant_items(item))

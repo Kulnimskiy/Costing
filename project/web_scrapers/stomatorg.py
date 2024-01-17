@@ -3,7 +3,7 @@ import requests
 
 
 class Stomatorg:
-    BASE_URL = "https://shop.stomatorg.ru/"
+    BASE_URL = "https://shop.stomatorg.ru"
 
     @staticmethod
     def search_relevant_items(item):
