@@ -32,7 +32,7 @@ class Denticom:
 
     @staticmethod
     def get_item_info(link: str):
-        if "https://dentikom.ru" not in link:
+        if Denticom.BASE_URL in link:
             print("Wrong link")
             return None
         try:
@@ -46,7 +46,7 @@ class Denticom:
             if not name:
                 print("There is no items")
                 return None
-            price = operate(lambda: doc.find(class_="dpp-price_data__price").find(class_="current-price"))
+            price = operate(lambda: doc.find(class_="dpp-price_data__price").find(class_="current-price").text)
             price = operate(lambda: int("".join([i for i in price if i.isdigit()])))
             return {"name": name, "price": price, "link": link}
         except (requests.exceptions.RequestException, AttributeError, ValueError) as e:
@@ -67,5 +67,5 @@ def operate(operation, info=None):
 
 
 if __name__ == "__main__":
-    item = "https://dentikom.ru"
+    item = "https://dentikom.ru/catalog/Dental-Units/6220-surgery/"
     print(Denticom.get_item_info(item))
