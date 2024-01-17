@@ -8,10 +8,12 @@ import time
 async def main():
     start_time = time.time()  # время начала выполнения
     item = "Стул"
-    task1 = asyncio.create_task(Dentikom.search_relevant_items(item))
-    task2 = asyncio.create_task(Dentex.search_relevant_items(item))
+
     task3 = asyncio.create_task(Stomshop.search_relevant_items(item))
     task4 = asyncio.create_task(Stomatorg.search_relevant_items(item))
+    task1 = asyncio.create_task(Dentikom.search_relevant_items(item))
+    task2 = asyncio.create_task(Dentex.search_relevant_items(item))
+
     for g in await task1:
         print(g)
     for i in await task2:

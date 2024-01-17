@@ -7,7 +7,7 @@ class Stomshop:
     BASE_URL = "https://stomshop.pro"
 
     @staticmethod
-    async def search_relevant_items(item):
+    def search_relevant_items(item):
         try:
             base_url = f"https://api4.searchbooster.io/api/12d02e18-b322-4cd6-9904-56712fb66827/search?query={item}&skip=0&limit=24&groupByCategories=%7B%22active%22%3Atrue%2C%22size%22%3A10%2C%22skip%22%3A0%7D"
             req = requests.get(base_url).json()
@@ -51,7 +51,7 @@ class Stomatorg:
     BASE_URL = "https://shop.stomatorg.ru"
 
     @staticmethod
-    async def search_relevant_items(item):
+    def search_relevant_items(item):
         try:
             base_url = f"https://api.searchbooster.net/api/9ec1c177-2047-4f1c-b1f9-14a4a7fa9c25/search?query={item}&skip=0&limit=24&groupByCategories=%7B%22active%22%3Atrue%2C%22size%22%3A10%2C%22skip%22%3A0%7D&client=shop.stomatorg.ru"
             req = requests.get(base_url).json()
@@ -93,7 +93,7 @@ class Dentikom:
     BASE_URL = "https://dentikom.ru"
 
     @staticmethod
-    async def search_relevant_items(item):
+    def search_relevant_items(item):
         if not item:
             return None
         try:
@@ -145,7 +145,7 @@ class Dentex:
     BASE_URL = "https://dentex.ru"
 
     @staticmethod
-    async def search_relevant_items(item):
+    def search_relevant_items(item):
         if not item:
             return None
         try:
@@ -233,5 +233,3 @@ if __name__ == "__main__":
     item = "стул"
 
 
-
-    # asyncio.run(main())
