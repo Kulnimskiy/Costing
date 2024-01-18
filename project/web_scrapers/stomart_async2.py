@@ -1,17 +1,13 @@
 from bs4 import BeautifulSoup
 import requests
 import asyncio
-import inspect
-import aiohttp
-import sys
-import time
 
 
 class Stomshop:
     BASE_URL = "https://stomshop.pro"
 
     @staticmethod
-    def search_relevant_items(item):
+    def search_relevant_items(item, session):
         try:
             base_url = f"https://api4.searchbooster.io/api/12d02e18-b322-4cd6-9904-56712fb66827/search?query={item}&skip=0&limit=24&groupByCategories=%7B%22active%22%3Atrue%2C%22size%22%3A10%2C%22skip%22%3A0%7D"
             req = requests.get(base_url).json()
@@ -166,7 +162,7 @@ class Dentex:
                 price = operate(lambda: str(thing.find("div", class_="price").text))
                 price_int = Dentex.price_format(price)
                 link = operate(lambda: Dentex.BASE_URL + str(thing.find("a", class_="cover-link")["href"]))
-                found_items.append({"name": name, "price": price_int, "url": link})
+                found_items.append({"name": name, "price": price, "url": link})
             return found_items
         except (requests.exceptions.RequestException, AttributeError) as e:
             print(e)
@@ -233,19 +229,5 @@ def convert_to_rub(amount: (int, float), currency: str):
         return None
 
 
-def get_classes():
-    current_module = sys.modules[__name__]
-    clsmembers = inspect.getmembers(current_module, inspect.isclass)
-    return [org_class for org_name, org_class in clsmembers][1:]
-
-
 if __name__ == "__main__":
-    start = time.time()
     item = "стул"
-    result = []
-    for cls in get_classes():
-        result.extend(cls.search_relevant_items(item))
-    for i in result:
-        print(i)
-    end = time.time()
-    print("finished for ", end - start, "sec")
