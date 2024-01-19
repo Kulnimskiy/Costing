@@ -1,6 +1,6 @@
 import requests
 from pprint import pprint
-from project.web_scrapers.stomart import Stomatorg, Stomshop, Dentex, Dentikom
+from project.web_scrapers.test_stomart import Stomatorg, Stomshop, Dentex, Dentikom
 import asyncio
 import time
 

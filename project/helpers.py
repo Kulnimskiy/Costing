@@ -1,6 +1,8 @@
 from email_validator import validate_email, EmailNotValidError
 from datetime import datetime
-
+import inspect
+import sys
+import requests
 
 def email_checker(email):
     try:
@@ -51,9 +53,40 @@ def get_cur_date():
     return datetime.today().strftime("%d.%m.%Y")
 
 
+def get_classes(module_name):
+    """get all the cls instances within a python file without the imported ones
+    use module_name=sys.modules[__name__] to get classes form your file"""
+
+    cls_members = inspect.getmembers(module_name, inspect.isclass)  # get ALL the classes (class_name, class_object)
+    # remove the imported classes
+    cls_objects = [obj for name, obj in cls_members if obj.__dict__.get("__module__", None) == "__main__"]
+    return cls_objects
+
+
+def operate(operation, info=None):
+    """function to process the result from parsing"""
+    try:
+        if info:
+            result = operation(info)
+            return result
+        return operation()
+    except (AttributeError, TypeError, ValueError) as e:
+        print(e)
+        return None
+
+
+def convert_to_rub(amount: (int, float), currency: str):
+    """convert currencies into Russian Ruble """
+    currency = currency.strip().upper()
+    try:
+        data = requests.get('https://www.cbr-xml-daily.ru/latest.js').json()
+        currency_rate = float(data["rates"][f"{currency}"])
+        return int(amount / currency_rate)
+    except Exception as error:
+        print(error)
+        return None
+
+
 if __name__ == "__main__":
-    emails = ["ser@yandex.ru", "sk@agv.ag", "ag.com", "sf@yan.rewq"]
-    passwords = ["12", "agv", "agv12", "  aGv123 ", "Ag v123", "agv123", "AGV123"]
-    inn = [123456789101, "1234n5678101", "123456 89101", "12345678910", "1234567890"]
-    for i in inn:
-        print(inn_checker(i))
+    for i in get_classes():
+        print(i)

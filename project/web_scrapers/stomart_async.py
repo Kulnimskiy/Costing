@@ -1,9 +1,10 @@
 import asyncio
 import aiohttp
-from time import time
-import requests
 import inspect
 import sys
+from time import time
+from bs4 import BeautifulSoup
+from project.helpers import get_classes
 
 
 class Stomshop:
@@ -39,7 +40,7 @@ def get_tasks(session, items):
     links = get_classes_links()
     for item in items:
         for link in links:
-            request_not_sent = session.get(link.format(item), ssl=False) # it is an awaitable coroutine
+            request_not_sent = session.get(link.format(item), ssl=False)  # it is an awaitable coroutine
             tasks.append(request_not_sent)
             print("task added")
     return tasks
@@ -67,4 +68,4 @@ res = {"sync": "12.887113809585571",
        "async": "7.395600080490112",
        "async_immediate": ""}
 if __name__ == '__main__':
-    main()
+    print(get_classes())
