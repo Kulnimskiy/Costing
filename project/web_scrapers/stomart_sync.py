@@ -239,14 +239,20 @@ def get_classes():
     return [org_class for org_name, org_class in clsmembers][1:]
 
 
-if __name__ == "__main__":
+def search_all(item):
     start = time.time()
-    item = "стул"
     result = []
     for cls in get_classes():
-        result.extend(cls.search_relevant_items(item))
+        req = cls.search_relevant_items(item)
+        if req:
+            result.extend(req)
     for i in result:
         print(i)
     print(len(result))
     end = time.time()
     print("finished for ", end - start, "sec")
+    return result
+
+
+if __name__ == "__main__":
+    search_all("стул")

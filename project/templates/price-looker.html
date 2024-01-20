@@ -1,7 +1,33 @@
 {% extends "layout.html" %}
 
-{% block title %} Login {% endblock %}
+{% block title %} Price Looker {% endblock %}
 
 {% block body %}
-    Look for the price
+<div class="container-md mt-4">
+    <form action="/price-looker" method="get">
+        <div class="input-group mb-3 mx-auto w-75" style="padding-top: 5%">
+            <input type="text" class="form-control" placeholder="Items to peek into" name="item" autofocus style="border-color: #b8daff">
+            <button class="btn btn-outline-primary" type="submit" id="button-addon2">PEEK</button>
+        </div>
+    </form>
+    <div class="header mx-auto w-75">
+        <h4 class="mx-auto" style="text-align: center">Items</h4>
+    </div>
+    <table class="table mx-auto w-75">
+        <thead>
+            <tr class="table-success">
+                <th>Name</th>
+                <th>Price</th>
+                <th>Link</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr>
+                <td>{{item.name}}</td><td>{{item.price}}</td><td style="max-width: 100%"><a href={{item.url}} target="_blank">{{item.url[8:25]}}...</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 {% endblock %}

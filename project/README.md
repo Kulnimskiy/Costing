@@ -2,8 +2,8 @@
 CHECK HOW TO ADD NEW MODELS TO AN EXISTING DB
 
 Search page:
-- need parsers for an item's page and a search page of the main competitors of stomart
-- 
+- need parsers for an item's page and a search page of the main competitors of stomart (done)
+- work out how to give the user only HIS parsers
 
 
 

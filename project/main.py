@@ -1,8 +1,12 @@
+import sys
+import time
+
 from flask import Blueprint, render_template, session, redirect, request, url_for
 from flask_login import login_required, current_user
 from .db_manager import load_company_data, db_add_competitor, db_get_competitors, db_delete_competitor, \
     get_all_competitors
-from .helpers import inn_checker
+from .helpers import inn_checker, calculate_relevance, get_classes
+from .web_scrapers.stomart_async import run_search_all
 
 main = Blueprint("main", __name__)
 
@@ -52,10 +56,25 @@ def comparison():
     return "Comparison of the prices between you and your competitors"
 
 
+class Sad:
+    pass
+
+
 @main.route("/price-looker")
 @login_required
 def price_looker():
-    return "Company profile"
+    item = request.args.get("item")
+    if not item:
+        return render_template("price-looker.html")
+    result = run_search_all(item)
+    for r in result:
+        if r["price"] is None:
+            r["price"] = 0
+    result = sorted(result, key=lambda r: (calculate_relevance(item, r["name"]), r["price"]), reverse=True)
+    for r in result:
+        if r["price"] == 0:
+            r["price"] = "Not selling || Not found"
+    return render_template("price-looker.html", items=result)
 
 
 @main.route("/profile/delete_competitor/<com_inn>", methods=["POST"])

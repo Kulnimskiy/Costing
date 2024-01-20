@@ -4,6 +4,7 @@ import inspect
 import sys
 import requests
 
+
 def email_checker(email):
     try:
         v = validate_email(str(email))
@@ -48,6 +49,8 @@ def login_checker(login):
         return login
     return False
 
+class Fly:
+    pass
 
 def get_cur_date():
     return datetime.today().strftime("%d.%m.%Y")
@@ -59,7 +62,7 @@ def get_classes(module_name):
 
     cls_members = inspect.getmembers(module_name, inspect.isclass)  # get ALL the classes (class_name, class_object)
     # remove the imported classes
-    cls_objects = [obj for name, obj in cls_members if obj.__dict__.get("__module__", None) == "__main__"]
+    cls_objects = [obj for name, obj in cls_members if obj.__dict__.get("BASE_URL", None)]
     return cls_objects
 
 
@@ -87,6 +90,17 @@ def convert_to_rub(amount: (int, float), currency: str):
         return None
 
 
+def calculate_relevance(search: str, result: str):
+    words = search.split()
+    counter = 0
+    for word in words:
+        if len(word) > 5:
+            word = word[1:-2]
+        if word.lower() in result.lower():
+            counter += 1
+    return counter / len(words)
+
+
 if __name__ == "__main__":
-    for i in get_classes():
+    for i in get_classes(sys.modules[__name__]):
         print(i)

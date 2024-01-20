@@ -1,34 +1,19 @@
 import requests
 from pprint import pprint
-from project.web_scrapers.test_stomart import Stomatorg, Stomshop, Dentex, Dentikom
+from project.web_scrapers.stomart_sync import Stomatorg, Stomshop, Dentex, Dentikom
 import asyncio
+import aiohttp
 import time
+import sys
+from project.web_scrapers.stomart_async import get_classes
+
+class FLY:
+    pass
+table = "s"
+
+print(get_classes(sys.modules[__name__]))
 
 
-async def main():
-    start_time = time.time()  # время начала выполнения
-    item = "Стул"
+kst = [1,4,6,7,2,5,2,3,4]
 
-    task3 = asyncio.create_task(Stomshop.search_relevant_items(item))
-    task4 = asyncio.create_task(Stomatorg.search_relevant_items(item))
-    task1 = asyncio.create_task(Dentikom.search_relevant_items(item))
-    task2 = asyncio.create_task(Dentex.search_relevant_items(item))
-
-    for g in await task1:
-        print(g)
-    for i in await task2:
-        print(i)
-    for i in await task3:
-        print(i)
-    for i in await task4:
-        print(i)
-
-
-    end_time = time.time()  # время окончания выполнения
-    execution_time = end_time - start_time  # вычисляем время выполнения
-
-    print(f"Время выполнения программы: {execution_time} секунд")
-
-asyncio.run(main())
-
-# asyncio.run(main())
+print(sorted(kst))
