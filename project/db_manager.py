@@ -8,7 +8,7 @@ from .helpers import get_cur_date
 def load_company_data(_inn):
     """Uses a parser to get data from the web if the last load of the date
     happened more than 2 days ago and updates the data in the db"""
-    days_between_reload = 1
+    days_between_reload = 3
     cur_date_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     cur_date = datetime.strptime(cur_date_str, "%Y-%m-%d %H:%M:%S")
     company = Companies.query.filter_by(_inn=_inn).first()

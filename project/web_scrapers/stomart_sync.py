@@ -14,7 +14,9 @@ class Stomshop:
     def search_relevant_items(item):
         try:
             base_url = f"https://api4.searchbooster.io/api/12d02e18-b322-4cd6-9904-56712fb66827/search?query={item}&skip=0&limit=24&groupByCategories=%7B%22active%22%3Atrue%2C%22size%22%3A10%2C%22skip%22%3A0%7D"
+            print("req sent 1")
             req = requests.get(base_url).json()
+            print("1 got")
             items_lst = []
             for the_offer in req["offers"]:
                 found_item = {"name": the_offer.get("name", None),
@@ -58,6 +60,7 @@ class Stomatorg:
     def search_relevant_items(item):
         try:
             base_url = f"https://api.searchbooster.net/api/9ec1c177-2047-4f1c-b1f9-14a4a7fa9c25/search?query={item}&skip=0&limit=24&groupByCategories=%7B%22active%22%3Atrue%2C%22size%22%3A10%2C%22skip%22%3A0%7D&client=shop.stomatorg.ru"
+            print("req sent 2")
             req = requests.get(base_url).json()
             items_lst = []
             for the_offer in req["offers"]:
@@ -102,7 +105,8 @@ class Dentikom:
             return None
         try:
             base_url = f"https://dentikom.ru/catalog/?q={item}"
-            req = requests.get(base_url).text
+            print("req sent 3")
+            req = requests.get(base_url, timeout=(3.05, 27)).text
             doc = BeautifulSoup(req, "html.parser")
             catalog = doc.find(id="catalog-products")
             items = catalog.find_all(class_="item")
@@ -154,6 +158,7 @@ class Dentex:
             return None
         try:
             base_url = f"https://dentex.ru/search/?q={item}&area=everywhere&s="
+            print("req sent 4")
             req = requests.get(base_url).text
             doc = BeautifulSoup(req, "html.parser")
             catalog = doc.find("div", class_="short-search")
