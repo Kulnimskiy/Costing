@@ -1,13 +1,10 @@
-import sys
-import time
-
 from flask import Blueprint, render_template, session, redirect, request, url_for
 from flask_login import login_required, current_user
 from .db_manager import load_company_data, db_add_competitor, db_get_competitors, db_delete_competitor, \
     get_all_competitors
-from .helpers import inn_checker, calculate_relevance, get_classes
+from .helpers import inn_checker, calculate_relevance, create_client_folder
 from .web_scrapers.stomart_async import run_search_all
-
+from .scraper_template import create_scraper_file
 main = Blueprint("main", __name__)
 
 
@@ -54,10 +51,6 @@ def competitor_monitoring():
 @login_required
 def comparison():
     return "Comparison of the prices between you and your competitors"
-
-
-class Sad:
-    pass
 
 
 @main.route("/price-looker")

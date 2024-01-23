@@ -34,3 +34,10 @@ class Competitors(db.Model):
     competitor_inn = db.Column(db.Integer, nullable=False)
     competitor_nickname = db.Column(db.String(100))
     competitor_website = db.Column(db.String(200))
+    connection_status = db.Column(db.String(200), default="disconnected", nullable=False)
+
+
+class Scrapers(db.Model):
+    scraper_id = db.Column(db.Integer, primary_key=True)
+    company_inn = db.Column(db.Integer, nullable=False)
+    scraper_path = db.Column(db.String(200), nullable=False)

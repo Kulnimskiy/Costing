@@ -3,6 +3,7 @@ from datetime import datetime
 import inspect
 import sys
 import requests
+import os
 
 
 def email_checker(email):
@@ -49,8 +50,10 @@ def login_checker(login):
         return login
     return False
 
+
 class Fly:
     pass
+
 
 def get_cur_date():
     return datetime.today().strftime("%d.%m.%Y")
@@ -99,6 +102,31 @@ def calculate_relevance(search: str, result: str):
         if word.lower() in result.lower():
             counter += 1
     return counter / len(words)
+
+
+def create_client_folder(login: str):
+    dir_name = login
+    parent_path = "./project/web_scrapers/"
+    path = os.path.join(parent_path, dir_name)
+    try:
+        os.mkdir(path)
+    except FileExistsError as error:
+        print(error)
+
+
+def hash_inn(comp_inn: str):
+    comp_inn = str(comp_inn)
+    value = ""
+    for digit in comp_inn:
+        value += chr(100 + int(digit))
+    return value.lower().capitalize()
+
+
+def unhash_inn(comp_hash: str):
+    value = ""
+    for letter in comp_hash:
+        value += str(ord(letter.lower()) - 100)
+    return value
 
 
 if __name__ == "__main__":
