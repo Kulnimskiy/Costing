@@ -65,9 +65,22 @@
     border-radius: 10px;
 }
 
-.delete-btn {
+#delete_btn {
+    border: none;
+    background: transparent;
+}
+#delete_btn:hover {
+    background: #e5e5e5;
+    border: 2px black;
+    border-radius: 5px;
+}
+
+.button-pic {
     position: relative;
-    text-align: center;
-    height: 25px;
-    width: auto;
+    padding-top: 2px;
+    height: 17px;
+    margin-top: -5px;
+}
+td {
+    vertical-align: middle
 }

@@ -55,6 +55,19 @@ def load_company_data(_inn):
     return company
 
 
+def create_competitor(data_source, user_id, comp_inn, comp_nickname=None, website=None):
+    comp_nickname = comp_nickname if comp_nickname else data_source.organization
+    website = website if website else data_source.website
+    if website:
+        if "http" not in website and "https" not in website:
+            website = "https://" + website
+    new_competitor = Competitors(user_id=user_id,
+                                 competitor_inn=comp_inn,
+                                 competitor_nickname=comp_nickname,
+                                 competitor_website=website)
+    return new_competitor
+
+
 def db_add_competitor(user_id, comp_inn, comp_nickname=None, website=None):
     competitor_already_added = Competitors.query.filter_by(competitor_inn=comp_inn, user_id=user_id).first()
     if competitor_already_added:
@@ -65,24 +78,14 @@ def db_add_competitor(user_id, comp_inn, comp_nickname=None, website=None):
     company_exists = Companies.query.filter_by(_inn=comp_inn).first()
     if company_exists:
         print("The company exists already in the table")
-        comp_nickname = comp_nickname if comp_nickname else company_exists.organization
-        website = website if website else company_exists.website
-        new_competitor = Competitors(user_id=user_id,
-                                     competitor_inn=comp_inn,
-                                     competitor_nickname=comp_nickname,
-                                     competitor_website=website)
+        new_competitor = create_competitor(company_exists, user_id, comp_inn, comp_nickname, website)
         db.session.add(new_competitor)
         db.session.commit()
         return 0
     print("adding a company")
     # if there is no company no competitor with this inn and
     company = load_company_data(comp_inn)
-    comp_nickname = comp_nickname if comp_nickname else company.organization
-    website = website if website else company.website
-    new_competitor = Competitors(user_id=user_id,
-                                 competitor_inn=comp_inn,
-                                 competitor_nickname=comp_nickname,
-                                 competitor_website=website)
+    new_competitor = create_competitor(company, user_id, comp_inn, comp_nickname, website)
     db.session.add(new_competitor)
     db.session.commit()
 
