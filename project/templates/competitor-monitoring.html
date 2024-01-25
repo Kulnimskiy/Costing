@@ -20,40 +20,43 @@
         <div class="col col-8">
             <table class="table table-hover">
                 <thead>
-                    <tr class="table-active">
+                <tr class="table-active">
 
-                        <th scope="col">#</th>
-                        <th scope="col">Company</th>
-                        <th scope="col">INN</th>
-                        <th scope="col">Website</th>
-                        <th scope="col"></th>
-                    </tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Company</th>
+                    <th scope="col">INN</th>
+                    <th scope="col">Website</th>
+                    <th scope="col"></th>
+                </tr>
                 </thead>
                 <tbody>
-                    {% for competitor in competitors %}
-                    <tr>
-                        <td>
-                            <form action="/profile/delete_competitor/{{competitor.competitor_inn}}" method="post">
-                               <button type="submit" id="delete_btn"><img class="button-pic" src="static/images/delete-button.svg" alt="Delete"/></button>
-                            </form>
-                        </td>
-                        <td>{{competitor.competitor_nickname}}</td>
-                        <td align="center">{{competitor.competitor_inn}}</td>
-                        {% if competitor.competitor_website %}
-                            <td><a href="{{competitor.competitor_website}}">{{competitor.competitor_website[8:]}}</a></td>
-                        {% else %}
-                            <td><a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ">{{competitor.competitor_website}}</a></td>
-                        {% endif %}
-                        <td align="center">
-                            <form action="/request-connection">
-                                <button class="btn btn-success"type="submit">Request to connect</button>
-                            </form>
-                        </td>
-                    </tr>
-                    {% endfor %}
-              </tbody>
+                {% for competitor in competitors %}
+                <tr>
+                    <td>
+                        <form action="/profile/delete_competitor/{{competitor.competitor_inn}}" method="post">
+                            <button type="submit" id="delete_btn"><img class="button-pic"
+                                                                       src="static/images/delete-button.svg"
+                                                                       alt="Delete"/></button>
+                        </form>
+                    </td>
+                    <td>{{competitor.competitor_nickname}}</td>
+                    <td align="center">{{competitor.competitor_inn}}</td>
+                    {% if competitor.competitor_website %}
+                    <td><a href="{{competitor.competitor_website}}">{{competitor.competitor_website[8:]}}</a></td>
+                    {% else %}
+                    <td><a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ">{{competitor.competitor_website}}</a></td>
+                    {% endif %}
+                    <td align="center">
+                        <form action="/request_connection/{{competitor.competitor_inn}}" , method="POST">
+                            <button class="btn btn-success" type="submit">Request to connect</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
             </table>
-	        <img src="https://mlmco.net/storage/postImages/33012/2022-08-18/1660847416_source.gif" alt="Yes" style="width: 650px; height: auto">
+            <img src="https://mlmco.net/storage/postImages/33012/2022-08-18/1660847416_source.gif" alt="Yes"
+                 style="width: 650px; height: auto">
         </div>
     </div>
 </div>

@@ -7,7 +7,8 @@ Search page:
 It could be implementer like this:
 - as the person registers, a folder with his loging as a name is created
 - when the client adds a competitor a file with a competitors inn as a name is created and
-- it adds the path to the parser to a table (client_scrapers(col (number, inn, path)))
+- it adds the path to the parser to a table (cl
+- ient_scrapers(col (number, inn, path)))
 - NEED TO ADD A COLUMN TO THE COMPETITORS TABLE(STATUS(CONNECTED\NOT CONNECTED(OR TRUE\FALSE)))
 - search looks for all the scrapers of the connected competitors by their inn, finds their paths and imports the classes
 into a file "search all" where the search happens asynchronously through all the websites

@@ -89,13 +89,19 @@ def db_add_competitor(user_id, comp_inn, comp_nickname=None, website=None):
     db.session.add(new_competitor)
     db.session.commit()
 
-
+def db_get_user(user_id):
+    User.query.filter_by(id=user_id)
+    return Companies.query.filter_by(_inn=comp_inn)
 def db_get_competitors(user_id):
     return Competitors.query.filter_by(user_id=user_id)
 
 
+def db_get_competitor(user_id, com_inn):
+    return Competitors.query.filter_by(user_id=user_id, competitor_inn=com_inn).first()
+
+
 def db_delete_competitor(user_id, com_inn):
-    company = Competitors.query.filter_by(user_id=user_id, competitor_inn=com_inn).first()
+    company = db_get_competitor(user_id, com_inn)
     if company:
         print(company)
         db.session.delete(company)
