@@ -51,10 +51,6 @@ def login_checker(login):
     return False
 
 
-class Fly:
-    pass
-
-
 def get_cur_date():
     return datetime.today().strftime("%d.%m.%Y")
 
@@ -106,7 +102,7 @@ def calculate_relevance(search: str, result: str):
 
 def create_client_folder(login: str):
     dir_name = login
-    parent_path = "./project/web_scrapers/"
+    parent_path = "D:\Моя\Programming\Costing\project\web_scrapers"
     path = os.path.join(parent_path, dir_name)
     try:
         os.mkdir(path)

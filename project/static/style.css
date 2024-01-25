@@ -81,6 +81,8 @@
     height: 17px;
     margin-top: -5px;
 }
-td {
-    vertical-align: middle
+
+.req_status {
+    text-align: center;
+    vertical-align: middle;
 }

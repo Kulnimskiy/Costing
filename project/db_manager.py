@@ -1,8 +1,9 @@
 from . import db
-from .models import Companies, User, Competitors
+from .models import Companies, User, Competitors, Scrapers
 from .web_scrapers.company_info_search import Company
 from datetime import datetime
 from .helpers import get_cur_date
+from .scraper_template import create_scraper_file
 
 
 def load_company_data(_inn):
@@ -89,15 +90,27 @@ def db_add_competitor(user_id, comp_inn, comp_nickname=None, website=None):
     db.session.add(new_competitor)
     db.session.commit()
 
+
 def db_get_user(user_id):
     User.query.filter_by(id=user_id)
     return Companies.query.filter_by(_inn=comp_inn)
+
+
 def db_get_competitors(user_id):
     return Competitors.query.filter_by(user_id=user_id)
 
 
 def db_get_competitor(user_id, com_inn):
     return Competitors.query.filter_by(user_id=user_id, competitor_inn=com_inn).first()
+
+
+def db_update_con_status(user_id, com_inn, new_status="requested"):
+    competitor = db_get_competitor(user_id, com_inn)
+    if competitor and competitor.connection_status == "disconnected":
+        competitor.connection_status = new_status
+        db.session.commit()
+        return True
+    return False
 
 
 def db_delete_competitor(user_id, com_inn):
@@ -113,3 +126,16 @@ def get_all_competitors():
     users = Competitors.query.all()
     for user in users:
         print(user.__dict__)
+
+
+def db_add_scraper(user_inn, comp_inn: str):
+    exists = Scrapers.query.filter_by(company_inn=comp_inn).first()
+    if exists:
+        return False
+    path = create_scraper_file(user_inn, comp_inn)
+    if path:
+        scraper = Scrapers(company_inn=comp_inn, scraper_path=path)
+        db.session.add(scraper)
+        db.session.commit()
+        return True
+    return False

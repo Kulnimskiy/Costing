@@ -4,10 +4,13 @@ from .helpers import create_client_folder, hash_inn, unhash_inn
 
 
 
-def create_scraper_file(user_login, comp_inn: str):
+def create_scraper_file(user_inn, comp_inn: str):
+    """returns the path where the scraper has been created"""
     try:
+        user_inn = hash_inn(user_inn)
         class_name = hash_inn(comp_inn)
-        with open(f"./web_scrapers/{user_login}/{comp_inn}.py", "a") as file:
+        path = f"""D:\Моя\Programming\Costing\project\web_scrapers\{user_inn}\{class_name}.py"""
+        with open(path, "a") as file:
             file.write(f"""import asyncio
 import aiohttp
 import sys
@@ -38,9 +41,14 @@ class {class_name}:
             return None
 
 """)
+        return path
     except FileNotFoundError as error:
         print(error)
+        return None
 
+def delete_empty_scraper():
+
+    pass
 
 if __name__ == "__main__":
     create_client_folder("test")
