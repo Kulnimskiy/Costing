@@ -1,5 +1,5 @@
-from . import db
 from flask_login import UserMixin
+from . import db
 
 
 class User(UserMixin, db.Model):
@@ -42,4 +42,3 @@ class Scrapers(db.Model):
     scraper_id = db.Column(db.Integer, primary_key=True)
     company_inn = db.Column(db.Integer, nullable=False)
     scraper_path = db.Column(db.String(200), nullable=False)
-

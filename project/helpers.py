@@ -1,9 +1,8 @@
-from email_validator import validate_email, EmailNotValidError
-from datetime import datetime
-import inspect
 import sys
+import inspect
 import requests
-import os
+from datetime import datetime
+from email_validator import validate_email, EmailNotValidError
 
 
 def email_checker(email):
@@ -98,16 +97,6 @@ def calculate_relevance(search: str, result: str):
         if word.lower() in result.lower():
             counter += 1
     return counter / len(words)
-
-
-def create_client_folder(login: str):
-    dir_name = login
-    parent_path = "D:\Моя\Programming\Costing\project\web_scrapers"
-    path = os.path.join(parent_path, dir_name)
-    try:
-        os.mkdir(path)
-    except FileExistsError as error:
-        print(error)
 
 
 def hash_inn(comp_inn: str):

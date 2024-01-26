@@ -1,6 +1,7 @@
-import smtplib, ssl
-from email.mime.text import MIMEText
+import ssl
+import smtplib
 from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 from .credentials import password, project_email
 
 

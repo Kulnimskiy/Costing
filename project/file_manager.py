@@ -1,7 +1,15 @@
-from .helpers import create_client_folder, hash_inn, unhash_inn
+import os
+from .helpers import hash_inn, unhash_inn
 
 
-
+def create_client_folder(user_inn: str):
+    dir_name = hash_inn(user_inn)
+    parent_path = ".\project\clients_scrapers"
+    path = os.path.join(parent_path, dir_name)
+    try:
+        os.mkdir(path)
+    except FileExistsError as error:
+        print(error)
 
 
 def create_scraper_file(user_inn, comp_inn: str):
@@ -9,7 +17,7 @@ def create_scraper_file(user_inn, comp_inn: str):
     try:
         user_inn = hash_inn(user_inn)
         class_name = hash_inn(comp_inn)
-        path = f"""D:\Моя\Programming\Costing\project\web_scrapers\{user_inn}\{class_name}.py"""
+        path = f""".\project\clients_scrapers\{user_inn}\{class_name}.py"""
         with open(path, "a") as file:
             file.write(f"""import asyncio
 import aiohttp
@@ -23,7 +31,7 @@ from project.helpers import get_classes, operate, convert_to_rub, calculate_rele
 class {class_name}:
     BASE_URL = ""
     SEARCH_URL = ""
-    
+
     @staticmethod
     async def search_relevant_items(item: str, session: aiohttp.ClientSession):
         try:
@@ -31,7 +39,7 @@ class {class_name}:
         except Exception as error:
             print(error, {class_name}.BASE_URL)
             return None
-       
+
     @staticmethod
     def get_item_info(link: str):
         try:
@@ -46,9 +54,10 @@ class {class_name}:
         print(error)
         return None
 
-def delete_empty_scraper():
 
+def delete_empty_scraper():
     pass
+
 
 if __name__ == "__main__":
     create_client_folder("test")

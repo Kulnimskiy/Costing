@@ -1,9 +1,8 @@
-from . import db
-from .models import Companies, User, Competitors, Scrapers
-from .web_scrapers.company_info_search import Company
 from datetime import datetime
-from .helpers import get_cur_date
-from .scraper_template import create_scraper_file
+from . import db
+from .models import Companies, Competitors, Scrapers
+from .corpotate_scrapers.company_info_search import Company
+from .file_manager import create_scraper_file
 
 
 def load_company_data(_inn):
@@ -89,11 +88,6 @@ def db_add_competitor(user_id, comp_inn, comp_nickname=None, website=None):
     new_competitor = create_competitor(company, user_id, comp_inn, comp_nickname, website)
     db.session.add(new_competitor)
     db.session.commit()
-
-
-def db_get_user(user_id):
-    User.query.filter_by(id=user_id)
-    return Companies.query.filter_by(_inn=comp_inn)
 
 
 def db_get_competitors(user_id):

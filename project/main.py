@@ -1,11 +1,11 @@
-from flask import Blueprint, render_template, session, redirect, request, url_for
+from flask import Blueprint, render_template, redirect, request, url_for
 from flask_login import login_required, current_user
+from .helpers import inn_checker, calculate_relevance
+from .request_connection import send_connect_request
+from .corpotate_scrapers.stomart_async import run_search_all
 from .db_manager import load_company_data, db_add_competitor, db_get_competitors, db_delete_competitor, \
-    get_all_competitors, db_get_competitor, db_update_con_status, db_add_scraper
-from .helpers import inn_checker, calculate_relevance, create_client_folder
-from .web_scrapers.stomart_async import run_search_all
-from .connection_req import send_connect_request
-from . import db
+    db_get_competitor, db_update_con_status, db_add_scraper
+
 main = Blueprint("main", __name__)
 
 

@@ -1,10 +1,10 @@
 from flask import Blueprint, render_template, request, redirect, session, flash, url_for
 from flask_login import login_user, logout_user
 from werkzeug.security import generate_password_hash, check_password_hash
-from .models import User
 from . import db
-from .helpers import password_checker, email_checker, inn_checker, login_checker, create_client_folder, hash_inn
-
+from .models import User
+from .helpers import password_checker, email_checker, inn_checker, login_checker
+from .file_manager import create_client_folder
 
 auth = Blueprint("auth", __name__)
 
@@ -54,7 +54,7 @@ def signup():
         # add the user to the db
         db.session.add(new_user)
         db.session.commit()
-        create_client_folder(hash_inn(comp_inn=company_inn_))
+        create_client_folder(user_inn=company_inn_)
         return redirect("/login")
     return render_template("signup.html")
 
