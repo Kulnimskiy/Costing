@@ -86,3 +86,12 @@
     text-align: center;
     vertical-align: middle;
 }
+
+.competitors_choice {
+    display: block;
+    border: 3px #b8daff;
+    padding-top: 5%;
+}
+.filter_header {
+    background: #e2e3e5;
+}

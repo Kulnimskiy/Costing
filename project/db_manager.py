@@ -90,7 +90,9 @@ def db_add_competitor(user_id, comp_inn, comp_nickname=None, website=None):
     db.session.commit()
 
 
-def db_get_competitors(user_id):
+def db_get_competitors(user_id, connection_status=""):
+    if connection_status:
+        return Competitors.query.filter_by(user_id=user_id, connection_status=connection_status)
     return Competitors.query.filter_by(user_id=user_id)
 
 

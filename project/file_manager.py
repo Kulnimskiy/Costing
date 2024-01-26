@@ -3,7 +3,8 @@ from .helpers import hash_inn, unhash_inn
 
 
 def create_client_folder(user_inn: str):
-    dir_name = hash_inn(user_inn)
+    # dir_name = hash_inn(user_inn)
+    dir_name = str(user_inn)
     parent_path = ".\project\clients_scrapers"
     path = os.path.join(parent_path, dir_name)
     try:
@@ -12,12 +13,14 @@ def create_client_folder(user_inn: str):
         print(error)
 
 
-def create_scraper_file(user_inn, comp_inn: str):
+def create_scraper_file(user_inn: str, comp_inn: str):
     """returns the path where the scraper has been created"""
     try:
-        user_inn = hash_inn(user_inn)
+        # user_inn = hash_inn(user_inn)W
+        # class_name = hash_inn(comp_inn)
         class_name = hash_inn(comp_inn)
-        path = f""".\project\clients_scrapers\{user_inn}\{class_name}.py"""
+        user_inn = str(user_inn)
+        path = f""".\project\clients_scrapers\{user_inn}\{str(comp_inn)}.py"""
         with open(path, "a") as file:
             file.write(f"""import asyncio
 import aiohttp
@@ -29,6 +32,7 @@ from project.helpers import get_classes, operate, convert_to_rub, calculate_rele
 
 
 class {class_name}:
+    INN = {comp_inn}
     BASE_URL = ""
     SEARCH_URL = ""
 

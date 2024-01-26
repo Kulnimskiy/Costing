@@ -58,18 +58,21 @@ def comparison():
 @main.route("/price-looker")
 @login_required
 def price_looker():
-    item = request.args.get("item")
-    if not item:
-        return render_template("price-looker.html")
-    result = run_search_all(item)
-    for r in result:
-        if r["price"] is None:
-            r["price"] = 0
-    result = sorted(result, key=lambda r: (calculate_relevance(item, r["name"]), r["price"]), reverse=True)
-    for r in result:
-        if r["price"] == 0:
-            r["price"] = "Not selling || Not found"
-    return render_template("price-looker.html", items=result)
+    available_competitors = db_get_competitors(current_user.get_id(), "connected")
+    if request.method == "POST":
+        item = request.args.get("item")
+        if not item:
+            return render_template("price-looker.html")
+        result = run_search_all(item)
+        for r in result:
+            if r["price"] is None:
+                r["price"] = 0
+        result = sorted(result, key=lambda r: (calculate_relevance(item, r["name"]), r["price"]), reverse=True)
+        for r in result:
+            if r["price"] == 0:
+                r["price"] = "Not selling || Not found"
+        return render_template("price-looker.html", items=result, competitors=available_competitors)
+    return render_template("price-looker.html", competitors=available_competitors)
 
 
 @main.route("/profile/delete_competitor/<com_inn>", methods=["POST"])
