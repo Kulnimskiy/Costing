@@ -25,18 +25,18 @@ def create_app():
     login_manager.login_view = "auth.login"
     login_manager.init_app(app)
 
-    from .models import User, Companies
+    from project.models import User, Companies
 
     @login_manager.user_loader
     def load_user(user_id):
         return User.query.get(int(user_id))
 
     # auth routs will be processed here
-    from .auth import auth as auth_blueprint
+    from project.auth import auth as auth_blueprint
     app.register_blueprint(auth_blueprint)
 
     # blueprint for the rest of the app
-    from .main import main as main_blueprint
+    from project.main import main as main_blueprint
     app.register_blueprint(main_blueprint)
 
     @app.after_request

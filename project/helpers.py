@@ -1,6 +1,7 @@
 import sys
 import inspect
 import requests
+import importlib.util
 from datetime import datetime
 from email_validator import validate_email, EmailNotValidError
 
@@ -54,7 +55,7 @@ def get_cur_date():
     return datetime.today().strftime("%d.%m.%Y")
 
 
-def get_classes(module_name):
+def get_cls_from_module(module_name):
     """get all the cls instances within a python file without the imported ones
     use module_name=sys.modules[__name__] to get classes form your file"""
 
@@ -114,6 +115,22 @@ def unhash_inn(comp_hash: str):
     return value
 
 
+def get_cls_from_path(path):
+    """first you import the module, a list of classes and del the module from the file"""
+    try:
+        spec = importlib.util.spec_from_file_location("scraper", path)
+        module = importlib.util.module_from_spec(spec)
+        sys.modules["scraper"] = module
+        spec.loader.exec_module(module)
+        classes = get_cls_from_module(module)
+        sys.modules.pop('scraper')
+        return classes
+    except FileNotFoundError as e:
+        print(e)
+        print(f"There is no such scraper on the path: {path}")
+        return None
+
+
 if __name__ == "__main__":
-    for i in get_classes(sys.modules[__name__]):
+    for i in get_cls_from_module(sys.modules[__name__]):
         print(i)

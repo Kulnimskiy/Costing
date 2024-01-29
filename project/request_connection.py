@@ -2,7 +2,7 @@ import ssl
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from .credentials import password, project_email
+from project.credentials import password, project_email
 
 
 def send_connect_request(current_user, competitor):

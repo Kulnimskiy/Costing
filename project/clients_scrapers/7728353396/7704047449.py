@@ -4,7 +4,7 @@ import sys
 import time
 import requests
 from bs4 import BeautifulSoup
-from project.helpers import get_classes, operate, convert_to_rub, calculate_relevance
+from project.helpers import get_cls_from_module, operate, convert_to_rub, calculate_relevance
 
 
 class Kkdhdhkhhm:

@@ -1,5 +1,5 @@
 import os
-from .helpers import hash_inn, unhash_inn
+from .helpers import hash_inn, unhash_inn, get_cls_from_module
 
 
 def create_client_folder(user_inn: str):
@@ -53,7 +53,7 @@ class {class_name}:
             return None
 
 """)
-        return path
+        return path.replace("\project", "")
     except FileNotFoundError as error:
         print(error)
         return None
@@ -61,6 +61,7 @@ class {class_name}:
 
 def delete_empty_scraper():
     pass
+
 
 
 if __name__ == "__main__":

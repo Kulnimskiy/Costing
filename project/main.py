@@ -1,10 +1,11 @@
 from flask import Blueprint, render_template, redirect, request, url_for
 from flask_login import login_required, current_user
-from .helpers import inn_checker, calculate_relevance
-from .request_connection import send_connect_request
-from .corpotate_scrapers.stomart_async import run_search_all
-from .db_manager import load_company_data, db_add_competitor, db_get_competitors, db_delete_competitor, \
+from project.helpers import inn_checker, calculate_relevance
+from project.request_connection import send_connect_request
+from project.corpotate_scrapers.stomart_async import run_search_all
+from project.db_manager import load_company_data, db_add_competitor, db_get_competitors, db_delete_competitor, \
     db_get_competitor, db_update_con_status, db_add_scraper
+
 
 main = Blueprint("main", __name__)
 
@@ -91,3 +92,9 @@ def request_connection(com_inn):
         send_connect_request(current_user, competitor)
         return redirect(url_for("main.competitor_monitoring"))
     return redirect(url_for("main.competitor_monitoring"))
+
+
+# @main.route("/test")
+# def test():
+#     funk()
+#     return redirect("/")

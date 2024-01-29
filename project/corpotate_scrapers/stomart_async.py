@@ -4,7 +4,7 @@ import sys
 import time
 import requests
 from bs4 import BeautifulSoup
-from project.helpers import get_classes, operate, convert_to_rub, calculate_relevance
+from project.helpers import get_cls_from_module, operate, convert_to_rub, calculate_relevance
 
 
 class Stomshop:
@@ -237,7 +237,7 @@ class Dentex:
 def get_tasks(item, session):
     """Creates a list of tasks to search all items references and
     add the search with each class method to the event loop"""
-    classes = get_classes(sys.modules[__name__])
+    classes = get_cls_from_module(sys.modules[__name__])
     tasks = []
     for cls in classes:
         tasks.append(asyncio.create_task(cls.search_relevant_items(item, session)))

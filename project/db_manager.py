@@ -1,8 +1,9 @@
 from datetime import datetime
-from . import db
-from .models import Companies, Competitors, Scrapers
-from .corpotate_scrapers.company_info_search import Company
-from .file_manager import create_scraper_file
+from project import db
+from project.models import Companies, Competitors, Scrapers
+from project.corpotate_scrapers.company_info_search import Company
+from project.file_manager import create_scraper_file
+from project.helpers import get_cls_from_path
 
 
 def load_company_data(_inn):
@@ -91,9 +92,10 @@ def db_add_competitor(user_id, comp_inn, comp_nickname=None, website=None):
 
 
 def db_get_competitors(user_id, connection_status=""):
+    """connection status can be 'disconnected', 'connected','requested'. Only those are in the db"""
     if connection_status:
-        return Competitors.query.filter_by(user_id=user_id, connection_status=connection_status)
-    return Competitors.query.filter_by(user_id=user_id)
+        return Competitors.query.filter_by(user_id=user_id, connection_status=connection_status).all()
+    return Competitors.query.filter_by(user_id=user_id).all()
 
 
 def db_get_competitor(user_id, com_inn):
@@ -135,3 +137,12 @@ def db_add_scraper(user_inn, comp_inn: str):
         db.session.commit()
         return True
     return False
+
+
+def db_get_scr_from_id(user_id):
+    """get all the scrapers connected to the user by their id"""
+    competitors_ = db_get_competitors(1, "connected")
+    inns_ = [competitor.competitor_inn for competitor in competitors_]
+    scr_path = Scrapers.query.filter(Scrapers.company_inn.in_(inns_)).all()
+    classes = [get_cls_from_path(scr.scraper_path)[0] for scr in scr_path]
+    return classes
