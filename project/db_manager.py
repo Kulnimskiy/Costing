@@ -139,9 +139,20 @@ def db_add_scraper(user_inn, comp_inn: str):
     return False
 
 
-def db_get_scr_from_id(user_id):
-    """get all the scrapers connected to the user by their id"""
-    competitors_ = db_get_competitors(1, "connected")
+def db_get_scr_from_id(user_id, comp_inn=None):
+    """ If competitor's inn is not provided, it returns a list of all the scrapers connected
+    to the user by their id. Else it returns a scraper for a specific competitor"""
+    if comp_inn:
+        competitor = db_get_competitor(user_id, comp_inn)
+        if competitor:
+            scr_path = Scrapers.query.filter_by(company_inn=comp_inn).first().scraper_path
+            if competitor.connection_status == "connected":
+                cls = get_cls_from_path(scr_path)[0]
+                return cls
+            else:
+                print(f"The competitor {comp_inn} is not connected")
+                return None
+    competitors_ = db_get_competitors(user_id, "connected")
     inns_ = [competitor.competitor_inn for competitor in competitors_]
     scr_path = Scrapers.query.filter(Scrapers.company_inn.in_(inns_)).all()
     classes = [get_cls_from_path(scr.scraper_path)[0] for scr in scr_path]

@@ -31,13 +31,16 @@ class Kldegghglf:
             return None
 
     @staticmethod
-    def get_item_info(link: str):
+    async def get_item_info(link: str, session):
         if Kldegghglf.BASE_URL not in link:
             print("Wrong link provided")
             return None
         try:
-            req = requests.get(link).text
-            doc = BeautifulSoup(req, "html.parser")
+            print("sent")
+            req = await session.get(link)
+            doc = await req.text()
+            print("got4")
+            doc = BeautifulSoup(doc, "html.parser")
             name = operate(
                 lambda: doc.find(class_="h2 text-center content-title content-title-copy-parent").find(
                     "h1").get_text())
@@ -51,7 +54,7 @@ class Kldegghglf:
             price = operate(lambda: int("".join([i for i in price if i.isdigit()])))
             return {"name": name, "price": price, "url": link}
         except Exception as error:
-            print(error)
+            print(error, Kldegghglf.BASE_URL)
             return None
-        pass
+
 

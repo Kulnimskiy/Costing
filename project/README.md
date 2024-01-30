@@ -1,4 +1,7 @@
 
+!remake the scraper tamplate
+
+
 create new models !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 Search page:

@@ -3,9 +3,9 @@ from flask_login import login_required, current_user
 from project.helpers import inn_checker, calculate_relevance
 from project.request_connection import send_connect_request
 from project.corpotate_scrapers.stomart_async import run_search_all
+from project.async_search import run_search_item, run_search_link, run_search_all_items, run_search_all_links
 from project.db_manager import load_company_data, db_add_competitor, db_get_competitors, db_delete_competitor, \
     db_get_competitor, db_update_con_status, db_add_scraper
-
 
 main = Blueprint("main", __name__)
 
@@ -56,15 +56,17 @@ def comparison():
     return "Comparison of the prices between you and your competitors"
 
 
-@main.route("/price-looker")
+@main.route("/price-looker", methods=["GET", "POST"])
 @login_required
 def price_looker():
     available_competitors = db_get_competitors(current_user.get_id(), "connected")
     if request.method == "POST":
-        item = request.args.get("item")
+        item = request.form.get("item")
+        chosen_competitors = request.form.getlist("chosen_competitor")
+        print(chosen_competitors)
         if not item:
-            return render_template("price-looker.html")
-        result = run_search_all(item)
+            return render_template("price-looker.html", competitors=available_competitors)
+        result = run_search_all_items(current_user.get_id(), item=item, chosen_comps=chosen_competitors)
         for r in result:
             if r["price"] is None:
                 r["price"] = 0
@@ -92,7 +94,6 @@ def request_connection(com_inn):
         send_connect_request(current_user, competitor)
         return redirect(url_for("main.competitor_monitoring"))
     return redirect(url_for("main.competitor_monitoring"))
-
 
 # @main.route("/test")
 # def test():

@@ -35,13 +35,16 @@ class Kkdmlhkdmg:
             return None
 
     @staticmethod
-    def get_item_info(link: str):
+    async def get_item_info(link: str, session):
         if Kkdmlhkdmg.BASE_URL not in link:
             print("Wrong link")
             return None
         try:
-            req = requests.get(link).text
-            doc = BeautifulSoup(req, "html.parser")
+            print("sent")
+            req = await session.get(link)
+            doc = await req.text()
+            print("got3")
+            doc = BeautifulSoup(doc, "html.parser")
             page = doc.find(class_="item-head")
             if not page:
                 return None
@@ -54,8 +57,8 @@ class Kkdmlhkdmg:
             price = operate(lambda: page.find(class_="price").find(class_="currency").text)
             price_int = Kkdmlhkdmg.price_format(price)
             return {"name": name, "price": price_int, "url": link}
-        except (requests.exceptions.RequestException, AttributeError, ValueError) as e:
-            print(e)
+        except Exception as error:
+            print(error, Kkdmlhkdmg.BASE_URL)
             return None
 
     @staticmethod

@@ -58,13 +58,16 @@ class Jmifddlkkg:
             return None
 
     @staticmethod
-    def get_item_info(link: str):
+    async def get_item_info(link: str, session):
         if Jmifddlkkg.BASE_URL not in link:
             print("Wrong link")
             return None
         try:
-            req = requests.get(link).text
-            doc = BeautifulSoup(req, "html.parser")
+            print("sent")
+            req = await session.get(link)
+            doc = await req.text()
+            print("got1")
+            doc = BeautifulSoup(doc, "html.parser")
             name = operate(
                 lambda: doc.find(class_="detail-product-page in-basket").find(
                     "h1").get_text())
@@ -75,9 +78,10 @@ class Jmifddlkkg:
                 return None
             price = operate(lambda: doc.find(class_="dpp-price_data__price").find(class_="current-price").text)
             price = operate(lambda: int("".join([i for i in price if i.isdigit()])))
-            return {"name": name, "price": price, "link": link}
-        except (requests.exceptions.RequestException, AttributeError, ValueError) as e:
-            print(e)
+            return {"name": name, "price": price, "url": link}
+        except Exception as error:
+            print(error, Jmifddlkkg.BASE_URL)
+            return None
             return None
 
 

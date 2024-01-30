@@ -29,13 +29,16 @@ class Kkdhdhkhhm:
             return None
 
     @staticmethod
-    def get_item_info(link: str):
+    async def get_item_info(link: str, session):
         if Kkdhdhkhhm.BASE_URL not in link:
             print("Wrong link")
             return None
         try:
-            req = requests.get(link).text
-            doc = BeautifulSoup(req, "html.parser")
+            print("sent")
+            req = await session.get(link)
+            doc = await req.text()
+            print("got2")
+            doc = BeautifulSoup(doc, "html.parser")
             name = operate(lambda: doc.find(class_="row").find("h1").get_text())
 
             # when there is no such item
@@ -46,7 +49,7 @@ class Kkdhdhkhhm:
             price = operate(lambda: doc.find(class_="element-stickyinfo-prices__curprice").get_text())
             price = operate(lambda: int("".join([i for i in price if i.isdigit()])))
             return {"name": name, "price": price, "url": link}
-        except (requests.exceptions.RequestException, AttributeError, ValueError) as e:
-            print(e)
+        except Exception as error:
+            print(error, Kkdhdhkhhm.BASE_URL)
             return None
 
