@@ -139,6 +139,21 @@ def check_price(price: str):
         return None
 
 
+def format_search_all_result(item, result: dict, min_price=None, max_price=None):
+    for r in result:
+        if r["price"] is None:
+            r["price"] = 0
+    if min_price:
+        result = filter(lambda x: x["price"] >= min_price, result)
+    if max_price:
+        result = filter(lambda x: x["price"] <= max_price, result)
+    result = sorted(list(result), key=lambda r: (calculate_relevance(item, r["name"]), r["price"]), reverse=True)
+    for r in result:
+        if r["price"] == 0:
+            r["price"] = "Not selling || Not found"
+    return result
+
+
 if __name__ == "__main__":
     for i in get_cls_from_module(sys.modules[__name__]):
         print(i)

@@ -1,6 +1,8 @@
+import html
+
 from flask import Blueprint, render_template, redirect, request, url_for
 from flask_login import login_required, current_user
-from project.helpers import inn_checker, calculate_relevance, check_price
+from project.helpers import inn_checker, format_search_all_result, check_price, unhash_inn
 from project.request_connection import send_connect_request
 from project.corpotate_scrapers.stomart_async import run_search_all
 from project.async_search import run_search_item, run_search_link, run_search_all_items, run_search_all_links
@@ -61,30 +63,31 @@ def comparison():
 def price_looker():
     available_competitors = db_get_competitors(current_user.get_id(), "connected")
     if request.method == "POST":
-
         # returns a html table with search results for ajax
         item = request.form.get("item")
         if not item:
-            return "Empty request"
+            return render_template("price-looker-results.html", competitors=available_competitors)
+
+        #  if no one has been chosen the search uses all of competitors
         chosen_competitors = request.form.getlist("chosen_competitor")
         if not chosen_competitors:
-            return "Nobody was chosen"
+            chosen_competitors = available_competitors
 
         min_price = check_price(request.form.get("min_price"))
         max_price = check_price(request.form.get("max_price"))
         result = run_search_all_items(current_user.get_id(), item=item, chosen_comps=chosen_competitors)
-        for r in result:
-            if r["price"] is None:
-                r["price"] = 0
-        if min_price:
-            result = filter(lambda x: x["price"] >= min_price, result)
-        if max_price:
-            result = filter(lambda x: x["price"] <= max_price, result)
-        result = sorted(list(result), key=lambda r: (calculate_relevance(item, r["name"]), r["price"]), reverse=True)
-        for r in result:
-            if r["price"] == 0:
-                r["price"] = "Not selling || Not found"
+        result = format_search_all_result(item, result, min_price, max_price)
         return render_template("price-looker-results.html", items=result)
+    if request.method == "GET":
+        item_search_field = request.args.get("item-search-field")
+
+        if item_search_field:
+            chosen_comps = [str(cls.competitor_inn) for cls in available_competitors]
+            result = run_search_all_items(current_user.get_id(), item=item_search_field,
+                                          chosen_comps=chosen_comps)
+            result = format_search_all_result(item_search_field, result)
+            return render_template("price-looker_layout.html", competitors=available_competitors,
+                                   items=result)
     return render_template("price-looker.html", competitors=available_competitors)
 
 

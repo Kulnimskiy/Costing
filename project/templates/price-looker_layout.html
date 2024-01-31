@@ -58,7 +58,29 @@
                 <div class="header mx-auto w-75">
                     <h4 class="mx-auto" style="text-align: center">Items</h4>
                 </div>
-                <div id="peek_results">{{item_search_field_results}}</div>
+                <div id="peek_results">
+                    <div>
+    <table class="table mx-auto">
+        <thead>
+        <tr class="table-secondary">
+            <th>Name</th>
+            <th>Price</th>
+            <th>Link</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for item in items %}
+        <tr>
+            <td>{{item.name}}</td>
+            <td>{{item.price}}</td>
+            <td style="max-width: 100%"><a href={{item.url}} target="_blank">{{item.url[8:25]}}...</a></td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+                </div>
+
             </div>
         </div>
     </div>

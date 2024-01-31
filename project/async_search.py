@@ -3,6 +3,7 @@ import aiohttp
 from project.db_manager import db_get_scr_from_id
 from project.helpers import unhash_inn
 
+
 def get_tasks_items(user_id, item, session, comp_filter=None):
     """Creates a list of tasks to search all items references and
     add the search with each class method to the event loop. You can add tasks either by item or link"""
