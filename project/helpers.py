@@ -131,6 +131,14 @@ def get_cls_from_path(path):
         return None
 
 
+def check_price(price: str):
+    try:
+        price = int("".join([digit for digit in price if digit.isdigit()]))
+        return price
+    except (TypeError, ValueError):
+        return None
+
+
 if __name__ == "__main__":
     for i in get_cls_from_module(sys.modules[__name__]):
         print(i)

@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, redirect, request, url_for
 from flask_login import login_required, current_user
-from project.helpers import inn_checker, calculate_relevance
+from project.helpers import inn_checker, calculate_relevance, check_price
 from project.request_connection import send_connect_request
 from project.corpotate_scrapers.stomart_async import run_search_all
 from project.async_search import run_search_item, run_search_link, run_search_all_items, run_search_all_links
@@ -61,20 +61,30 @@ def comparison():
 def price_looker():
     available_competitors = db_get_competitors(current_user.get_id(), "connected")
     if request.method == "POST":
+
+        # returns a html table with search results for ajax
         item = request.form.get("item")
-        chosen_competitors = request.form.getlist("chosen_competitor")
-        print(chosen_competitors)
         if not item:
-            return render_template("price-looker.html", competitors=available_competitors)
+            return "Empty request"
+        chosen_competitors = request.form.getlist("chosen_competitor")
+        if not chosen_competitors:
+            return "Nobody was chosen"
+
+        min_price = check_price(request.form.get("min_price"))
+        max_price = check_price(request.form.get("max_price"))
         result = run_search_all_items(current_user.get_id(), item=item, chosen_comps=chosen_competitors)
         for r in result:
             if r["price"] is None:
                 r["price"] = 0
-        result = sorted(result, key=lambda r: (calculate_relevance(item, r["name"]), r["price"]), reverse=True)
+        if min_price:
+            result = filter(lambda x: x["price"] >= min_price, result)
+        if max_price:
+            result = filter(lambda x: x["price"] <= max_price, result)
+        result = sorted(list(result), key=lambda r: (calculate_relevance(item, r["name"]), r["price"]), reverse=True)
         for r in result:
             if r["price"] == 0:
                 r["price"] = "Not selling || Not found"
-        return render_template("price-looker.html", items=result, competitors=available_competitors)
+        return render_template("price-looker-results.html", items=result)
     return render_template("price-looker.html", competitors=available_competitors)
 
 

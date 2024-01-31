@@ -1,0 +1,20 @@
+<div>
+    <table class="table mx-auto">
+        <thead>
+        <tr class="table-secondary">
+            <th>Name</th>
+            <th>Price</th>
+            <th>Link</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for item in items %}
+        <tr>
+            <td>{{item.name}}</td>
+            <td>{{item.price}}</td>
+            <td style="max-width: 100%"><a href={{item.url}} target="_blank">{{item.url[8:25]}}...</a></td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>

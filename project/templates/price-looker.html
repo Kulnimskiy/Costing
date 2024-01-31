@@ -3,7 +3,7 @@
 {% block title %} Price Looker {% endblock %}
 
 {% block body %}
-<form action="/price-looker" method="post">
+<form action="/price-looker" method="post" id="form-peek">
     <div class="container-md mt-4">
         <div class="row">
             <aside class="col-lg-4" style="padding-top: 3%">
@@ -17,11 +17,12 @@
                                 <div class="form-row">
                                     <div class="form-group col-md-6">
                                         <label>Min</label>
-                                        <input type="number" class="form-control" id="inputEmail4" placeholder="$0">
+                                        <input type="number" class="form-control" name="min_price" placeholder="$0">
                                     </div>
                                     <div class="form-group col-md-6 text-right">
                                         <label>Max</label>
-                                        <input type="number" class="form-control" placeholder="$1,0000">
+                                        <input type="number" class="form-control" name="max_price"
+                                               placeholder="$1,0000">
                                     </div>
                                 </div>
                             </div> <!-- card-body.// -->
@@ -36,7 +37,8 @@
                                 {% for competitor in competitors %}
                                 <div class="form-check form-switch ">
                                     <input class="form-check-input" type="checkbox" name="chosen_competitor"
-                                           value="{{competitor.competitor_inn}}" id="{{competitor.competitor_inn}}" checked>
+                                           value="{{competitor.competitor_inn}}" id="{{competitor.competitor_inn}}"
+                                           checked>
                                     <label class="form-check-label" for="{{competitor.competitor_inn}}">{{competitor.competitor_nickname}}</label>
                                 </div>
                                 {% endfor %}
@@ -47,34 +49,21 @@
             </aside>
             <div class="col-lg-8">
                 <div class="input-group mb-3 mx-auto" style="padding-top: 5%">
-                    <input type="text" class="form-control" placeholder="Items to peek into" name="item" autofocus
+                    <input type="text" class="form-control" placeholder="Items to peek into" name="item" id="item_info"
+                           autofocus
                            style="border-color: #b8daff">
-                    <button class="btn btn-outline-primary" type="submit" id="button-addon2">PEEK</button>
+                    <button class="btn btn-outline-primary" type="submit" id="peek">PEEK</button>
                 </div>
+                <div id="last-search"></div>
                 <div class="header mx-auto w-75">
                     <h4 class="mx-auto" style="text-align: center">Items</h4>
                 </div>
-                <table class="table mx-auto">
-                    <thead>
-                    <tr class="table-secondary">
-                        <th>Name</th>
-                        <th>Price</th>
-                        <th>Link</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {% for item in items %}
-                    <tr>
-                        <td>{{item.name}}</td>
-                        <td>{{item.price}}</td>
-                        <td style="max-width: 100%"><a href={{item.url}} target="_blank">{{item.url[8:25]}}...</a></td>
-                    </tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
+                <div id="peek_results"></div>
             </div>
         </div>
     </div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="/static/price_looker.js" crossorigin="anonymous"></script>
 </form>
 
 {% endblock %}
