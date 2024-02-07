@@ -34,7 +34,7 @@ def profile():
 @main.route("/company-goods")
 @login_required
 def company_goods():
-    return "Company’s goods and prices"
+    return render_template("company-goods.html")
 
 
 @main.route("/competitor-monitoring", methods=["GET", "POST"])

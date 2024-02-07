@@ -1,7 +1,67 @@
 {% extends "layout.html" %}
 
-{% block title %} Login {% endblock %}
+{% block title %} Goods {% endblock %}
 
 {% block body %}
-    Profile
+<div class="container-md mt-4">
+    <div class="row">
+        <form action="/company-goods" method="post">
+            <div>
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" name="link" placeholder="Items's link">
+                    <div class="input-group-append">
+                        <button class="btn btn-success" type="submit" id="follow">Follow item</button>
+                    </div>
+                </div>
+                <div class="input-group mb-3" >
+                    <input type="number" class="form-control" name="link" placeholder=1 style="width: 50px">
+                    <div class="input-group-append">
+                        <button class="btn btn-success">Refresh Now</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="row">
+        <div class="col">
+            <table class="table table-hover">
+                <thead>
+                <tr class="table-active">
+                    <th scope="col">#</th>
+                    <th scope="col">Item</th>
+                    <th scope="col">Competitor</th>
+                    <th scope="col">Last price</th>
+                    <th scope="col">Last date</th>
+                    <th scope="col">Price change</th>
+                    <th scope="col">Prev price</th>
+                    <th scope="col">Prev date</th>
+                    <th scope="col" class="req_status">Link</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for item in items %}
+                <tr>
+                    <td>
+                        <form action="/where u delete the item" method="post">
+                            <button type="submit" id="delete_btn"><img class="button-pic"
+                                                                       src="static/images/delete-button.svg"
+                                                                       alt="Delete"/></button>
+                        </form>
+                    </td>
+                    <td>{{item.name}}</td>
+                    <td>{{item.competitor}}</td>
+                    <td>{{item.last_price}}</td>
+                    <td>{{item.last_date}}</td>
+                    <td>{{item.price_change}}</td>
+                    <td>{{item.prev_price}}</td>
+                    <td>{{item.prev_date}}</td>
+                    <td>{{item.link}}</td>
+                    <td>{{item.last_price}}</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 {% endblock %}
