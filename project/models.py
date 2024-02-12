@@ -48,7 +48,7 @@ class Items(db.Model):
     item_id = db.Column(db.Integer, primary_key=True)
     item_name = db.Column(db.String(300), nullable=False)
     company_inn = db.Column(db.String(200), nullable=False)
-    price = db.Column(db.String(200), nullable=False)
+    price = db.Column(db.Float, nullable=False)
     date = db.Column(db.String(200), nullable=False)
     link = db.Column(db.String(200), nullable=False, unique=True)
 

@@ -1,9 +1,9 @@
 from datetime import datetime
 from project import db
-from project.models import Companies, Competitors, Scrapers
+from project.models import Companies, Competitors, Scrapers, Items, ItemsConnections
 from project.corpotate_scrapers.company_info_search import Company
 from project.file_manager import create_scraper_file
-from project.helpers import get_cls_from_path
+from project.helpers import get_cls_from_path, get_cur_date
 
 
 def load_company_data(_inn):
@@ -157,3 +157,9 @@ def db_get_scr_from_id(user_id, comp_inn=None):
     scr_path = Scrapers.query.filter(Scrapers.company_inn.in_(inns_)).all()
     classes = [get_cls_from_path(scr.scraper_path)[0] for scr in scr_path]
     return classes
+
+
+def db_add_item(link):
+    date = get_cur_date()
+
+    pass

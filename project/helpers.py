@@ -1,6 +1,7 @@
 import sys
 import inspect
 import requests
+import validators
 import importlib.util
 from datetime import datetime
 from email_validator import validate_email, EmailNotValidError
@@ -154,6 +155,18 @@ def format_search_all_result(item, result: dict, min_price=None, max_price=None)
     return result
 
 
+def get_link(link):
+    if not link:
+        return None
+    if "http" in link and validators.url(link):
+            return link
+    else:
+        link = "https://" + link
+        if validators.url(link):
+            return link
+    return None
+
+
+
 if __name__ == "__main__":
-    for i in get_cls_from_module(sys.modules[__name__]):
-        print(i)
+    print(get_link("dentikom/delivery-and-payment/delivery/"))

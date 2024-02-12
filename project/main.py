@@ -2,7 +2,7 @@ import html
 
 from flask import Blueprint, render_template, redirect, request, url_for
 from flask_login import login_required, current_user
-from project.helpers import inn_checker, format_search_all_result, check_price, unhash_inn
+from project.helpers import inn_checker, format_search_all_result, check_price, unhash_inn, get_link
 from project.request_connection import send_connect_request
 from project.corpotate_scrapers.stomart_async import run_search_all
 from project.async_search import run_search_item, run_search_link, run_search_all_items, run_search_all_links
@@ -31,10 +31,18 @@ def profile():
     return "Company profile"
 
 
-@main.route("/company-goods")
+@main.route("/company-goods", methods=["POST", "GET"])
 @login_required
 def company_goods():
-    return render_template("company-goods.html")
+    available_competitors = db_get_competitors(current_user.get_id(), "connected")
+    if request.method == "POST":
+        item_link = get_link(request.form.get("item_link"))
+        if not item_link:
+            return render_template("company-goods.html")
+        competitor = inn_checker(request.form.get("competitor"))
+        if not competitor:
+            return render_template("company-goods.html", competitors=available_competitors)
+    return render_template("company-goods.html", competitors=available_competitors)
 
 
 @main.route("/competitor-monitoring", methods=["GET", "POST"])
