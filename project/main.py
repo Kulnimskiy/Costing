@@ -5,9 +5,9 @@ from flask_login import login_required, current_user
 from project.helpers import inn_checker, format_search_all_result, check_price, unhash_inn, get_link
 from project.request_connection import send_connect_request
 from project.corpotate_scrapers.stomart_async import run_search_all
-from project.async_search import run_search_item, run_search_link, run_search_all_items, run_search_all_links
+from project.async_search import run_search_link, run_search_all_items, run_search_all_links
 from project.db_manager import load_company_data, db_add_competitor, db_get_competitors, db_delete_competitor, \
-    db_get_competitor, db_update_con_status, db_add_scraper
+    db_get_competitor, db_update_con_status, db_add_scraper, db_add_item, db_get_items
 
 main = Blueprint("main", __name__)
 
@@ -34,15 +34,23 @@ def profile():
 @main.route("/company-goods", methods=["POST", "GET"])
 @login_required
 def company_goods():
+    user_id = current_user.get_id()
     available_competitors = db_get_competitors(current_user.get_id(), "connected")
+    items = db_get_items(user_id)
     if request.method == "POST":
         item_link = get_link(request.form.get("item_link"))
         if not item_link:
-            return render_template("company-goods.html")
+            return render_template("company-goods.html", competitors=available_competitors, items=items)
         competitor = inn_checker(request.form.get("competitor"))
-        if not competitor:
-            return render_template("company-goods.html", competitors=available_competitors)
-    return render_template("company-goods.html", competitors=available_competitors)
+        if not competitor or competitor not in [competitor.competitor_inn for competitor in available_competitors]:
+            return render_template("company-goods.html", competitors=available_competitors, items=items)
+        item = run_search_link(user_id, competitor, item_link)
+        if not item:
+            print("there is no such item")
+            return render_template("company-goods.html", competitors=available_competitors, items=items)
+        db_add_item(user_id, item["name"], competitor, item["price"], item_link)
+        items = db_get_items(user_id)
+    return render_template("company-goods.html", competitors=available_competitors, items=items)
 
 
 @main.route("/competitor-monitoring", methods=["GET", "POST"])

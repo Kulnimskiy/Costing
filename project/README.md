@@ -1,6 +1,6 @@
 
 !remake the scraper tamplate
-
+! remove the ItemsConnection model and tables
 
 create new models !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 

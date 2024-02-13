@@ -45,6 +45,7 @@
                 </tr>
                 </thead>
                 <tbody>
+                {% if items %}
                 {% for item in items %}
                 <tr>
                     <td>
@@ -54,17 +55,17 @@
                                                                        alt="Delete"/></button>
                         </form>
                     </td>
-                    <td>{{item.name}}</td>
-                    <td>{{item.competitor}}</td>
-                    <td>{{item.last_price}}</td>
-                    <td>{{item.last_date}}</td>
-                    <td>{{item.price_change}}</td>
-                    <td>{{item.prev_price}}</td>
-                    <td>{{item.prev_date}}</td>
-                    <td>{{item.link}}</td>
-                    <td>{{item.last_price}}</td>
+                    <td>{{item.item_name}}</td>
+                    <td>{{item.company_inn}}</td>
+                    <td>{{item.price}}</td>
+                    <td>{{item.date}}</td>
+                    <td>{{item.price}}</td>
+                    <td>{{item.price}}</td>
+                    <td>{{item.date}}</td>
+                    <td style="max-width: 100%"><a href={{item.link}} target="_blank">{{item.link[8:25]}}...</a></td>
                 </tr>
                 {% endfor %}
+                {% endif %}
                 </tbody>
             </table>
         </div>

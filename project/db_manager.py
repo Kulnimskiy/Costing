@@ -1,6 +1,7 @@
+import random
 from datetime import datetime
 from project import db
-from project.models import Companies, Competitors, Scrapers, Items, ItemsConnections
+from project.models import Companies, Competitors, Scrapers, ItemsRecords, UsersItems
 from project.corpotate_scrapers.company_info_search import Company
 from project.file_manager import create_scraper_file
 from project.helpers import get_cls_from_path, get_cur_date
@@ -159,7 +160,66 @@ def db_get_scr_from_id(user_id, comp_inn=None):
     return classes
 
 
-def db_add_item(link):
+def db_add_item(user_id, item_name, company_inn, price, link):
     date = get_cur_date()
+    # date randomizer
+    # date = get_cur_date().replace("13", str(random.choice(list(range(10, 30)))))
 
-    pass
+    item_records = db_get_item_records(link, company_inn)
+    if item_records:
+        last_date = item_records[0].date
+        if date == last_date:
+            print(last_date, "already checked today")
+        else:
+            item = ItemsRecords(item_name=item_name,
+                                company_inn=company_inn,
+                                price=price,
+                                date=date,
+                                link=link)
+            db.session.add(item)
+    connection_exists = UsersItems.query.filter_by(user_id=user_id, link=link).first()
+    if not connection_exists:
+        connection = UsersItems(user_id=user_id, link=link)
+        db.session.add(connection)
+    db.session.commit()
+    return True
+
+
+def db_get_items(user_id):
+    items_connections = UsersItems.query.filter_by(user_id=user_id).all()
+    items_connections = UsersItems.query.filter_by(user_id=user_id).all()
+    items_links = [items_link.link for items_link in items_connections]
+    print(items_links)
+    items = ItemsRecords.query.filter(ItemsRecords.link.in_(items_links)).all()
+    # for item in items:
+    #     item.__dict__["name"] = "12"
+    #     item.__dict__["name"] = "12"
+    #     item.__dict__["name"] = "12"
+    #     item.__dict__["name"] = "12"
+    for item in items:
+        print()
+        print()
+        print(item.__dict__)
+    return items
+
+    # item.name
+    # item.competitor
+    # item.last_price
+    # item.last_date
+    # item.price_change
+    # item.prev_price
+    # item.prev_date
+    # item.link
+    # item.last_price
+
+
+def db_get_item_records(link, company_inn):
+    item_records = ItemsRecords.query.filter_by(link=link, company_inn=company_inn).all()
+    if item_records:
+        item_records = sorted(item_records, key=(lambda x: (x.date[-4:], x.date[-7:-5], x.date[:-8])), reverse=True)
+        # for i in items_records:
+        #     print(i.date)
+        last_date = item_records[0].date
+        print(last_date, " :last date")
+        return item_records
+    return None

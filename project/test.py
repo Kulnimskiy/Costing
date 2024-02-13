@@ -5,16 +5,17 @@ from app import create_app
 from time import perf_counter
 import importlib.util
 import sys
-from helpers import check_price
-
+from helpers import check_price, get_cur_date
+import random
 
 
 if __name__ == '__main__':
     app = create_app()
     with app.app_context():
+
         start = perf_counter()
         # test ur code here
-        print(check_price(""))
-
+        date = get_cur_date()
+        print(date[-4:], date[-7:-5], date[:-8])
         stop = perf_counter()
         print(stop - start)
