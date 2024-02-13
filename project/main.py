@@ -41,15 +41,41 @@ def company_goods():
         item_link = get_link(request.form.get("item_link"))
         if not item_link:
             return render_template("company-goods.html", competitors=available_competitors, items=items)
-        competitor = inn_checker(request.form.get("competitor"))
-        if not competitor or competitor not in [competitor.competitor_inn for competitor in available_competitors]:
+        competitor_inn = None
+        for competitor in available_competitors:
+            if competitor.competitor_website in item_link:
+                competitor_inn = competitor.competitor_inn
+        if not competitor_inn or competitor_inn not in [competitor.competitor_inn for competitor in available_competitors]:
             return render_template("company-goods.html", competitors=available_competitors, items=items)
-        item = db_add_item(user_id, competitor, item_link)
+        item = db_add_item(user_id, competitor_inn, item_link)
         if not item:
             print("there is no such item")
             return render_template("company-goods.html", competitors=available_competitors, items=items)
         items = db_get_items(user_id)
     return render_template("company-goods.html", competitors=available_competitors, items=items)
+
+
+@main.route("/company-goods/refresh_all")
+@login_required
+def refresh_item_prices():
+    user_id = current_user.get_id()
+    available_competitors = db_get_competitors(user_id, "connected")
+    items = db_get_items(user_id)
+    links = []
+    for item in items:
+        for competitor in available_competitors:
+            if competitor.competitor_website in item["link"]:
+                links.append((competitor.competitor_inn, item["link"]))
+    results = run_search_all_links(user_id, links)
+    for result in results:
+        if result:
+            link = result["url"]
+            comp_inn = None
+            for lk in links:
+                comp_inn = lk[0] if lk[1] == link else None
+            db_add_item(user_id,comp_inn, link)
+    return redirect("/company-goods")
+
 
 
 @main.route("/competitor-monitoring", methods=["GET", "POST"])
@@ -107,6 +133,7 @@ def price_looker():
 
 
 @main.route("/profile/delete_competitor/<com_inn>", methods=["POST"])
+@login_required
 def delete_competitor(com_inn):
     com_inn = inn_checker(com_inn)
     db_delete_competitor(user_id=current_user.get_id(), com_inn=com_inn)
@@ -114,6 +141,7 @@ def delete_competitor(com_inn):
 
 
 @main.route("/request_connection/<com_inn>", methods=["POST"])
+@login_required
 def request_connection(com_inn):
     user_id = current_user.get_id()
     com_inn = inn_checker(com_inn)

@@ -217,7 +217,7 @@ def db_get_items(user_id):
             item_refined["name"] = last_check.item_name
             item_refined["competitor"] = Companies.query.filter_by(_inn=last_check.company_inn).first().organization
             item_refined["last_price"] = last_check.price
-            item_refined["last_date"] = prev_check.date
+            item_refined["last_date"] = last_check.date
             item_refined["price_change"] = prev_check.price - last_check.price
             item_refined["prev_price"] = prev_check.price
             item_refined["prev_date"] = prev_check.date
@@ -231,9 +231,10 @@ def db_get_item_records(link):
     item_records = ItemsRecords.query.filter_by(link=link).all()
     if item_records:
         item_records = sorted(item_records, key=(lambda x: (x.date[-4:], x.date[-7:-5], x.date[:-8])), reverse=True)
-        # for i in items_records:
-        #     print(i.date)
-        last_date = item_records[0].date
-        print(last_date, " :last date")
         return item_records
     return None
+
+
+def db_refresh_all_items(user_id):
+    items_connections = UsersItems.query.filter_by(user_id=user_id).all()
+    pass
