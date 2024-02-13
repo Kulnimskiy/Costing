@@ -16,6 +16,5 @@ if __name__ == '__main__':
         start = perf_counter()
         # test ur code here
         date = get_cur_date()
-        print(date[-4:], date[-7:-5], date[:-8])
         stop = perf_counter()
         print(stop - start)

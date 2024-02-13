@@ -9,7 +9,7 @@ from project.helpers import get_cls_from_module, operate, convert_to_rub, calcul
 
 class Kldegghglf:
     INN = 7801334382
-    BASE_URL = "https://stomshop.pr"
+    BASE_URL = "https://stomshop.pro"
     SEARCH_URL = "https://api4.searchbooster.io/api/12d02e18-b322-4cd6-9904-56712fb66827/search?query={}&skip=0&limit=24&groupByCategories=%7B%22active%22%3Atrue%2C%22size%22%3A10%2C%22skip%22%3A0%7D"
 
     @staticmethod

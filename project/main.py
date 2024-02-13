@@ -44,11 +44,10 @@ def company_goods():
         competitor = inn_checker(request.form.get("competitor"))
         if not competitor or competitor not in [competitor.competitor_inn for competitor in available_competitors]:
             return render_template("company-goods.html", competitors=available_competitors, items=items)
-        item = run_search_link(user_id, competitor, item_link)
+        item = db_add_item(user_id, competitor, item_link)
         if not item:
             print("there is no such item")
             return render_template("company-goods.html", competitors=available_competitors, items=items)
-        db_add_item(user_id, item["name"], competitor, item["price"], item_link)
         items = db_get_items(user_id)
     return render_template("company-goods.html", competitors=available_competitors, items=items)
 

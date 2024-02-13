@@ -5,6 +5,7 @@ from project.models import Companies, Competitors, Scrapers, ItemsRecords, Users
 from project.corpotate_scrapers.company_info_search import Company
 from project.file_manager import create_scraper_file
 from project.helpers import get_cls_from_path, get_cur_date
+from project import async_search
 
 
 def load_company_data(_inn):
@@ -160,23 +161,39 @@ def db_get_scr_from_id(user_id, comp_inn=None):
     return classes
 
 
-def db_add_item(user_id, item_name, company_inn, price, link):
+def db_add_item(user_id, company_inn, link):
     date = get_cur_date()
     # date randomizer
-    # date = get_cur_date().replace("13", str(random.choice(list(range(10, 30)))))
-
-    item_records = db_get_item_records(link, company_inn)
+    date = get_cur_date().replace("13", str(random.choice(list(range(10, 30)))))
+    item_records = db_get_item_records(link)
     if item_records:
         last_date = item_records[0].date
         if date == last_date:
             print(last_date, "already checked today")
         else:
-            item = ItemsRecords(item_name=item_name,
+            item = async_search.run_search_link(user_id, company_inn, link)
+            if not item:
+                print("there is no such item")
+                return False
+            print("Not checked today. Last time is", last_date)
+            item = ItemsRecords(item_name=item["name"],
                                 company_inn=company_inn,
-                                price=price,
+                                price=item["price"],
                                 date=date,
                                 link=link)
             db.session.add(item)
+    else:
+        item = async_search.run_search_link(user_id, company_inn, link)
+        if not item:
+            print("there is no such item")
+            return False
+        print("Has never been added. Adding...")
+        item = ItemsRecords(item_name=item["name"],
+                            company_inn=company_inn,
+                            price=item["price"],
+                            date=date,
+                            link=link)
+        db.session.add(item)
     connection_exists = UsersItems.query.filter_by(user_id=user_id, link=link).first()
     if not connection_exists:
         connection = UsersItems(user_id=user_id, link=link)
@@ -187,34 +204,31 @@ def db_add_item(user_id, item_name, company_inn, price, link):
 
 def db_get_items(user_id):
     items_connections = UsersItems.query.filter_by(user_id=user_id).all()
-    items_connections = UsersItems.query.filter_by(user_id=user_id).all()
-    items_links = [items_link.link for items_link in items_connections]
-    print(items_links)
-    items = ItemsRecords.query.filter(ItemsRecords.link.in_(items_links)).all()
-    # for item in items:
-    #     item.__dict__["name"] = "12"
-    #     item.__dict__["name"] = "12"
-    #     item.__dict__["name"] = "12"
-    #     item.__dict__["name"] = "12"
-    for item in items:
-        print()
-        print()
-        print(item.__dict__)
-    return items
-
-    # item.name
-    # item.competitor
-    # item.last_price
-    # item.last_date
-    # item.price_change
-    # item.prev_price
-    # item.prev_date
-    # item.link
-    # item.last_price
+    if items_connections:
+        items_refined = []
+        for item in items_connections:
+            item_refined = dict()
+            item_records = db_get_item_records(item.link)
+            last_check = item_records[0]
+            if len(item_records) > 1:
+                prev_check = item_records[1]
+            else:
+                prev_check = last_check
+            item_refined["name"] = last_check.item_name
+            item_refined["competitor"] = Companies.query.filter_by(_inn=last_check.company_inn).first().organization
+            item_refined["last_price"] = last_check.price
+            item_refined["last_date"] = prev_check.date
+            item_refined["price_change"] = prev_check.price - last_check.price
+            item_refined["prev_price"] = prev_check.price
+            item_refined["prev_date"] = prev_check.date
+            item_refined["link"] = item.link
+            items_refined.append(item_refined)
+        return items_refined
+    return []
 
 
-def db_get_item_records(link, company_inn):
-    item_records = ItemsRecords.query.filter_by(link=link, company_inn=company_inn).all()
+def db_get_item_records(link):
+    item_records = ItemsRecords.query.filter_by(link=link).all()
     if item_records:
         item_records = sorted(item_records, key=(lambda x: (x.date[-4:], x.date[-7:-5], x.date[:-8])), reverse=True)
         # for i in items_records:
