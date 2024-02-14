@@ -202,6 +202,16 @@ def db_add_item(user_id, company_inn, link):
     return True
 
 
+def db_add_refreshed_item(item_name, company_inn, price, link, date):
+    item = ItemsRecords(item_name=item_name,
+                        company_inn=company_inn,
+                        price=price,
+                        date=date,
+                        link=link)
+    db.session.add(item)
+    db.session.commit()
+
+
 def db_get_items(user_id):
     items_connections = UsersItems.query.filter_by(user_id=user_id).all()
     if items_connections:

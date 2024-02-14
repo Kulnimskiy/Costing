@@ -1,13 +1,14 @@
 import html
-
+import logging
+from project import db
 from flask import Blueprint, render_template, redirect, request, url_for
 from flask_login import login_required, current_user
-from project.helpers import inn_checker, format_search_all_result, check_price, unhash_inn, get_link
+from project.helpers import inn_checker, format_search_all_result, check_price, unhash_inn, get_link, get_cur_date
 from project.request_connection import send_connect_request
 from project.corpotate_scrapers.stomart_async import run_search_all
 from project.async_search import run_search_link, run_search_all_items, run_search_all_links
 from project.db_manager import load_company_data, db_add_competitor, db_get_competitors, db_delete_competitor, \
-    db_get_competitor, db_update_con_status, db_add_scraper, db_add_item, db_get_items
+    db_get_competitor, db_update_con_status, db_add_scraper, db_add_item, db_get_items, db_add_refreshed_item
 
 main = Blueprint("main", __name__)
 
@@ -67,13 +68,18 @@ def refresh_item_prices():
             if competitor.competitor_website in item["link"]:
                 links.append((competitor.competitor_inn, item["link"]))
     results = run_search_all_links(user_id, links)
+    date = get_cur_date()
     for result in results:
         if result:
-            link = result["url"]
-            comp_inn = None
-            for lk in links:
-                comp_inn = lk[0] if lk[1] == link else None
-            db_add_item(user_id,comp_inn, link)
+            for link in links:
+                if link[1] == result["url"]:
+                    db_add_refreshed_item(item_name=result["name"],
+                                          company_inn=link[0],
+                                          link=result["url"],
+                                          price=result["price"],
+                                          date=date)
+        else:
+            logging.warning("Item not added")
     return redirect("/company-goods")
 
 
