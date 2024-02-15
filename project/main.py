@@ -8,7 +8,8 @@ from project.request_connection import send_connect_request
 from project.corpotate_scrapers.stomart_async import run_search_all
 from project.async_search import run_search_link, run_search_all_items, run_search_all_links
 from project.db_manager import load_company_data, db_add_competitor, db_get_competitors, db_delete_competitor, \
-    db_get_competitor, db_update_con_status, db_add_scraper, db_add_item, db_get_items, db_add_refreshed_item
+    db_get_competitor, db_update_con_status, db_add_scraper, db_add_item, db_get_items, db_add_refreshed_item, \
+    db_delete_item_connection
 
 main = Blueprint("main", __name__)
 
@@ -29,7 +30,7 @@ def index():
 @main.route("/profile")
 @login_required
 def profile():
-    return "Company profile"
+    return render_template("profile.html")
 
 
 @main.route("/company-goods", methods=["POST", "GET"])
@@ -46,7 +47,8 @@ def company_goods():
         for competitor in available_competitors:
             if competitor.competitor_website in item_link:
                 competitor_inn = competitor.competitor_inn
-        if not competitor_inn or competitor_inn not in [competitor.competitor_inn for competitor in available_competitors]:
+        if not competitor_inn or competitor_inn not in [competitor.competitor_inn for competitor in
+                                                        available_competitors]:
             return render_template("company-goods.html", competitors=available_competitors, items=items)
         item = db_add_item(user_id, competitor_inn, item_link)
         if not item:
@@ -82,6 +84,17 @@ def refresh_item_prices():
             logging.warning("Item not added")
     return redirect("/company-goods")
 
+
+@main.route("/company-goods/delete-item", methods=["POST"])
+@login_required
+def delete_item():
+    item_id = request.form.get("item_id")
+    user_id = current_user.get_id()
+    print(item_id)
+    if db_delete_item_connection(user_id, item_id):
+        return redirect("/company-goods")
+    logging.warning("Item is not deleted. Access denied")
+    return redirect("/company-goods")
 
 
 @main.route("/competitor-monitoring", methods=["GET", "POST"])

@@ -224,11 +224,12 @@ def db_get_items(user_id):
                 prev_check = item_records[1]
             else:
                 prev_check = last_check
+            item_refined["item_id"] = item.connection_id
             item_refined["name"] = last_check.item_name
             item_refined["competitor"] = Companies.query.filter_by(_inn=last_check.company_inn).first().organization
             item_refined["last_price"] = last_check.price
             item_refined["last_date"] = last_check.date
-            item_refined["price_change"] = prev_check.price - last_check.price
+            item_refined["price_change"] = last_check.price - prev_check.price
             item_refined["prev_price"] = prev_check.price
             item_refined["prev_date"] = prev_check.date
             item_refined["link"] = item.link
@@ -248,3 +249,12 @@ def db_get_item_records(link):
 def db_refresh_all_items(user_id):
     items_connections = UsersItems.query.filter_by(user_id=user_id).all()
     pass
+
+
+def db_delete_item_connection(user_id, connection_id):
+    item_connection = UsersItems.query.filter_by(user_id=user_id, connection_id=connection_id)
+    if item_connection.first():
+        item_connection.delete()
+        db.session.commit()
+        return True
+    return False

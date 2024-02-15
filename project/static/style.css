@@ -65,7 +65,7 @@
     border-radius: 10px;
 }
 
-#delete_btn {
+#delete_btn, #delete_item {
     border: none;
     background: transparent;
 }
@@ -95,3 +95,9 @@
 .filter_header {
     background: #e2e3e5;
 }
+
+.refresh {
+    text-align: center;
+    margin-bottom: 6px;
+}
+

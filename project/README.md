@@ -1,4 +1,26 @@
 
+Profile
+ - html for request to connect your site to return
+   - displays: input link to request connection to the clients website
+   - displays: request connection button
+   - or add items manually
+   - 
+ - 
+
+Your goods
+
+
+Competitors
+
+
+
+Search
+
+
+
+
+
+
 !remake the scraper tamplate
 ! remove the ItemsConnection model and tables
 

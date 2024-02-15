@@ -5,32 +5,21 @@
 {% block body %}
 <div class="container-md mt-4">
     <div class="row mb-3">
+        <strong>{{error}}</strong>
         <form action="/company-goods" method="post">
             <div>
-                <div class="input-group mb-3">
+                <div class="input-group mb-1">
                     <input type="text" class="form-control" name="item_link" placeholder="Items's link">
                     <div class="input-group-append">
                         <button class="btn btn-success" type="submit" id="follow">Follow item</button>
                     </div>
                 </div>
-                <select class="form-select" aria-label="Default select example" name="competitor">
-                    <option selected disabled>Select competitor</option>
-                    {% for competitor in competitors %}
-                    <option value={{competitor.competitor_inn}}>{{competitor.competitor_nickname}}</option>
-                    {% endfor %}
-                </select>
-<!--                <div class="input-group mb-3">-->
-<!--                    <input type="number" class="form-control" name="link_refresh_rate" placeholder=1 disabled>-->
-<!--                    <div class="input-group-append">-->
-<!--                        <button class="btn btn-success">Refresh Now</button>-->
-<!--                    </div>-->
-<!--                </div>-->
             </div>
         </form>
     </div>
-    <div style="text-align:right">
+    <div class="refresh">
         <form action="/company-goods/refresh_all">
-            <button class="btn btn-success">Refresh all</button>
+            <button type="submit" class="btn btn-success">Refresh now</button>
         </form>
     </div>
     <div class="row">
@@ -54,10 +43,11 @@
                 {% for item in items %}
                 <tr>
                     <td>
-                        <form action="/where u delete the item" method="post">
-                            <button type="submit" id="delete_btn"><img class="button-pic"
+                        <form action="/company-goods/delete-item" method="post">
+                            <button type="submit" id="delete_item"><img class="button-pic"
                                                                        src="static/images/delete-button.svg"
                                                                        alt="Delete"/></button>
+                            <input title="item_id" hidden="hidden" value="{{item.item_id}}" name="item_id">
                         </form>
                     </td>
                     <td>{{item.name}}</td>
@@ -67,7 +57,7 @@
                     <td>{{item.price_change}}</td>
                     <td>{{item.prev_price}}</td>
                     <td>{{item.prev_date}}</td>
-                    <td style="max-width: 100%"><a href={{item.link}} target="_blank">{{item.link[8:25]}}...</a></td>
+                    <td><a href={{item.link}} target="_blank">{{item.link[8:25]}}...</a></td>
                 </tr>
                 {% endfor %}
                 {% endif %}

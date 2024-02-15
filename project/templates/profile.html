@@ -3,5 +3,110 @@
 {% block title %} Login {% endblock %}
 
 {% block body %}
-    Profile
-{% endblock %}
+<div class="container-md mt-4">
+    <div class="row mb-3">
+        <div class="company-description">
+            <div class="card border-light mb-3">
+                <div class="card-header text-white bg-success">
+                    <h5>
+                        Stomart INN:12345678910
+                    </h5>
+                </div>
+                <div class="card-body bg-light">
+                    <div class="card-text"><b>Items: </b> 6</div>
+                    <div class="card-text"><b>Competitors: </b> 3</div>
+                    <div class="card-text">
+                        <b>Website: </b>
+                        <a class="link" href={{website}} target="_blank">fakesite.com </a>
+                    </div>
+                    <div class="card-text mt-3">
+                        <form action="/pathtoconnecttheuser" method="POST">
+                            <div>
+                                <b>Status: </b>
+                                <input hidden type="text" class="form-control" name="user_web_link"
+                                       placeholder="Your website link" value="https://fakesite.com">
+                                <button class="btn btn-success" type="submit" id="btn_req_user_site"
+                                        title="Connect your website to upload your items automatically">Request
+                                    connection
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col col-4">
+            <form action="/competitor-monitoring" method="post">
+                <div>
+                    <button class="btn btn-success w-100" type="submit" id="" disabled>Load Items</button>
+                </div>
+            </form><br>
+            <form action="/competitor-monitoring" method="post">
+                <div>
+                    <button class="btn btn-success w-100" type="submit" id="" disabled>Autoload Associations</button>
+                </div>
+            </form><br>
+            <form action="/competitor-monitoring" method="post">
+                <div>
+                    <div>
+                        <input type="text" class="form-control" name="item" placeholder="Item link from your web" required>
+                        <button class="btn btn-success" type="submit" id="" disabled>Load Item</button>
+                    </div>
+                </div>
+            </form><br>
+            <form action="/competitor-monitoring" method="post">
+                <div>
+                    <div>
+                        <input type="text" class="form-control" name="item" placeholder="Item" required>
+                        <input type="text" class="form-control" name="price" placeholder="Price" required>
+                        <input type="text" class="form-control" name="link" placeholder="Link(optional)">
+                        <button class="btn btn-success" type="submit" id="">Add Item</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="col col-8">
+            <div class="col">
+                <table class="table table-hover">
+                    <thead>
+                    <tr class="table-active">
+                        <th scope="col">№</th>
+                        <th scope="col">My Item</th>
+                        <th scope="col">Comp 1</th>
+                        <th scope="col">Comp 2</th>
+                        <th scope="col">Comp 3</th>
+                        <th scope="col">...</th>
+                        <th scope="col">Comp N</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% if items %}
+                    {% for item in items %}
+                    <tr>
+                        <td>
+                            <form action="/company-goods/delete-item" method="post">
+                                <button type="submit" id="delete_item"><img class="button-pic"
+                                                                            src="static/images/delete-button.svg"
+                                                                            alt="Delete"/></button>
+                                <input title="item_id" hidden="hidden" value="{{item.item_id}}" name="item_id">
+                            </form>
+                        </td>
+                        <td>{{item.name}}</td>
+                        <td>{{item.competitor}}</td>
+                        <td>{{item.last_price}}</td>
+                        <td>{{item.last_date}}</td>
+                        <td>{{item.price_change}}</td>
+                        <td>{{item.prev_price}}</td>
+                        <td>{{item.prev_date}}</td>
+                        <td><a href={{item.link}} target="_blank">{{item.link[8:25]}}...</a></td>
+                    </tr>
+                    {% endfor %}
+                    {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endblock %}
