@@ -22,7 +22,10 @@ def load_company_data(_inn):
             # update the company info
             company_info = Company(_inn).get_full_info()
             company.inn = company_info["inn"]
-            company.website = company_info["website"]
+
+            # if there is new info about a website, we change it
+            if company_info["website"]:
+                company.website = company_info["website"]
             company.organization = company_info["organization"]
             company.ogrn = company_info["ogrn"]
             company.registration_date = company_info["registration_date"]
@@ -53,6 +56,9 @@ def load_company_data(_inn):
                             ceo=company_info["ceo"],
                             info_loading_date=cur_date_str)
     db.session.add(new_company)
+
+    # also we add it to the list of competitors so that it could be connected
+    db_add_competitor()
     db.session.commit()
     company = Companies.query.filter_by(_inn=_inn).first()
     return company

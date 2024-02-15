@@ -35,7 +35,7 @@
                     <b>CEO:</b>
                     <div class="card-text">{{ company_info.ceo }}</div>
                     <b>Website:</b>
-                    <div class="card-text">
+                    <div class="card-text" contenteditable="true">
                         {% if company_info.website %}
                         <a class="link" href={{website}} target="_blank">{{ company_info.website }} </a>
                         {% else %}
@@ -54,4 +54,6 @@
         </div>
     </div>
 </div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="/static/homepage.js" crossorigin="anonymous"></script>
 {% endblock %}
