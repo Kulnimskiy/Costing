@@ -27,7 +27,13 @@ def index():
 @main.route("/profile")
 @login_required
 def profile():
-    return render_template("profile.html")
+    _inn = current_user.company_inn
+    company_info = load_company_data(_inn)
+    if company_info:
+        print(company_info.organization)
+        weblink_title = company_info.website
+        website_link = "https://" + weblink_title if weblink_title else None
+    return render_template("profile.html", company_info=company_info)
 
 
 @main.route("/company-goods", methods=["POST", "GET"])

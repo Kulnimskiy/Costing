@@ -9,7 +9,7 @@
             <div class="card border-light mb-3">
                 <div class="card-header text-white bg-success">
                     <h5>
-                        Stomart INN:12345678910
+                        {{company_info.organization}} INN:{{company_info._inn}}
                     </h5>
                 </div>
                 <div class="card-body bg-light">
@@ -17,7 +17,7 @@
                     <div class="card-text"><b>Competitors: </b> 3</div>
                     <div class="card-text">
                         <b>Website: </b>
-                        <a class="link" href={{website}} target="_blank">fakesite.com </a>
+                        <a class="link" href={{website}} target="_blank">{{company_info.website}} </a>
                     </div>
                     <div class="card-text mt-3">
                         <form action="/pathtoconnecttheuser" method="POST">
