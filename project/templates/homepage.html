@@ -35,12 +35,11 @@
                     <b>CEO:</b>
                     <div class="card-text">{{ company_info.ceo }}</div>
                     <b>Website:</b>
-                    <div class="card-text" contenteditable="true">
-                        {% if company_info.website %}
-                        <a class="link" href={{website}} target="_blank">{{ company_info.website }} </a>
-                        {% else %}
-                        None
-                        {% endif %}
+                    <div class="card-text" id="website">
+                        <a class="link" href={{website.link}} target="_blank">{{website.link}}</a>
+                        <button type="button" id="interact_btn"><img class="button-pic"
+                                                                     src="/static/images/black_pensil.png"
+                                                                     alt="Change"/></button>
                     </div>
                 </div>
             </div>

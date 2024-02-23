@@ -65,11 +65,12 @@
     border-radius: 10px;
 }
 
-#delete_btn, #delete_item {
+#interact_btn, #delete_item {
     border: none;
     background: transparent;
 }
-#delete_btn:hover {
+
+#interact_btn:hover {
     background: #e5e5e5;
     border: 2px black;
     border-radius: 5px;
@@ -92,6 +93,7 @@
     border: 3px #b8daff;
     padding-top: 5%;
 }
+
 .filter_header {
     background: #e2e3e5;
 }
@@ -99,5 +101,36 @@
 .refresh {
     text-align: center;
     margin-bottom: 6px;
+}
+
+a.result:link {
+    color: #000000;
+    text-decoration: none;
+}
+
+/* visited link */
+a.result:visited {
+    color: #000000;
+    text-decoration: none;
+}
+
+/* mouse over link */
+a.result:hover {
+    color: #6b747c;
+    text-decoration: none;
+}
+
+/* selected link */
+a.result :active {
+    color: blue;
+    text-decoration: none;
+}
+
+th.price {
+    min-width: 100px;
+}
+
+th.competitor {
+    min-width: 180px;
 }
 

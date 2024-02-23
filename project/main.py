@@ -1,4 +1,5 @@
 import logging
+import decimal
 from flask import Blueprint, render_template, redirect, request, url_for
 from flask_login import login_required, current_user
 from project.helpers import inn_checker, format_search_all_result, check_price, unhash_inn, get_link, get_cur_date
@@ -6,7 +7,7 @@ from project.request_connection import send_connect_request
 from project.async_search import run_search_link, run_search_all_items, run_search_all_links
 from project.db_manager import load_company_data, db_add_competitor, db_get_competitors, db_delete_competitor, \
     db_get_competitor, db_update_con_status, db_add_scraper, db_add_item, db_get_items, db_add_refreshed_item, \
-    db_delete_item_connection
+    db_delete_item_connection, db_get_user_website
 
 main = Blueprint("main", __name__)
 
@@ -16,18 +17,28 @@ main = Blueprint("main", __name__)
 def index():
     # get the info about the user from the obj current_user like current_user._id
     _inn = current_user.company_inn
+    user_id = current_user.get_id()
     company_info = load_company_data(_inn)
     if company_info:
-        weblink_title = company_info.website
-        website_link = "https://" + weblink_title if weblink_title else None
-        return render_template("homepage.html", user=current_user, company_info=company_info, website=website_link)
+        requested_connection = db_get_competitor(user_id=user_id, com_inn=company_info._inn)
+
+        # The user can change the website if he hasn't requested the connection yet
+        if requested_connection:
+            print("is")
+            website = {"link": get_link(requested_connection.competitor_website), "status": requested_connection.connection_status}
+            return render_template("homepage.html", user=current_user, company_info=company_info, website=website)
+        website = {"link": get_link(company_info.website), "status": "disconnected"}
+        return render_template("homepage.html", user=current_user, company_info=company_info, website=website)
     return render_template("homepage.html", user=current_user, company_info=company_info)
 
 
 @main.route("/profile")
 @login_required
 def profile():
-    return render_template("profile.html")
+    _inn = current_user.company_inn
+    user_id = current_user.get_id()
+    user_website = get_link(db_get_user_website(user_id=user_id, inn=_inn))
+    return render_template("profile.html", website=user_website)
 
 
 @main.route("/company-goods", methods=["POST", "GET"])
@@ -128,12 +139,12 @@ def price_looker():
         #  if no one has been chosen the search uses all of competitors
         chosen_competitors = request.form.getlist("chosen_competitor")
         if not chosen_competitors:
-            chosen_competitors = available_competitors
+            return render_template("price-looker.html", competitors=available_competitors)
 
         min_price = check_price(request.form.get("min_price"))
         max_price = check_price(request.form.get("max_price"))
         result = run_search_all_items(current_user.get_id(), item=item, chosen_comps=chosen_competitors)
-        result = format_search_all_result(item, result, min_price, max_price)
+        result = format_search_all_result(item, result, available_competitors, min_price, max_price)
         return render_template("price-looker-results.html", items=result)
     if request.method == "GET":
         item_search_field = request.args.get("item-search-field")
@@ -142,7 +153,7 @@ def price_looker():
             chosen_comps = [str(cls.competitor_inn) for cls in available_competitors]
             result = run_search_all_items(current_user.get_id(), item=item_search_field,
                                           chosen_comps=chosen_comps)
-            result = format_search_all_result(item_search_field, result)
+            result = format_search_all_result(item_search_field, result, available_competitors)
             return render_template("price-looker_layout.html", competitors=available_competitors,
                                    items=result)
     return render_template("price-looker.html", competitors=available_competitors)

@@ -29,13 +29,12 @@
                 <tr class="table-active">
                     <th scope="col">#</th>
                     <th scope="col">Item</th>
-                    <th scope="col">Competitor</th>
-                    <th scope="col">Last price</th>
+                    <th scope="col" class="competitor">Competitor</th>
+                    <th scope="col" class="price">Last price</th>
                     <th scope="col">Last date</th>
-                    <th scope="col">Price change</th>
-                    <th scope="col">Prev price</th>
+                    <th scope="col" class="price">Price change</th>
+                    <th scope="col" class="price">Prev price</th>
                     <th scope="col">Prev date</th>
-                    <th scope="col" class="req_status">Link</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -44,20 +43,19 @@
                 <tr>
                     <td>
                         <form action="/company-goods/delete-item" method="post">
-                            <button type="submit" id="delete_item"><img class="button-pic"
+                            <button type="submit" id="delete_item"><img class="interact_btn"
                                                                        src="static/images/delete-button.svg"
                                                                        alt="Delete"/></button>
                             <input title="item_id" hidden="hidden" value="{{item.item_id}}" name="item_id">
                         </form>
                     </td>
-                    <td>{{item.name}}</td>
-                    <td>{{item.competitor}}</td>
-                    <td>{{item.last_price}}</td>
+                    <td><a href={{item.link}} target="_blank" class="result">{{item.name}}</a></td>
+                    <td>{{item.competitor[0:15]}}</td>
+                    <td class="price">{{item.last_price}}</td>
                     <td>{{item.last_date}}</td>
-                    <td>{{item.price_change}}</td>
-                    <td>{{item.prev_price}}</td>
+                    <td class="price" name="price_change">{{item.price_change}}</td>
+                    <td class="price">{{item.prev_price}}</td>
                     <td>{{item.prev_date}}</td>
-                    <td><a href={{item.link}} target="_blank">{{item.link[8:25]}}...</a></td>
                 </tr>
                 {% endfor %}
                 {% endif %}
@@ -66,4 +64,32 @@
         </div>
     </div>
 </div>
+<script>
+    function changeColor() {
+        let operations = document.getElementsByName("price_change")
+        console.log(operations)
+        for (let operation of operations) {
+            let operation_value = operation.innerText.toString().toLowerCase()
+            if (operation_value.includes("-") ) {
+                operation.style.color = "#cd1e1e"
+                operation.style.fontWeight = "700"
+            }
+            else {
+                operation.style.color = "#198654"
+                operation.style.fontWeight = "700"
+            }
+        }
+    };
+    function formatPrice() {
+        let operations = document.getElementsByClassName("price")
+        console.log(operations)
+        for (let operation of operations) {
+            let operation_value = operation.innerText.toString()
+            let [_, num, suffix] = operation_value.match(/^(.*?)((?:[,.]\d+)?|)$/);
+            operation.innerText = `${num.replace(/\B(?=(?:\d{3})*$)/g, ' ')}${suffix}`
+        }
+    };
+    changeColor()
+    formatPrice()
+</script>
 {% endblock %}

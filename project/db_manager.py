@@ -1,10 +1,11 @@
+import logging
 import random
 from datetime import datetime
 from project import db
 from project.models import Companies, Competitors, Scrapers, ItemsRecords, UsersItems
 from project.corpotate_scrapers.company_info_search import Company
 from project.file_manager import create_scraper_file
-from project.helpers import get_cls_from_path, get_cur_date
+from project.helpers import get_cls_from_path, get_cur_date, get_link
 from project import async_search
 
 
@@ -58,7 +59,7 @@ def load_company_data(_inn):
     db.session.add(new_company)
 
     # also we add it to the list of competitors so that it could be connected
-    db_add_competitor()
+    # db_add_competitor()
     db.session.commit()
     company = Companies.query.filter_by(_inn=_inn).first()
     return company
@@ -264,3 +265,25 @@ def db_delete_item_connection(user_id, connection_id):
         db.session.commit()
         return True
     return False
+
+
+def db_get_user_website(user_id, inn):
+    """When the user hasn't requested connection yet, he sees companies website from
+    the companies table as a default. Returns the object from the db that will show the needed website"""
+    requested = Competitors.query.filter_by(user_id=user_id, competitor_inn=inn).first()
+    if requested:
+        return requested.competitor_website
+    return Companies.query.filter_by(_inn=inn).first().website
+
+
+def db_change_website(user_id, inn, new_website):
+    requested = Competitors.query.filter_by(user_id=user_id, competitor_inn=inn)
+    new_website = get_link(new_website)
+    if requested and new_website:
+        requested.competitor_website = get_link(new_website)
+        db.session.commit()
+    elif new_website:
+        Companies.query.filter_by(_inn=inn).website = get_link(new_website)
+        db.session.commit()
+    else:
+        logging.warning(f"The website for {inn} hasn't been changed")

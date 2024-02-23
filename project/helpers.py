@@ -1,4 +1,5 @@
 import sys
+import decimal
 import inspect
 import requests
 import validators
@@ -140,10 +141,14 @@ def check_price(price: str):
         return None
 
 
-def format_search_all_result(item, result: dict, min_price=None, max_price=None):
+def format_search_all_result(item, result: dict, competitors, min_price=None, max_price=None,):
+
     for r in result:
         if r["price"] is None:
             r["price"] = 0
+        for competitor in competitors:
+            if competitor.competitor_website in r["url"]:
+                r["competitor"] = competitor.competitor_nickname
     if min_price:
         result = filter(lambda x: x["price"] >= min_price, result)
     if max_price:
@@ -152,6 +157,9 @@ def format_search_all_result(item, result: dict, min_price=None, max_price=None)
     for r in result:
         if r["price"] == 0:
             r["price"] = "Not selling || Not found"
+        else:
+            r["price"] = decimal.Decimal(str(r["price"]))
+            r["price"] = '{0:,}'.format(r["price"]).replace(',', ' ')
     return result
 
 
@@ -159,13 +167,12 @@ def get_link(link):
     if not link:
         return None
     if "http" in link and validators.url(link):
-            return link
+        return link
     else:
         link = "https://" + link
         if validators.url(link):
             return link
     return None
-
 
 
 if __name__ == "__main__":
