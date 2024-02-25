@@ -24,7 +24,6 @@ def index():
 
         # The user can change the website if he hasn't requested the connection yet
         if requested_connection:
-            print("is")
             website = {"link": get_link(requested_connection.competitor_website), "status": requested_connection.connection_status}
             return render_template("homepage.html", user=current_user, company_info=company_info, website=website)
         website = {"link": get_link(company_info.website), "status": "disconnected"}

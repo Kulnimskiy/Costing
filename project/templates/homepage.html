@@ -37,9 +37,12 @@
                     <b>Website:</b>
                     <div class="card-text" id="website">
                         <a class="link" href={{website.link}} target="_blank">{{website.link}}</a>
+                        {% if website.status == "disconnected" %}
                         <button type="button" id="interact_btn"><img class="button-pic"
                                                                      src="/static/images/black_pensil.png"
                                                                      alt="Change"/></button>
+                        {% endif %}
+
                     </div>
                 </div>
             </div>

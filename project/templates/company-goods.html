@@ -43,7 +43,7 @@
                 <tr>
                     <td>
                         <form action="/company-goods/delete-item" method="post">
-                            <button type="submit" id="delete_item"><img class="interact_btn"
+                            <button type="submit" id="delete_item"><img class="button-pic"
                                                                        src="static/images/delete-button.svg"
                                                                        alt="Delete"/></button>
                             <input title="item_id" hidden="hidden" value="{{item.item_id}}" name="item_id">
@@ -70,16 +70,17 @@
         console.log(operations)
         for (let operation of operations) {
             let operation_value = operation.innerText.toString().toLowerCase()
+            console.log(operation_value);
             if (operation_value.includes("-") ) {
                 operation.style.color = "#cd1e1e"
                 operation.style.fontWeight = "700"
             }
-            else {
-                operation.style.color = "#198654"
-                operation.style.fontWeight = "700"
+            else if (operation_value.localeCompare("0.0")) {
+                operation.style.color = "#198654";
+                operation.style.fontWeight = "700";
             }
         }
-    };
+    }
     function formatPrice() {
         let operations = document.getElementsByClassName("price")
         console.log(operations)
@@ -88,7 +89,7 @@
             let [_, num, suffix] = operation_value.match(/^(.*?)((?:[,.]\d+)?|)$/);
             operation.innerText = `${num.replace(/\B(?=(?:\d{3})*$)/g, ' ')}${suffix}`
         }
-    };
+    }
     changeColor()
     formatPrice()
 </script>
