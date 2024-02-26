@@ -42,7 +42,17 @@
                     <td>{{competitor.competitor_nickname}}</td>
                     <td>{{competitor.competitor_inn}}</td>
                     {% if competitor.competitor_website %}
-                    <td><a href="{{competitor.competitor_website}}">{{competitor.competitor_website[8:]}}</a></td>
+                    <td>
+                        <input type="hidden" id="inn" value={{competitor.competitor_inn}}>
+                        <div id="website">
+                            <a href="{{competitor.competitor_website}}" target="_blank">{{competitor.competitor_website[8:]}}</a>
+<!--                            {% if competitor.connection_status == "disconnected" %}-->
+<!--                            <button type="button" id="interact_btn"><img class="button-pic"-->
+<!--                                                                         src="/static/images/black_pensil.png"-->
+<!--                                                                         alt="Change"/></button>-->
+<!--                            {% endif %}-->
+                        </div>
+                    </td>
                     {% else %}
                     <td><a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ">{{competitor.competitor_website}}</a></td>
                     {% endif %}
@@ -70,4 +80,6 @@
         </div>
     </div>
 </div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="/static/competitors.js" crossorigin="anonymous"></script>
 {% endblock %}

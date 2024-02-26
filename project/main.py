@@ -7,7 +7,7 @@ from project.request_connection import send_connect_request
 from project.async_search import run_search_link, run_search_all_items, run_search_all_links
 from project.db_manager import load_company_data, db_add_competitor, db_get_competitors, db_delete_competitor, \
     db_get_competitor, db_update_con_status, db_add_scraper, db_add_item, db_get_items, db_add_refreshed_item, \
-    db_delete_item_connection, db_get_user_website
+    db_delete_item_connection, db_get_user_website, db_change_website
 
 main = Blueprint("main", __name__)
 
@@ -20,11 +20,12 @@ def index():
     user_id = current_user.get_id()
     company_info = load_company_data(_inn)
     if company_info:
-        requested_connection = db_get_competitor(user_id=user_id, com_inn=company_info._inn)
+        requested_connection = db_get_competitor(user_id=user_id, com_inn=_inn)
 
         # The user can change the website if he hasn't requested the connection yet
         if requested_connection:
-            website = {"link": get_link(requested_connection.competitor_website), "status": requested_connection.connection_status}
+            website = {"link": get_link(requested_connection.competitor_website),
+                       "status": requested_connection.connection_status}
             return render_template("homepage.html", user=current_user, company_info=company_info, website=website)
         website = {"link": get_link(company_info.website), "status": "disconnected"}
         return render_template("homepage.html", user=current_user, company_info=company_info, website=website)
@@ -36,8 +37,18 @@ def index():
 def profile():
     _inn = current_user.company_inn
     user_id = current_user.get_id()
-    user_website = get_link(db_get_user_website(user_id=user_id, inn=_inn))
-    return render_template("profile.html", website=user_website)
+    company_info = load_company_data(_inn)
+    if company_info:
+        requested_connection = db_get_competitor(user_id=user_id, com_inn=_inn)
+
+        # The user can change the website if he hasn't requested the connection yet
+        if requested_connection:
+            website = {"link": get_link(requested_connection.competitor_website),
+                       "status": requested_connection.connection_status}
+            return render_template("profile.html", user=current_user, company_info=company_info, website=website)
+        website = {"link": get_link(company_info.website), "status": "disconnected"}
+        return render_template("profile.html", user=current_user, company_info=company_info, website=website)
+    return render_template("profile.html")
 
 
 @main.route("/company-goods", methods=["POST", "GET"])
@@ -177,7 +188,36 @@ def request_connection(com_inn):
         return redirect(url_for("main.competitor_monitoring"))
     return redirect(url_for("main.competitor_monitoring"))
 
-# @main.route("/test")
-# def test():
-#     funk()
-#     return redirect("/")
+
+@main.route("/profile/change_web", methods=["GET", "POST"])
+def change_web():
+    user_id = current_user.get_id()
+    _inn = current_user.company_inn
+    available_inns = [competitor.competitor_inn for competitor in db_get_competitors(user_id)]
+    available_inns.append(_inn)
+    new_web = request.form.get("new_web")
+
+    # if addressed directly
+    if request.method == "GET":
+        comp_inn = inn_checker(request.args.get("inn"))
+        if comp_inn not in available_inns or not new_web:
+            return redirect("/competitor-monitoring")
+        requested_connection = db_get_competitor(user_id=user_id, com_inn=comp_inn)
+        if not requested_connection or requested_connection.connection_status == "disconnected":
+            if db_change_website(user_id, _inn, new_website=new_web):
+                return redirect("/competitor-monitoring")
+            else:
+                return redirect("/competitor-monitoring")
+
+    comp_inn = inn_checker(request.form.get("inn"))
+    if comp_inn not in available_inns:
+        return "Not allowed"
+    if not new_web:
+        return "Empty field"
+    requested_connection = db_get_competitor(user_id=user_id, com_inn=comp_inn)
+    if not requested_connection or requested_connection.connection_status == "disconnected":
+        if db_change_website(user_id, _inn, new_website=new_web):
+            return new_web
+        else:
+            return "Something went wrong"
+    return f"Not valid: {new_web}"

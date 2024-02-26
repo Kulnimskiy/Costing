@@ -9,7 +9,7 @@
             <div class="card border-light mb-3">
                 <div class="card-header text-white bg-success">
                     <h5>
-                        Stomart INN:12345678910
+                        {{company_info.organization}}<span id="user_inn" hidden="hidden">{{company_info._inn}}</span>
                     </h5>
                 </div>
                 <div class="card-body bg-light">
@@ -17,7 +17,14 @@
                     <div class="card-text"><b>Competitors: </b> 3</div>
                     <div class="card-text">
                         <b>Website: </b>
-                        <a class="link" href={{website}} target="_blank">{{website}}</a>
+                        <span id="website">
+                            <a class="link" href={{website.link}} target="_blank">{{website.link}}</a>
+                            {% if website.status == "disconnected" %}
+                            <button type="button" id="interact_btn"><img class="button-pic"
+                                                                         src="/static/images/black_pensil.png"
+                                                                         alt="Change"/></button>
+                            {% endif %}
+                        </span>
                     </div>
                     <div class="card-text mt-3">
                         <form action="/pathtoconnecttheuser" method="POST">
@@ -42,20 +49,24 @@
                 <div>
                     <button class="btn btn-success w-100" type="submit" id="" disabled>Load Items</button>
                 </div>
-            </form><br>
+            </form>
+            <br>
             <form action="/competitor-monitoring" method="post">
                 <div>
                     <button class="btn btn-success w-100" type="submit" id="" disabled>Autoload Associations</button>
                 </div>
-            </form><br>
+            </form>
+            <br>
             <form action="/competitor-monitoring" method="post">
                 <div>
                     <div>
-                        <input type="text" class="form-control" name="item" placeholder="Item link from your web" required>
+                        <input type="text" class="form-control" name="item" placeholder="Item link from your web"
+                               required>
                         <button class="btn btn-success" type="submit" id="" disabled>Load Item</button>
                     </div>
                 </div>
-            </form><br>
+            </form>
+            <br>
             <form action="/competitor-monitoring" method="post">
                 <div>
                     <div>
@@ -109,4 +120,7 @@
             </div>
         </div>
     </div>
-    {% endblock %}
+</div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="/static/profile.js" crossorigin="anonymous"></script>
+{% endblock %}

@@ -57,3 +57,5 @@ class ItemsRecords(db.Model):
     price = db.Column(db.Float, nullable=False)
     date = db.Column(db.String(200), nullable=False)
     link = db.Column(db.String(200), nullable=False)
+
+

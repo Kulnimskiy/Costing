@@ -277,13 +277,20 @@ def db_get_user_website(user_id, inn):
 
 
 def db_change_website(user_id, inn, new_website):
-    requested = Competitors.query.filter_by(user_id=user_id, competitor_inn=inn)
-    new_website = get_link(new_website)
-    if requested and new_website:
-        requested.competitor_website = get_link(new_website)
+    # the changed info about the user is stored in the competitors table where the user his own
+    # competitor. If the user wants to change his email for the first time, we add him to the table.
+
+    requested = Competitors.query.filter_by(user_id=user_id, competitor_inn=inn).first()
+    new_web = get_link(new_website)
+    if requested and new_web:
+        print("in1")
+        requested.competitor_website = new_web
         db.session.commit()
-    elif new_website:
-        Companies.query.filter_by(_inn=inn).website = get_link(new_website)
-        db.session.commit()
+        return True
+    elif new_web:
+        print("in2")
+        db_add_competitor(user_id, inn, website=new_web)
+        return True
     else:
         logging.warning(f"The website for {inn} hasn't been changed")
+        return False
