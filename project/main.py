@@ -40,14 +40,15 @@ def profile():
     company_info = load_company_data(_inn)
     if company_info:
         requested_connection = db_get_competitor(user_id=user_id, com_inn=_inn)
-
         # The user can change the website if he hasn't requested the connection yet
         if requested_connection:
             website = {"link": get_link(requested_connection.competitor_website),
                        "status": requested_connection.connection_status}
-            return render_template("profile.html", user=current_user, company_info=company_info, website=website)
+            return render_template("profile.html", user=current_user, company_info=company_info, website=website,
+                                   competitor=requested_connection)
         website = {"link": get_link(company_info.website), "status": "disconnected"}
-        return render_template("profile.html", user=current_user, company_info=company_info, website=website)
+        return render_template("profile.html", user=current_user, company_info=company_info, website=website,
+                               competitor=None)
     return render_template("profile.html")
 
 
@@ -125,8 +126,10 @@ def competitor_monitoring():
         db_add_competitor(user_id=current_user.get_id(), comp_inn=_inn, comp_nickname=company, website=website)
         db_add_scraper(user_inn=current_user.company_inn, comp_inn=_inn)
         competitors = db_get_competitors(current_user.get_id())
+        competitors = [competitor for competitor in competitors if competitor.competitor_inn != current_user.company_inn]
         return render_template("competitor-monitoring.html", competitors=competitors)
     competitors = db_get_competitors(current_user.get_id())
+    competitors = [competitor for competitor in competitors if competitor.competitor_inn != current_user.company_inn]
     return render_template("competitor-monitoring.html", competitors=competitors)
 
 
@@ -174,6 +177,8 @@ def price_looker():
 def delete_competitor(com_inn):
     com_inn = inn_checker(com_inn)
     db_delete_competitor(user_id=current_user.get_id(), com_inn=com_inn)
+    if "profile" in request.referrer:
+        return redirect(url_for("main.profile"))
     return redirect(url_for("main.competitor_monitoring"))
 
 
@@ -183,8 +188,14 @@ def request_connection(com_inn):
     user_id = current_user.get_id()
     com_inn = inn_checker(com_inn)
     competitor = db_get_competitor(user_id=user_id, com_inn=com_inn)
+    if not competitor:
+        company = load_company_data(com_inn)
+        db_change_website(user_id, com_inn, new_website=company.website)
+        competitor = db_get_competitor(user_id=user_id, com_inn=com_inn)
     if db_update_con_status(user_id, com_inn):
         send_connect_request(current_user, competitor)
+        if "profile" in request.referrer:
+            return redirect(url_for("main.profile"))
         return redirect(url_for("main.competitor_monitoring"))
     return redirect(url_for("main.competitor_monitoring"))
 

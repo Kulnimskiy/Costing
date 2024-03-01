@@ -27,17 +27,36 @@
                         </span>
                     </div>
                     <div class="card-text mt-3">
-                        <form action="/pathtoconnecttheuser" method="POST">
-                            <div>
-                                <b>Status: </b>
-                                <input hidden type="text" class="form-control" name="user_web_link"
-                                       placeholder="Your website link" value="https://fakesite.com">
+
+                        <div>
+                            <b>Status: </b>
+                            {% if competitor %}
+                                {% if competitor.connection_status == "requested" %}
+                                <form action="/profile/delete_competitor/{{company_info._inn}}" method="POST">
+                                    <button class="btn btn-warning" type="submit" id="btn_req_user_site"
+                                            title="Click to cancel!">Requested
+                                    </button>
+                                </form>
+                                {% elif competitor.connection_status == "connected" %}
+                                <button class="btn btn-primary" type="submit">Connected</button>
+                                {% else %}
+                                <form action="/request_connection/{{company_info._inn}}" method="POST">
+                                    <button class="btn btn-success" type="submit" id="btn_req_user_site"
+                                            title="Connect your website to upload your items automatically">Request
+                                        connection
+                                    </button>
+                                </form>
+                                {% endif %}
+                            {% else %}
+                            <form action="/request_connection/{{company_info._inn}}" method="POST">
                                 <button class="btn btn-success" type="submit" id="btn_req_user_site"
                                         title="Connect your website to upload your items automatically">Request
                                     connection
                                 </button>
-                            </div>
-                        </form>
+                            </form>
+                            {% endif %}
+                        </div>
+
                     </div>
                 </div>
             </div>
