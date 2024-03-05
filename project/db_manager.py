@@ -1,5 +1,6 @@
 import logging
 import random
+from sqlalchemy import func
 from datetime import datetime
 from project import db
 from project.models import Companies, Competitors, Scrapers, ItemsRecords, UsersItems
@@ -171,7 +172,7 @@ def db_get_scr_from_id(user_id, comp_inn=None):
 def db_add_item(user_id, company_inn, link):
     date = get_cur_date()
     # date randomizer
-    date = get_cur_date().replace("13", str(random.choice(list(range(10, 30)))))
+    # date = get_cur_date().replace("13", str(random.choice(list(range(10, 30)))))
     item_records = db_get_item_records(link)
     if item_records:
         last_date = item_records[0].date
@@ -194,6 +195,41 @@ def db_add_item(user_id, company_inn, link):
         if not item:
             print("there is no such item")
             return False
+        print("Has never been added. Adding...")
+        item = ItemsRecords(item_name=item["name"],
+                            company_inn=company_inn,
+                            price=item["price"],
+                            date=date,
+                            link=link)
+        db.session.add(item)
+    connection_exists = UsersItems.query.filter_by(user_id=user_id, link=link).first()
+    if not connection_exists:
+        connection = UsersItems(user_id=user_id, link=link)
+        db.session.add(connection)
+    db.session.commit()
+    return True
+
+
+def db_add_item_mnl(user_id, company_inn, item_name, price, link):
+    date = get_cur_date()
+    # date randomizer
+    # date = get_cur_date().replace("13", str(random.choice(list(range(10, 30)))))
+    item_records = db_get_item_records(link)
+    if item_records:
+        last_date = item_records[0].date
+        if date == last_date:
+            print(last_date, "already checked today")
+        else:
+            item = {"name": item_name, "price": price, "url": link}
+            print("Not checked today. Last time is", last_date)
+            item = ItemsRecords(item_name=item["name"],
+                                company_inn=company_inn,
+                                price=item["price"],
+                                date=date,
+                                link=link)
+            db.session.add(item)
+    else:
+        item = {"name": item_name, "price": price, "url": link}
         print("Has never been added. Adding...")
         item = ItemsRecords(item_name=item["name"],
                             company_inn=company_inn,
@@ -233,6 +269,7 @@ def db_get_items(user_id):
                 prev_check = last_check
             item_refined["item_id"] = item.connection_id
             item_refined["name"] = last_check.item_name
+            item_refined["competitor_inn"] = last_check.company_inn
             item_refined["competitor"] = Companies.query.filter_by(_inn=last_check.company_inn).first().organization
             item_refined["last_price"] = last_check.price
             item_refined["last_date"] = last_check.date
@@ -294,3 +331,16 @@ def db_change_website(user_id, inn, new_website):
     else:
         logging.warning(f"The website for {inn} hasn't been changed")
         return False
+
+
+def db_get_item_link_new(user_id, company_inn, item_name):
+    # the soul purpose of the funk is to get the number to a manually added item and
+    # recognize if the item has ever been added
+    item_link = get_link(db_get_user_website(user_id, company_inn))
+    item_name = item_name.strip()
+    exist = ItemsRecords.query.filter_by(item_name=item_name, company_inn=company_inn).first()
+    if exist:
+        return exist.link
+    item_id = db.session.query(func.max(ItemsRecords.item_id)).scalar()
+    item_link = item_link + f"/{1000 + item_id}"
+    return item_link

@@ -64,35 +64,35 @@
     </div>
     <div class="row">
         <div class="col col-4">
-            <form action="/competitor-monitoring" method="post">
+            <form action="/profile" method="post">
                 <div>
-                    <button class="btn btn-success w-100" type="submit" id="" disabled>Load Items</button>
+                    <button class="btn btn-success w-100" type="submit" name="load_link" disabled>Load Items</button>
                 </div>
             </form>
             <br>
-            <form action="/competitor-monitoring" method="post">
+            <form action="/profile" method="post">
                 <div>
-                    <button class="btn btn-success w-100" type="submit" id="" disabled>Autoload Associations</button>
+                    <button class="btn btn-success w-100" type="submit" name="autoload" disabled>Autoload Associations</button>
                 </div>
             </form>
             <br>
-            <form action="/competitor-monitoring" method="post">
+            <form action="/profile" method="post">
                 <div>
                     <div>
-                        <input type="text" class="form-control" name="item" placeholder="Item link from your web"
+                        <input type="text" class="form-control" name="item_link" placeholder="Item link from your web"
                                required>
                         <button class="btn btn-success" type="submit" id="" disabled>Load Item</button>
                     </div>
                 </div>
             </form>
             <br>
-            <form action="/competitor-monitoring" method="post">
+            <form action="/profile" method="post">
                 <div>
                     <div>
-                        <input type="text" class="form-control" name="item" placeholder="Item" required>
-                        <input type="text" class="form-control" name="price" placeholder="Price" required>
-                        <input type="text" class="form-control" name="link" placeholder="Link(optional)">
-                        <button class="btn btn-success" type="submit" id="">Add Item</button>
+                        <input type="text" class="form-control" name="item_name" placeholder="Item"  required>
+                        <input type="text" class="form-control" name="item_price" placeholder="Price" required>
+                        <input type="text" class="form-control" name="item_link" placeholder="Link(optional)">
+                        <button class="btn btn-success" type="submit" name="add_item_manual">Add Item</button>
                     </div>
                 </div>
             </form>

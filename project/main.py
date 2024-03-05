@@ -7,7 +7,7 @@ from project.request_connection import send_connect_request
 from project.async_search import run_search_link, run_search_all_items, run_search_all_links
 from project.db_manager import load_company_data, db_add_competitor, db_get_competitors, db_delete_competitor, \
     db_get_competitor, db_update_con_status, db_add_scraper, db_add_item, db_get_items, db_add_refreshed_item, \
-    db_delete_item_connection, db_get_user_website, db_change_website
+    db_delete_item_connection, db_get_user_website, db_change_website, db_add_item_mnl, db_get_item_link_new
 
 main = Blueprint("main", __name__)
 
@@ -32,11 +32,32 @@ def index():
     return render_template("homepage.html", user=current_user, company_info=company_info)
 
 
-@main.route("/profile")
+@main.route("/profile", methods=["GET", "POST"])
 @login_required
 def profile():
     _inn = current_user.company_inn
     user_id = current_user.get_id()
+    if request.method == "POST":
+        # here u don't have to check if the user's web is connected
+        item_name = request.form.get("item_name")
+        if not item_name:
+            return redirect("/profile")
+        item_price = check_price(request.form.get("item_price"))
+        if not item_price:
+            return redirect("/profile")
+        item_link = get_link(request.form.get("item_link"))
+        if not item_link:
+            items = db_get_items(user_id)
+            items = list(filter(lambda x: inn_checker(x["competitor_inn"]) == _inn, items))
+            print(items)
+            item_link = db_get_item_link_new(user_id=user_id, company_inn=_inn, item_name=item_name)
+        db_add_item_mnl(user_id=user_id,
+                        company_inn=_inn,
+                        item_name=item_name,
+                        price=item_price,
+                        link=item_link)
+
+    # this happens when you just want to get the page with all the existing items
     company_info = load_company_data(_inn)
     if company_info:
         requested_connection = db_get_competitor(user_id=user_id, com_inn=_inn)
@@ -126,7 +147,8 @@ def competitor_monitoring():
         db_add_competitor(user_id=current_user.get_id(), comp_inn=_inn, comp_nickname=company, website=website)
         db_add_scraper(user_inn=current_user.company_inn, comp_inn=_inn)
         competitors = db_get_competitors(current_user.get_id())
-        competitors = [competitor for competitor in competitors if competitor.competitor_inn != current_user.company_inn]
+        competitors = [competitor for competitor in competitors if
+                       competitor.competitor_inn != current_user.company_inn]
         return render_template("competitor-monitoring.html", competitors=competitors)
     competitors = db_get_competitors(current_user.get_id())
     competitors = [competitor for competitor in competitors if competitor.competitor_inn != current_user.company_inn]
