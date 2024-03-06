@@ -3,7 +3,7 @@ import random
 from sqlalchemy import func
 from datetime import datetime
 from project import db
-from project.models import Companies, Competitors, Scrapers, ItemsRecords, UsersItems
+from project.models import Companies, Competitors, Scrapers, ItemsRecords, UsersItems, ItemsConnections
 from project.corpotate_scrapers.company_info_search import Company
 from project.file_manager import create_scraper_file
 from project.helpers import get_cls_from_path, get_cur_date, get_link
@@ -40,9 +40,9 @@ def load_company_data(_inn):
 
             # need to get that again after the commit
             company = Companies.query.filter_by(_inn=_inn).first()
-            print("CHANGE", company.__dict__)
+            # print("CHANGE", company.__dict__)
             return company
-        print("GET", company.__dict__)
+        # print("GET", company.__dict__)
         return company
 
     # if the company hasn't been added yet, we add it
@@ -269,7 +269,7 @@ def db_get_items(user_id):
                 prev_check = last_check
             item_refined["item_id"] = item.connection_id
             item_refined["name"] = last_check.item_name
-            item_refined["competitor_inn"] = last_check.company_inn
+            item_refined["competitor_inn"] = int(last_check.company_inn)
             item_refined["competitor"] = Companies.query.filter_by(_inn=last_check.company_inn).first().organization
             item_refined["last_price"] = last_check.price
             item_refined["last_date"] = last_check.date
@@ -298,6 +298,11 @@ def db_refresh_all_items(user_id):
 def db_delete_item_connection(user_id, connection_id):
     item_connection = UsersItems.query.filter_by(user_id=user_id, connection_id=connection_id)
     if item_connection.first():
+        date = get_cur_date()
+        link = item_connection.first().link
+        print(link)
+        item_last_record = ItemsRecords.query.filter_by(date=date, link=item_connection.first().link)
+        item_last_record.delete()
         item_connection.delete()
         db.session.commit()
         return True
@@ -342,5 +347,20 @@ def db_get_item_link_new(user_id, company_inn, item_name):
     if exist:
         return exist.link
     item_id = db.session.query(func.max(ItemsRecords.item_id)).scalar()
-    item_link = item_link + f"/{1000 + item_id}"
+    item_link = item_link + f"/{1000 + item_id + 1}"
     return item_link
+
+
+def db_link_items(user_id, user_link, comp_link, comp_inn):
+    """Create a connection between a user's item and a competitor's link item"""
+    db_add_item(user_id=user_id, company_inn=comp_inn, link=comp_link)
+    exist = ItemsConnections.query.filter_by(user_id=user_id, item_link=user_link, connected_item_link=comp_link)
+    if exist:
+        return
+    connection = ItemsConnections(user_id=user_id, item_link=user_link, connected_item_link=comp_link)
+    db.session.add(connection)
+    db.session.commit()
+
+
+def db_get_item_connections(user_id, user_link):
+    pass

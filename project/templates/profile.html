@@ -31,22 +31,22 @@
                         <div>
                             <b>Status: </b>
                             {% if competitor %}
-                                {% if competitor.connection_status == "requested" %}
-                                <form action="/profile/delete_competitor/{{company_info._inn}}" method="POST">
-                                    <button class="btn btn-warning" type="submit" id="btn_req_user_site"
-                                            title="Click to cancel!">Requested
-                                    </button>
-                                </form>
-                                {% elif competitor.connection_status == "connected" %}
-                                <button class="btn btn-primary" type="submit">Connected</button>
-                                {% else %}
-                                <form action="/request_connection/{{company_info._inn}}" method="POST">
-                                    <button class="btn btn-success" type="submit" id="btn_req_user_site"
-                                            title="Connect your website to upload your items automatically">Request
-                                        connection
-                                    </button>
-                                </form>
-                                {% endif %}
+                            {% if competitor.connection_status == "requested" %}
+                            <form action="/profile/delete_competitor/{{company_info._inn}}" method="POST">
+                                <button class="btn btn-warning" type="submit" id="btn_req_user_site"
+                                        title="Click to cancel!">Requested
+                                </button>
+                            </form>
+                            {% elif competitor.connection_status == "connected" %}
+                            <button class="btn btn-primary" type="submit">Connected</button>
+                            {% else %}
+                            <form action="/request_connection/{{company_info._inn}}" method="POST">
+                                <button class="btn btn-success" type="submit" id="btn_req_user_site"
+                                        title="Connect your website to upload your items automatically">Request
+                                    connection
+                                </button>
+                            </form>
+                            {% endif %}
                             {% else %}
                             <form action="/request_connection/{{company_info._inn}}" method="POST">
                                 <button class="btn btn-success" type="submit" id="btn_req_user_site"
@@ -63,20 +63,19 @@
         </div>
     </div>
     <div class="row">
-        <div class="col col-4">
-            <form action="/profile" method="post">
+        <div class="col col-5">
+            <form class="mb-1" action="/profile" method="post">
+                <div>
+                    <button class="btn btn-success w-100" type="submit" name="autoload" disabled>Autoload Associations
+                    </button>
+                </div>
+            </form>
+            <form class="mb-1" action="/profile" method="post">
                 <div>
                     <button class="btn btn-success w-100" type="submit" name="load_link" disabled>Load Items</button>
                 </div>
             </form>
-            <br>
-            <form action="/profile" method="post">
-                <div>
-                    <button class="btn btn-success w-100" type="submit" name="autoload" disabled>Autoload Associations</button>
-                </div>
-            </form>
-            <br>
-            <form action="/profile" method="post">
+            <form class="mb-1" action="/profile" method="post">
                 <div>
                     <div>
                         <input type="text" class="form-control" name="item_link" placeholder="Item link from your web"
@@ -86,59 +85,58 @@
                 </div>
             </form>
             <br>
+        </div>
+        <div class="col col-7">
             <form action="/profile" method="post">
                 <div>
                     <div>
-                        <input type="text" class="form-control" name="item_name" placeholder="Item"  required>
-                        <input type="text" class="form-control" name="item_price" placeholder="Price" required>
-                        <input type="text" class="form-control" name="item_link" placeholder="Link(optional)">
+                        <input type="text" class="form-control mb-1" name="item_name" placeholder="Item" required>
+                        <input type="text" class="form-control mb-1" name="item_price" placeholder="Price" required>
+                        <input type="text" class="form-control mb-1" name="item_link" placeholder="Link(optional)">
                         <button class="btn btn-success" type="submit" name="add_item_manual">Add Item</button>
                     </div>
                 </div>
             </form>
         </div>
-        <div class="col col-8">
-            <div class="col">
-                <table class="table table-hover">
-                    <thead>
-                    <tr class="table-active">
-                        <th scope="col">№</th>
-                        <th scope="col">My Item</th>
-                        <th scope="col">Comp 1</th>
-                        <th scope="col">Comp 2</th>
-                        <th scope="col">Comp 3</th>
-                        <th scope="col">...</th>
-                        <th scope="col">Comp N</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {% if items %}
-                    {% for item in items %}
-                    <tr>
-                        <td>
-                            <form action="/company-goods/delete-item" method="post">
-                                <button type="submit" id="delete_item"><img class="button-pic"
-                                                                            src="static/images/delete-button.svg"
-                                                                            alt="Delete"/></button>
-                                <input title="item_id" hidden="hidden" value="{{item.item_id}}" name="item_id">
-                            </form>
-                        </td>
-                        <td>{{item.name}}</td>
-                        <td>{{item.competitor}}</td>
-                        <td>{{item.last_price}}</td>
-                        <td>{{item.last_date}}</td>
-                        <td>{{item.price_change}}</td>
-                        <td>{{item.prev_price}}</td>
-                        <td>{{item.prev_date}}</td>
-                        <td><a href={{item.link}} target="_blank">{{item.link[8:25]}}...</a></td>
-                    </tr>
-                    {% endfor %}
-                    {% endif %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
     </div>
+    <table class="table table-hover">
+        <thead>
+        <tr class="table-active">
+            <th scope="col">№</th>
+            <th scope="col">My Item</th>
+            {% if competitors %}
+            {% for competitor in competitors %}
+            <th scope="col">{{competitor.competitor_nickname}}</th>
+            {% endfor %}
+            {% endif %}
+            <th scope="col"></th>
+        </tr>
+        </thead>
+        <tbody>
+        {% if items %}
+        {% for item in items %}
+        <tr>
+                <td>{{loop.index}}</td>
+                <td>{{item.name}}</td>
+                {% if competitors %}
+                    {% for competitor in competitors %}
+                    <td><input type="text" class="form-control" name="item_link"
+                               placeholder="link for the {{competitor.competitor_nickname}}'s item"></td>
+                    {% endfor %}
+                <td>
+                    <form action="/company-goods/delete-item" method="post">
+                        <button type="submit" id="delete_item"><img class="button-pic"
+                                                                    src="static/images/delete-button.svg"
+                                                                    alt="Delete"/></button>
+                        <input title="item_id" hidden="hidden" value="{{item.item_id}}" name="item_id">
+                    </form>
+                </td>
+                {% endif %}
+        </tr>
+        {% endfor %}
+        {% endif %}
+        </tbody>
+    </table>
 </div>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script src="/static/profile.js" crossorigin="anonymous"></script>

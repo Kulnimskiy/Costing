@@ -446,8 +446,8 @@
     <routine id="176" parent="1" name="fts3_tokenizer"/>
     <schema id="177" parent="1" name="main">
       <Current>1</Current>
-      <IntrospectionTimestamp>2024-02-15.21:33:31.926</IntrospectionTimestamp>
-      <LocalIntrospectionTimestamp>2024-02-15.18:33:31</LocalIntrospectionTimestamp>
+      <IntrospectionTimestamp>2024-03-06.20:31:09.723</IntrospectionTimestamp>
+      <LocalIntrospectionTimestamp>2024-03-06.17:31:09</LocalIntrospectionTimestamp>
     </schema>
     <argument id="178" parent="16">
       <ArgumentDirection>R</ArgumentDirection>
@@ -1471,240 +1471,265 @@
     </argument>
     <table id="518" parent="177" name="companies"/>
     <table id="519" parent="177" name="competitors"/>
-    <table id="520" parent="177" name="items_records"/>
-    <table id="521" parent="177" name="scrapers"/>
-    <table id="522" parent="177" name="sqlite_master">
+    <table id="520" parent="177" name="items_connections"/>
+    <table id="521" parent="177" name="items_records"/>
+    <table id="522" parent="177" name="scrapers"/>
+    <table id="523" parent="177" name="sqlite_master">
       <System>1</System>
     </table>
-    <table id="523" parent="177" name="user"/>
-    <table id="524" parent="177" name="users_items"/>
-    <column id="525" parent="518" name="inn">
+    <table id="524" parent="177" name="user"/>
+    <table id="525" parent="177" name="users_items"/>
+    <column id="526" parent="518" name="inn">
       <DasType>INTEGER|0s</DasType>
       <NotNull>1</NotNull>
       <Position>1</Position>
     </column>
-    <column id="526" parent="518" name="website">
+    <column id="527" parent="518" name="website">
       <DasType>VARCHAR(200)|0s</DasType>
       <Position>2</Position>
     </column>
-    <column id="527" parent="518" name="organization">
+    <column id="528" parent="518" name="organization">
       <DasType>VARCHAR(200)|0s</DasType>
       <Position>3</Position>
     </column>
-    <column id="528" parent="518" name="ogrn">
+    <column id="529" parent="518" name="ogrn">
       <DasType>INTEGER|0s</DasType>
       <Position>4</Position>
     </column>
-    <column id="529" parent="518" name="registration_date">
+    <column id="530" parent="518" name="registration_date">
       <DasType>VARCHAR(100)|0s</DasType>
       <Position>5</Position>
     </column>
-    <column id="530" parent="518" name="sphere">
+    <column id="531" parent="518" name="sphere">
       <DasType>VARCHAR(400)|0s</DasType>
       <Position>6</Position>
     </column>
-    <column id="531" parent="518" name="address">
+    <column id="532" parent="518" name="address">
       <DasType>VARCHAR(400)|0s</DasType>
       <Position>7</Position>
     </column>
-    <column id="532" parent="518" name="workers_number">
+    <column id="533" parent="518" name="workers_number">
       <DasType>INTEGER|0s</DasType>
       <Position>8</Position>
     </column>
-    <column id="533" parent="518" name="ceo">
+    <column id="534" parent="518" name="ceo">
       <DasType>VARCHAR(100)|0s</DasType>
       <Position>9</Position>
     </column>
-    <column id="534" parent="518" name="info_loading_date">
+    <column id="535" parent="518" name="info_loading_date">
       <DasType>VARCHAR(100)|0s</DasType>
       <Position>10</Position>
     </column>
-    <key id="535" parent="518">
+    <key id="536" parent="518">
       <ColNames>inn</ColNames>
       <Primary>1</Primary>
     </key>
-    <column id="536" parent="519" name="connection_id">
+    <column id="537" parent="519" name="connection_id">
       <DasType>INTEGER|0s</DasType>
       <NotNull>1</NotNull>
       <Position>1</Position>
     </column>
-    <column id="537" parent="519" name="user_id">
+    <column id="538" parent="519" name="user_id">
       <DasType>INTEGER|0s</DasType>
       <NotNull>1</NotNull>
       <Position>2</Position>
     </column>
-    <column id="538" parent="519" name="competitor_inn">
+    <column id="539" parent="519" name="competitor_inn">
       <DasType>INTEGER|0s</DasType>
       <NotNull>1</NotNull>
       <Position>3</Position>
     </column>
-    <column id="539" parent="519" name="competitor_nickname">
+    <column id="540" parent="519" name="competitor_nickname">
       <DasType>VARCHAR(100)|0s</DasType>
       <Position>4</Position>
     </column>
-    <column id="540" parent="519" name="competitor_website">
+    <column id="541" parent="519" name="competitor_website">
       <DasType>VARCHAR(200)|0s</DasType>
       <Position>5</Position>
     </column>
-    <column id="541" parent="519" name="connection_status">
+    <column id="542" parent="519" name="connection_status">
       <DasType>VARCHAR(200)|0s</DasType>
       <NotNull>1</NotNull>
       <Position>6</Position>
     </column>
-    <key id="542" parent="519">
+    <key id="543" parent="519">
       <ColNames>connection_id</ColNames>
       <Primary>1</Primary>
     </key>
-    <column id="543" parent="520" name="item_id">
+    <column id="544" parent="520" name="connection_id">
       <DasType>INTEGER|0s</DasType>
       <NotNull>1</NotNull>
       <Position>1</Position>
     </column>
-    <column id="544" parent="520" name="item_name">
+    <column id="545" parent="520" name="user_id">
+      <DasType>INTEGER|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>2</Position>
+    </column>
+    <column id="546" parent="520" name="item_link">
+      <DasType>VARCHAR(200)|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>3</Position>
+    </column>
+    <column id="547" parent="520" name="connected_item_link">
+      <DasType>VARCHAR(200)|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>4</Position>
+    </column>
+    <key id="548" parent="520">
+      <ColNames>connection_id</ColNames>
+      <Primary>1</Primary>
+    </key>
+    <column id="549" parent="521" name="item_id">
+      <DasType>INTEGER|0s</DasType>
+      <NotNull>1</NotNull>
+      <Position>1</Position>
+    </column>
+    <column id="550" parent="521" name="item_name">
       <DasType>VARCHAR(300)|0s</DasType>
       <NotNull>1</NotNull>
       <Position>2</Position>
     </column>
-    <column id="545" parent="520" name="company_inn">
+    <column id="551" parent="521" name="company_inn">
       <DasType>VARCHAR(200)|0s</DasType>
       <NotNull>1</NotNull>
       <Position>3</Position>
     </column>
-    <column id="546" parent="520" name="price">
+    <column id="552" parent="521" name="price">
       <DasType>FLOAT|0s</DasType>
       <NotNull>1</NotNull>
       <Position>4</Position>
     </column>
-    <column id="547" parent="520" name="date">
+    <column id="553" parent="521" name="date">
       <DasType>VARCHAR(200)|0s</DasType>
       <NotNull>1</NotNull>
       <Position>5</Position>
     </column>
-    <column id="548" parent="520" name="link">
+    <column id="554" parent="521" name="link">
       <DasType>VARCHAR(200)|0s</DasType>
       <NotNull>1</NotNull>
       <Position>6</Position>
     </column>
-    <key id="549" parent="520">
+    <key id="555" parent="521">
       <ColNames>item_id</ColNames>
       <Primary>1</Primary>
     </key>
-    <column id="550" parent="521" name="scraper_id">
+    <column id="556" parent="522" name="scraper_id">
       <DasType>INTEGER|0s</DasType>
       <NotNull>1</NotNull>
       <Position>1</Position>
     </column>
-    <column id="551" parent="521" name="company_inn">
+    <column id="557" parent="522" name="company_inn">
       <DasType>INTEGER|0s</DasType>
       <NotNull>1</NotNull>
       <Position>2</Position>
     </column>
-    <column id="552" parent="521" name="scraper_path">
+    <column id="558" parent="522" name="scraper_path">
       <DasType>VARCHAR(200)|0s</DasType>
       <NotNull>1</NotNull>
       <Position>3</Position>
     </column>
-    <key id="553" parent="521">
+    <key id="559" parent="522">
       <ColNames>scraper_id</ColNames>
       <Primary>1</Primary>
     </key>
-    <column id="554" parent="522" name="type">
+    <column id="560" parent="523" name="type">
       <DasType>TEXT|0s</DasType>
       <Position>1</Position>
     </column>
-    <column id="555" parent="522" name="name">
+    <column id="561" parent="523" name="name">
       <DasType>TEXT|0s</DasType>
       <Position>2</Position>
     </column>
-    <column id="556" parent="522" name="tbl_name">
+    <column id="562" parent="523" name="tbl_name">
       <DasType>TEXT|0s</DasType>
       <Position>3</Position>
     </column>
-    <column id="557" parent="522" name="rootpage">
+    <column id="563" parent="523" name="rootpage">
       <DasType>INT|0s</DasType>
       <Position>4</Position>
     </column>
-    <column id="558" parent="522" name="sql">
+    <column id="564" parent="523" name="sql">
       <DasType>TEXT|0s</DasType>
       <Position>5</Position>
     </column>
-    <column id="559" parent="523" name="id">
+    <column id="565" parent="524" name="id">
       <DasType>INTEGER|0s</DasType>
       <NotNull>1</NotNull>
       <Position>1</Position>
     </column>
-    <column id="560" parent="523" name="company_name">
+    <column id="566" parent="524" name="company_name">
       <DasType>VARCHAR(100)|0s</DasType>
       <NotNull>1</NotNull>
       <Position>2</Position>
     </column>
-    <column id="561" parent="523" name="company_inn">
+    <column id="567" parent="524" name="company_inn">
       <DasType>INTEGER|0s</DasType>
       <NotNull>1</NotNull>
       <Position>3</Position>
     </column>
-    <column id="562" parent="523" name="login">
+    <column id="568" parent="524" name="login">
       <DasType>VARCHAR(100)|0s</DasType>
       <NotNull>1</NotNull>
       <Position>4</Position>
     </column>
-    <column id="563" parent="523" name="email">
+    <column id="569" parent="524" name="email">
       <DasType>VARCHAR(100)|0s</DasType>
       <NotNull>1</NotNull>
       <Position>5</Position>
     </column>
-    <column id="564" parent="523" name="password">
+    <column id="570" parent="524" name="password">
       <DasType>VARCHAR(100)|0s</DasType>
       <NotNull>1</NotNull>
       <Position>6</Position>
     </column>
-    <index id="565" parent="523" name="sqlite_autoindex_user_1">
+    <index id="571" parent="524" name="sqlite_autoindex_user_1">
       <ColNames>company_inn</ColNames>
       <NameSurrogate>1</NameSurrogate>
       <Unique>1</Unique>
     </index>
-    <index id="566" parent="523" name="sqlite_autoindex_user_2">
+    <index id="572" parent="524" name="sqlite_autoindex_user_2">
       <ColNames>login</ColNames>
       <NameSurrogate>1</NameSurrogate>
       <Unique>1</Unique>
     </index>
-    <key id="567" parent="523">
+    <key id="573" parent="524">
       <ColNames>id</ColNames>
       <Primary>1</Primary>
     </key>
-    <key id="568" parent="523">
+    <key id="574" parent="524">
       <ColNames>company_inn</ColNames>
       <UnderlyingIndexName>sqlite_autoindex_user_1</UnderlyingIndexName>
     </key>
-    <key id="569" parent="523">
+    <key id="575" parent="524">
       <ColNames>login</ColNames>
       <UnderlyingIndexName>sqlite_autoindex_user_2</UnderlyingIndexName>
     </key>
-    <column id="570" parent="524" name="connection_id">
+    <column id="576" parent="525" name="connection_id">
       <DasType>INTEGER|0s</DasType>
       <NotNull>1</NotNull>
       <Position>1</Position>
     </column>
-    <column id="571" parent="524" name="user_id">
+    <column id="577" parent="525" name="user_id">
       <DasType>INTEGER|0s</DasType>
       <NotNull>1</NotNull>
       <Position>2</Position>
     </column>
-    <column id="572" parent="524" name="link">
+    <column id="578" parent="525" name="link">
       <DasType>VARCHAR(200)|0s</DasType>
       <NotNull>1</NotNull>
       <Position>3</Position>
     </column>
-    <index id="573" parent="524" name="sqlite_autoindex_users_items_1">
+    <index id="579" parent="525" name="sqlite_autoindex_users_items_1">
       <ColNames>link</ColNames>
       <NameSurrogate>1</NameSurrogate>
       <Unique>1</Unique>
     </index>
-    <key id="574" parent="524">
+    <key id="580" parent="525">
       <ColNames>connection_id</ColNames>
       <Primary>1</Primary>
     </key>
-    <key id="575" parent="524">
+    <key id="581" parent="525">
       <ColNames>link</ColNames>
       <UnderlyingIndexName>sqlite_autoindex_users_items_1</UnderlyingIndexName>
     </key>

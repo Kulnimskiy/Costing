@@ -1,4 +1,7 @@
 document.getElementById("interact_btn").addEventListener("click", changeWebsite);
+// window.addEventListener('load', loadConnections () {
+//   alert("It's loaded!")
+// })
 
 function changeWebsite() {
     let website_div = document.getElementById("website")

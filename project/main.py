@@ -7,7 +7,8 @@ from project.request_connection import send_connect_request
 from project.async_search import run_search_link, run_search_all_items, run_search_all_links
 from project.db_manager import load_company_data, db_add_competitor, db_get_competitors, db_delete_competitor, \
     db_get_competitor, db_update_con_status, db_add_scraper, db_add_item, db_get_items, db_add_refreshed_item, \
-    db_delete_item_connection, db_get_user_website, db_change_website, db_add_item_mnl, db_get_item_link_new
+    db_delete_item_connection, db_get_user_website, db_change_website, db_add_item_mnl, db_get_item_link_new, \
+    db_link_items
 
 main = Blueprint("main", __name__)
 
@@ -47,9 +48,6 @@ def profile():
             return redirect("/profile")
         item_link = get_link(request.form.get("item_link"))
         if not item_link:
-            items = db_get_items(user_id)
-            items = list(filter(lambda x: inn_checker(x["competitor_inn"]) == _inn, items))
-            print(items)
             item_link = db_get_item_link_new(user_id=user_id, company_inn=_inn, item_name=item_name)
         db_add_item_mnl(user_id=user_id,
                         company_inn=_inn,
@@ -59,6 +57,11 @@ def profile():
 
     # this happens when you just want to get the page with all the existing items
     company_info = load_company_data(_inn)
+    competitors = db_get_competitors(current_user.get_id())
+    competitors = [competitor for competitor in competitors if
+                   competitor.competitor_inn != current_user.company_inn]
+    all_items = db_get_items(user_id)
+    own_items = list(filter(lambda x: inn_checker(x["competitor_inn"]) == _inn, all_items))
     if company_info:
         requested_connection = db_get_competitor(user_id=user_id, com_inn=_inn)
         # The user can change the website if he hasn't requested the connection yet
@@ -66,11 +69,11 @@ def profile():
             website = {"link": get_link(requested_connection.competitor_website),
                        "status": requested_connection.connection_status}
             return render_template("profile.html", user=current_user, company_info=company_info, website=website,
-                                   competitor=requested_connection)
+                                   competitor=requested_connection, competitors=competitors, items=own_items)
         website = {"link": get_link(company_info.website), "status": "disconnected"}
         return render_template("profile.html", user=current_user, company_info=company_info, website=website,
-                               competitor=None)
-    return render_template("profile.html")
+                               competitor=None, competitors=competitors, items=own_items)
+    return render_template("profile.html", competitors=competitors, items=own_items)
 
 
 @main.route("/company-goods", methods=["POST", "GET"])
@@ -132,6 +135,8 @@ def delete_item():
     user_id = current_user.get_id()
     print(item_id)
     if db_delete_item_connection(user_id, item_id):
+        if "profile" in request.referrer:
+            return redirect(url_for("main.profile"))
         return redirect("/company-goods")
     logging.warning("Item is not deleted. Access denied")
     return redirect("/company-goods")
@@ -254,3 +259,18 @@ def change_web():
         else:
             return "Something went wrong"
     return f"Not valid: {new_web}"
+
+
+@main.route("/profile/link_items", methods=["POST"])
+@login_required
+def link_items():
+    user_id = current_user.get_id()
+    competitors = db_get_competitors(user_id=current_user.get_id(), connection_status="connected")
+    competitors = [competitor for competitor in competitors if
+                   competitor.competitor_inn != current_user.company_inn]
+    if request.method == "POST":
+        user_link = request.form.get("user_item_link")
+        comp_link = request.form.get("comp_item_link")
+        for competitor in competitors:
+            if competitor.competitor_website in comp_link:
+                db_link_items(user_id=user_id, user_link=user_link, comp_link=comp_link, comp_inn=competitor.competitor_inn)
