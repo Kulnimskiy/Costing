@@ -20,7 +20,7 @@
                         <span id="website">
                             <a class="link" href={{website.link}} target="_blank">{{website.link}}</a>
                             {% if website.status == "disconnected" %}
-                            <button type="button" id="interact_btn"><img class="button-pic"
+                            <button type="button" id="interact_btn" name="interact_btn"><img class="button-pic"
                                                                          src="/static/images/black_pensil.png"
                                                                          alt="Change"/></button>
                             {% endif %}
@@ -115,13 +115,22 @@
         <tbody>
         {% if items %}
         {% for item in items %}
+        {% set outer_loop = loop %}
         <tr>
                 <td>{{loop.index}}</td>
                 <td>{{item.name}}</td>
                 {% if competitors %}
                     {% for competitor in competitors %}
-                    <td><input type="text" class="form-control" name="item_link"
-                               placeholder="link for the {{competitor.competitor_nickname}}'s item"></td>
+                    <td>
+                        <span>
+                            <input type="hidden" class="element_id" value="{{outer_loop.index0}}_{{competitor.competitor_inn}}" id="{{outer_loop.index0}}_{{competitor.competitor_inn}}">
+                            <a class="link" href={{competitor.competitor_website}} target="_blank">{{competitor.competitor_website[8:20]}}</a>
+                            {% if website.status == "disconnected" %}
+                            <button type="button" name="interact_btn"><img class="button-pic item_link"
+                                                                         src="/static/images/black_pensil.png"
+                                                                         alt="Change"/></button>
+                            {% endif %}
+                        </span>
                     {% endfor %}
                 <td>
                     <form action="/company-goods/delete-item" method="post">

@@ -65,12 +65,12 @@
     border-radius: 10px;
 }
 
-#interact_btn, #delete_item {
+button[name="interact_btn"], #delete_item {
     border: none;
     background: transparent;
 }
 
-#interact_btn:hover {
+button[name="interact_btn"]:hover {
     background: #e5e5e5;
     border: 2px black;
     border-radius: 5px;

@@ -264,13 +264,14 @@ def change_web():
 @main.route("/profile/link_items", methods=["POST"])
 @login_required
 def link_items():
-    user_id = current_user.get_id()
-    competitors = db_get_competitors(user_id=current_user.get_id(), connection_status="connected")
-    competitors = [competitor for competitor in competitors if
-                   competitor.competitor_inn != current_user.company_inn]
-    if request.method == "POST":
-        user_link = request.form.get("user_item_link")
-        comp_link = request.form.get("comp_item_link")
-        for competitor in competitors:
-            if competitor.competitor_website in comp_link:
-                db_link_items(user_id=user_id, user_link=user_link, comp_link=comp_link, comp_inn=competitor.competitor_inn)
+    return "got it"
+    # user_id = current_user.get_id()
+    # competitors = db_get_competitors(user_id=current_user.get_id(), connection_status="connected")
+    # competitors = [competitor for competitor in competitors if
+    #                competitor.competitor_inn != current_user.company_inn]
+    # if request.method == "POST":
+    #     user_link = request.form.get("user_item_link")
+    #     comp_link = request.form.get("comp_item_link")
+    #     for competitor in competitors:
+    #         if competitor.competitor_website in comp_link:
+    #             db_link_items(user_id=user_id, user_link=user_link, comp_link=comp_link, comp_inn=competitor.competitor_inn)
