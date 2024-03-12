@@ -8,7 +8,7 @@ from project.async_search import run_search_link, run_search_all_items, run_sear
 from project.db_manager import load_company_data, db_add_competitor, db_get_competitors, db_delete_competitor, \
     db_get_competitor, db_update_con_status, db_add_scraper, db_add_item, db_get_items, db_add_refreshed_item, \
     db_delete_item_connection, db_get_user_website, db_change_website, db_add_item_mnl, db_get_item_link_new, \
-    db_link_items
+    db_get_item_link, db_get_item_connection, db_add_item_connection, db_get_inn, db_get_users_connections
 
 main = Blueprint("main", __name__)
 
@@ -62,6 +62,17 @@ def profile():
                    competitor.competitor_inn != current_user.company_inn]
     all_items = db_get_items(user_id)
     own_items = list(filter(lambda x: inn_checker(x["competitor_inn"]) == _inn, all_items))
+    all_linked_items = db_get_users_connections(user_id)
+    # all_links = [item.item_link for item in all_linked_items] if all_linked_items else []
+    items_info = dict()
+    for item in own_items:
+        related = dict()
+        for linked_item in all_linked_items:
+            if item['link'] == linked_item.item_link:
+                comp_inn = db_get_inn(linked_item.item_link)
+                related[comp_inn] = linked_item.item_link
+        items_info[f"{item['link']}"] = related
+
     if company_info:
         requested_connection = db_get_competitor(user_id=user_id, com_inn=_inn)
         # The user can change the website if he hasn't requested the connection yet
@@ -69,11 +80,11 @@ def profile():
             website = {"link": get_link(requested_connection.competitor_website),
                        "status": requested_connection.connection_status}
             return render_template("profile.html", user=current_user, company_info=company_info, website=website,
-                                   competitor=requested_connection, competitors=competitors, items=own_items)
+                                   competitor=requested_connection, competitors=competitors, items=own_items, info=items_info)
         website = {"link": get_link(company_info.website), "status": "disconnected"}
         return render_template("profile.html", user=current_user, company_info=company_info, website=website,
-                               competitor=None, competitors=competitors, items=own_items)
-    return render_template("profile.html", competitors=competitors, items=own_items)
+                               competitor=None, competitors=competitors, items=own_items, info=items_info)
+    return render_template("profile.html", competitors=competitors, items=own_items, info=items_info)
 
 
 @main.route("/company-goods", methods=["POST", "GET"])
@@ -264,7 +275,26 @@ def change_web():
 @main.route("/profile/link_items", methods=["POST"])
 @login_required
 def link_items():
-    return "got it"
+    user_id = current_user.get_id()
+    item_id = check_price(request.form.get("item_id"))
+    if not item_id:
+        return "No item"
+    item_link = db_get_item_link(user_id=user_id, item_id=item_id)
+    if not item_link:
+        return "You don't have this item"
+    new_link = get_link(request.form.get("new_link"))
+    if not new_link:
+        return None
+    comp_inn = inn_checker(request.form.get("comp_inn"))
+    if not comp_inn:
+        return "This comp isn't added"
+    available_inns = [competitor.competitor_inn for competitor in db_get_competitors(user_id, connection_status="connected")]
+    if comp_inn not in available_inns:
+        return "This comp isn't connected"
+    if not db_add_item(user_id=user_id, company_inn=comp_inn, link=new_link):
+        return "Cannot get item info!"
+    db_add_item_connection(user_id=user_id, item_link=item_link, connected_item_link=new_link)
+    return new_link
     # user_id = current_user.get_id()
     # competitors = db_get_competitors(user_id=current_user.get_id(), connection_status="connected")
     # competitors = [competitor for competitor in competitors if

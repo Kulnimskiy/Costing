@@ -351,16 +351,36 @@ def db_get_item_link_new(user_id, company_inn, item_name):
     return item_link
 
 
-def db_link_items(user_id, user_link, comp_link, comp_inn):
-    """Create a connection between a user's item and a competitor's link item"""
-    db_add_item(user_id=user_id, company_inn=comp_inn, link=comp_link)
-    exist = ItemsConnections.query.filter_by(user_id=user_id, item_link=user_link, connected_item_link=comp_link)
-    if exist:
+def db_get_item_connection(user_id, user_link):
+    linked_item = ItemsConnections.query.filter_by(user_id=user_id, item_link=user_link).first()
+    return linked_item
+
+
+def db_get_users_connections(user_id):
+    return ItemsConnections.query.filter_by(user_id=user_id).all()
+
+def db_add_item_connection(user_id, item_link, connected_item_link):
+    exists = db_get_item_connection(user_id, item_link)
+    if exists:
+        exists.connection_item_link = connected_item_link
+        db.session.commit()
         return
-    connection = ItemsConnections(user_id=user_id, item_link=user_link, connected_item_link=comp_link)
-    db.session.add(connection)
+    new_connection = ItemsConnections(user_id=user_id, item_link=item_link, connected_item_link=connected_item_link)
+    db.session.add(new_connection)
     db.session.commit()
+    return
 
 
-def db_get_item_connections(user_id, user_link):
-    pass
+def db_get_item_link(user_id, item_id):
+    item = UsersItems.query.filter_by(user_id=user_id, connection_id=item_id).first()
+    if item:
+        return item.link
+    return None
+
+
+def db_get_inn(link: str):
+    """gets competitor's inn from a given link from the ItemsRecords table"""
+    item = ItemsRecords.query.filter_by(link=link).first()
+    if not item:
+        return None
+    return item.company_inn

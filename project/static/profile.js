@@ -46,41 +46,42 @@ function changeConnection(e) {
     let link_span_el = $(this)[0].parentElement.parentElement;
     let link_span_html_old = link_span_el.innerHTML;
     let el_id = link_span_el.getElementsByClassName("element_id")[0].value;
-    let input_html = `<input type='text' class='form-control' name='new_item_link' id='${el_id}' placeholder='link for item'>`;
+    let old_link = link_span_el.innerText;
+    let input_html = `<input type='text' class='form-control' name='new_item_link' id='${el_id}' placeholder='link for item' value='${old_link}'>`;
     link_span_el.innerHTML = input_html;
-    let link_buttons = document.getElementById(el_id);
-//    document.querySelectorAll('.item_link').forEach((el) => {
-//        el.addEventListener('click', changeConnection)
-//    })
 
-    //  reset the event listener
-    document.querySelectorAll('.item_link').forEach((el) => {
-    el.addEventListener('click', changeConnection)
-    })
-//    website_div.innerHTML = `<input id='new_website' value='${old_website}'>`;
-//    document.getElementById("new_website").addEventListener("keypress", function (e) {
-//        if (e.key === 'Enter') {
-//            let new_website = document.getElementById('new_website').value;
-//            console.log("new: " + new_website);
-//
-////             here u get the response from the server
-//
-//             $.ajax({
-//                 url: "/profile/change_web", // Здесь указываем URL-адрес серверного обработчика
-//                 type: "post",
-//                 data: {"new_web": new_website, "inn": inn},
-//                 success: function (response) {
-//                     // Обработка успешной отправки данных
-//                        website_div.innerHTML = old_html;
-//                        website_div.querySelector("a").innerText = response;
-//                        document.getElementById("interact_btn").addEventListener("click", changeWebsite);
-//                        console.log("there has been a responce " + response);
-//                 },
-//                 error: function (error) {
-//                     // Обработка ошибок при отправке данных
-//                        console.error("Ошибка при отправке данных: ", error);
-//                 },
-//             });
-//        }
-//    });
+    document.getElementById(el_id).addEventListener("keypress", function (e) {
+        if (e.key === 'Enter') {
+            let new_link = document.getElementById(el_id).value;
+            connection_info = el_id.split("_");
+            item_id = connection_info[0];
+            comp_inn = connection_info[1];
+            console.log("new: " + new_link, "item id: "+ item_id, "comp_inn: " + comp_inn);
+
+//             here u get the response from the server
+
+             $.ajax({
+                 url: "/profile/link_items", // Здесь указываем URL-адрес серверного обработчика
+                 type: "post",
+                 data: {"new_link": new_link, "item_id": item_id, "comp_inn": comp_inn},
+                 success: function (response) {
+                     // Обработка успешной отправки данных
+                        link_span_el.innerHTML = link_span_html_old;
+                        if (response == None) {
+                            link_span_el.querySelector("a").innerText = old_link;
+                            link_span_el.querySelector("a").style.color = "red";
+                            console.log("Error! link is not valid or sth went wrong");
+                        }
+                        link_span_el.querySelector("a").innerText = response;
+                        link_span_el.querySelector("a").style.color = "#e2e3e5";
+                        document.getElementById(el_id).addEventListener('click', changeConnection);
+                        console.log("there has been a responce " + response);
+                 },
+                 error: function (error) {
+                     // Обработка ошибок при отправке данных
+                        console.error("Ошибка при отправке данных: ", error);
+                 },
+             });
+        }
+    });
 }
