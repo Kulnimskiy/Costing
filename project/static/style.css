@@ -134,3 +134,7 @@ th.competitor {
     min-width: 180px;
 }
 
+.link {
+    font-size: small;
+    text-decoration: none;
+}

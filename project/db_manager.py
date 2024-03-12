@@ -351,24 +351,32 @@ def db_get_item_link_new(user_id, company_inn, item_name):
     return item_link
 
 
-def db_get_item_connection(user_id, user_link):
-    linked_item = ItemsConnections.query.filter_by(user_id=user_id, item_link=user_link).first()
-    return linked_item
+def db_get_item_connection(user_id, user_link, comp_inn):
+    linked_items = ItemsConnections.query.filter_by(user_id=user_id, item_link=user_link).all()
+    for item in linked_items:
+        if str(db_get_inn(item.connected_item_link)) == str(comp_inn):
+            return item
+    return None
 
 
 def db_get_users_connections(user_id):
     return ItemsConnections.query.filter_by(user_id=user_id).all()
 
-def db_add_item_connection(user_id, item_link, connected_item_link):
-    exists = db_get_item_connection(user_id, item_link)
+
+def db_add_item_connection(user_id, item_link, connected_item_link, comp_inn):
+    exists = ItemsConnections.query.filter_by(user_id=user_id, item_link=item_link, connected_item_link=connected_item_link).first()
     if exists:
+        return False
+    exists = db_get_item_connection(user_id=user_id, user_link=item_link, comp_inn=comp_inn)
+    if exists:
+        print('ex.............................')
         exists.connection_item_link = connected_item_link
         db.session.commit()
-        return
+        return True
     new_connection = ItemsConnections(user_id=user_id, item_link=item_link, connected_item_link=connected_item_link)
     db.session.add(new_connection)
     db.session.commit()
-    return
+    return True
 
 
 def db_get_item_link(user_id, item_id):
@@ -384,3 +392,11 @@ def db_get_inn(link: str):
     if not item:
         return None
     return item.company_inn
+
+
+def db_delete_connection(user_id, item_link, linked_item_link):
+    exists = ItemsConnections.query.filter_by(user_id=user_id, item_link=item_link,
+                                              connected_item_link=linked_item_link)
+    if exists.first():
+        exists.delete()
+        db.session.commit()

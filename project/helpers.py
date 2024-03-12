@@ -160,6 +160,7 @@ def format_search_all_result(item, result: dict, competitors, min_price=None, ma
         else:
             r["price"] = decimal.Decimal(str(r["price"]))
             r["price"] = '{0:,}'.format(r["price"]).replace(',', ' ')
+    print(result)
     return result
 
 

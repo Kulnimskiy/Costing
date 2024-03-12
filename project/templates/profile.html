@@ -118,7 +118,7 @@
             {% set item_link = item["link"] %}
         <tr>
                 <td>{{loop.index}}</td>
-                <td>{{item["name"]}}</td>
+                <td><a class="link" href="{{item_link}}" target="_blank">{{item["name"]}}</a></td>
                 {% if competitors %}
                     {% for competitor in competitors %}
                     {% set comp_inn = competitor.competitor_inn %}
@@ -126,7 +126,7 @@
                         <span>
                             <input type="hidden" class="element_id" value="{{item.item_id}}_{{competitor.competitor_inn}}" id="{{item.item_id}}_{{competitor.competitor_inn}}">
                             {% if info[item_link][comp_inn] %}
-                            <a class="link" href={{info[item_link][comp_inn]}} target="_blank">{{info[item_link][comp_inn][8:20]}}</a>
+                            <a class="link" href={{info[item_link][comp_inn]}} target="_blank">{{info[item_link][comp_inn][8:20]}}...</a>
                             {% else %}
                             <a class="link" href="" target="_blank">None</a>
                             {% endif %}
