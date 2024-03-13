@@ -9,7 +9,7 @@ from project.db_manager import load_company_data, db_add_competitor, db_get_comp
     db_get_competitor, db_update_con_status, db_add_scraper, db_add_item, db_get_items, db_add_refreshed_item, \
     db_delete_item_connection, db_get_user_website, db_change_website, db_add_item_mnl, db_get_item_link_new, \
     db_get_item_link, db_get_item_connection, db_add_item_connection, db_get_inn, db_get_users_connections, \
-    db_delete_connection
+    db_delete_connection, db_get_item
 
 main = Blueprint("main", __name__)
 
@@ -177,7 +177,40 @@ def competitor_monitoring():
 @main.route("/comparison")
 @login_required
 def comparison():
-    return "Comparison of the prices between you and your competitors"
+    """Compare prices of the user's items and his competitors(cr)"""
+    user_id = current_user.get_id()
+    user_inn = current_user.company_inn
+    all_crs = db_get_competitors(current_user.get_id())
+    crs = [cr for cr in all_crs if cr.competitor_inn != user_inn]
+    all_items = db_get_items(user_id)
+    own_items = list(filter(lambda x: inn_checker(x["competitor_inn"]) == user_inn, all_items))
+    all_linked_items = db_get_users_connections(user_id)
+
+    # get the info into the right structure {"item_link": {"comp_inn": "linked_item", ...}, ...}
+
+    items_info = dict()
+    for item in own_items:
+        item_url = item['link']
+        info = {"name": item['name'],
+                "url": item['link'],
+                "my_price": item['last_price'],
+                "max_price": 0,
+                "min_price": 0,
+                "avg_price": 0.0,
+                "cr_prices": dict()}
+        for linked_item in all_linked_items:
+            if linked_item.item_link == item_url:
+                cr_inn = int(db_get_inn(linked_item.connected_item_link))
+                cr_item = db_get_item(user_id=user_id, item_link=linked_item.connected_item_link)
+                info["cr_prices"][cr_inn] = cr_item
+        cr_prices = [item["last_price"] for item in info["cr_prices"].values()]
+        if cr_prices:
+            info["max_price"] = max(cr_prices)
+            print(info["max_price"])
+            info["min_price"] = min(cr_prices)
+            info["avg_price"] = sum(cr_prices) / len(cr_prices)
+        items_info[f"{item_url}"] = info
+    return render_template("comparison.html", items=own_items, items_info=items_info, competitors=crs)
 
 
 @main.route("/price-looker", methods=["GET", "POST"])

@@ -282,6 +282,30 @@ def db_get_items(user_id):
     return []
 
 
+def db_get_item(user_id, item_link):
+    item = UsersItems.query.filter_by(user_id=user_id, link=item_link).first()
+    item_refined = dict()
+    if not item:
+        return item_refined
+    item_records = db_get_item_records(item_link)
+    last_check = item_records[0]
+    if len(item_records) > 1:
+        prev_check = item_records[1]
+    else:
+        prev_check = last_check
+    item_refined["item_id"] = item.connection_id
+    item_refined["name"] = last_check.item_name
+    item_refined["competitor_inn"] = int(last_check.company_inn)
+    item_refined["competitor"] = Companies.query.filter_by(_inn=last_check.company_inn).first().organization
+    item_refined["last_price"] = last_check.price
+    item_refined["last_date"] = last_check.date
+    item_refined["price_change"] = last_check.price - prev_check.price
+    item_refined["prev_price"] = prev_check.price
+    item_refined["prev_date"] = prev_check.date
+    item_refined["link"] = item.link
+    return item_refined
+
+
 def db_get_item_records(link):
     item_records = ItemsRecords.query.filter_by(link=link).all()
     if item_records:
@@ -364,7 +388,8 @@ def db_get_users_connections(user_id):
 
 
 def db_add_item_connection(user_id, item_link, connected_item_link, comp_inn):
-    exists = ItemsConnections.query.filter_by(user_id=user_id, item_link=item_link, connected_item_link=connected_item_link).first()
+    exists = ItemsConnections.query.filter_by(user_id=user_id, item_link=item_link,
+                                              connected_item_link=connected_item_link).first()
     if exists:
         return False
     exists = db_get_item_connection(user_id=user_id, user_link=item_link, comp_inn=comp_inn)

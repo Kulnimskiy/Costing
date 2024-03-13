@@ -1,7 +1,61 @@
 {% extends "layout.html" %}
 
-{% block title %} Login {% endblock %}
+{% block title %} Comparison {% endblock %}
 
 {% block body %}
-    Compare
+<div class="container-md mt-4">
+    <div class="row mb-3">
+        <table class="table table-hover">
+            <thead>
+            <tr class="table-active">
+                <th scope="col">№</th>
+                <th scope="col">My Item</th>
+                <th scope="col">My Price</th>
+                <th scope="col">Min</th>
+                <th scope="col">Avg</th>
+                <th scope="col">Max</th>
+                {% if competitors %}
+                {% for competitor in competitors %}
+                <th scope="col">{{competitor.competitor_nickname}}</th>
+                {% endfor %}
+                {% endif %}
+                <th scope="col"></th>
+            </tr>
+            </thead>
+            <tbody>
+            {% if items %}
+            {% for item in items %}
+            {% set item_link = item["link"] %}
+            <tr>
+                <td>{{loop.index}}</td>
+                <td><a class="link" href="{{item_link}}" target="_blank">{{item["name"]}}</a></td>
+                <td>{{items_info[item_link]["my_price"]}}</td>
+                <td>{{items_info[item_link]["min_price"]}}</td>
+                <td>{{items_info[item_link]["avg_price"]}}</td>
+                <td>{{items_info[item_link]["max_price"]}}</td>
+                {% if competitors %}
+                {% set cr_prices = items_info[item_link]["cr_prices"] %}
+                {% for competitor in competitors %}
+                {% set comp_inn = competitor.competitor_inn %}
+
+                <td>
+                        <span>
+                            <input type="hidden" class="element_id"
+                                   value="{{item.item_id}}_{{competitor.competitor_inn}}"
+                                   id="{{item.item_id}}_{{competitor.competitor_inn}}">
+                            {% if cr_prices[comp_inn] %}
+                            <a class="link" href={{cr_prices[comp_inn]["link"]}} target="_blank">{{cr_prices[comp_inn]["last_price"]}}...</a>
+                            {% else %}
+                            <a class="link" href="" target="_blank">None</a>
+                            {% endif %}
+                        </span>
+                    {% endfor %}
+                    {% endif %}
+            </tr>
+            {% endfor %}
+            {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
 {% endblock %}
