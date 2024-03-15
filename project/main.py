@@ -268,6 +268,7 @@ def request_connection(com_inn):
         competitor = db_get_competitor(user_id=user_id, com_inn=com_inn)
     if db_update_con_status(user_id, com_inn):
         send_connect_request(current_user, competitor)
+        db_add_scraper(user_inn=current_user.company_inn, comp_inn=current_user.company_inn)
         if "profile" in request.referrer:
             return redirect(url_for("main.profile"))
         return redirect(url_for("main.competitor_monitoring"))

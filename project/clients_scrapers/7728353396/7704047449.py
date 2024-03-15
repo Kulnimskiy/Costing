@@ -9,7 +9,7 @@ from project.helpers import get_cls_from_module, operate, convert_to_rub, calcul
 
 class Kkdhdhkhhm:
     INN = 7704047449
-    BASE_URL = "https://stomatorg.ru/"
+    BASE_URL = "https://stomatorg.ru"
     SEARCH_URL = "https://api.searchbooster.net/api/9ec1c177-2047-4f1c-b1f9-14a4a7fa9c25/search?query={}&skip=0&limit=24&groupByCategories=%7B%22active%22%3Atrue%2C%22size%22%3A10%2C%22skip%22%3A0%7D&client=shop.stomatorg.ru"
 
     @staticmethod
