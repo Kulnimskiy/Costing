@@ -24,7 +24,8 @@
     </div>
     <div class="row">
         <div class="col">
-            <table class="table table-hover">
+            <input class="form-control w-25 mb-2" type="text" id="filterInput" onkeyup="filterFunction()" placeholder="Goods search..">
+            <table class="table table-hover" id="goodsTable">
                 <thead>
                 <tr class="table-active">
                     <th scope="col">#</th>
@@ -67,10 +68,8 @@
 <script>
     function changeColor() {
         let operations = document.getElementsByName("price_change")
-        console.log(operations)
         for (let operation of operations) {
             let operation_value = operation.innerText.toString().toLowerCase()
-            console.log(operation_value);
             if (operation_value.includes("-") ) {
                 operation.style.color = "#cd1e1e"
                 operation.style.fontWeight = "700"
@@ -83,14 +82,38 @@
     }
     function formatPrice() {
         let operations = document.getElementsByClassName("price")
-        console.log(operations)
         for (let operation of operations) {
-            let operation_value = operation.innerText.toString()
-            let [_, num, suffix] = operation_value.match(/^(.*?)((?:[,.]\d+)?|)$/);
-            operation.innerText = `${num.replace(/\B(?=(?:\d{3})*$)/g, ' ')}${suffix}`
+            let operation_value = operation.innerText.toString();
+            operation_value = operation_value.slice(0, -2);
+            if (!isNaN(operation_value)){
+                let [_, num, suffix] = operation_value.match(/^(.*?)((?:[,.]\d+)?|)$/);
+                operation.innerText = `${num.replace(/\B(?=(?:\d{3})*$)/g, ' ')}${suffix}`
+            }
         }
     }
     changeColor()
     formatPrice()
+    function filterFunction() {
+        // Объявить переменные
+        let input, filter, table, tr, td, i, txtValue;
+        input = document.getElementById("filterInput");
+        filter = input.value.toUpperCase();
+        table = document.getElementById("goodsTable");
+        tr = table.getElementsByTagName("tr");
+
+        // Перебирайте все строки таблицы и скрывайте тех, кто не соответствует поисковому запросу
+        // Поиск по столбцу с индексом ("td")[1]
+        for (i = 0; i < tr.length; i++) {
+            td = tr[i].getElementsByTagName("td")[1];
+            if (td) {
+                txtValue = td.textContent || td.innerText;
+                if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                    tr[i].style.display = "";
+                } else {
+                    tr[i].style.display = "none";
+                }
+            }
+        }
+    }
 </script>
 {% endblock %}

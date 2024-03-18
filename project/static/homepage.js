@@ -11,7 +11,7 @@ function changeWebsite() {
             let new_website = document.getElementById('new_website').value;
             console.log("new: " + new_website);
 
-             here u get the response from the server
+             // here u get the response from the server
 //             $.ajax({
 //                 url: $(this).attr('action'), // Здесь указываем URL-адрес серверного обработчика
 //                 type: "post",
