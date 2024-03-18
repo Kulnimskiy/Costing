@@ -11,22 +11,22 @@ function changeWebsite() {
             let new_website = document.getElementById('new_website').value;
             console.log("new: " + new_website);
 
-            // here u get the response from the server
-            // $.ajax({
-            //     url: $(this).attr('action'), // Здесь указываем URL-адрес серверного обработчика
-            //     type: "post",
-            //     data: new_website,
-            //     success: function (response) {
-            //         // Обработка успешной отправки данных
-            //         $("#peek_results").html(response)
-            //         console.log("there has been a responce");
-            //     },
-            //     error: function (error) {
-            //         // Обработка ошибок при отправке данных
-            //         $("#peek_results").html("There has been an error!")
-            //         console.error("Ошибка при отправке данных: ", error);
-            //     },
-            // });
+             here u get the response from the server
+//             $.ajax({
+//                 url: $(this).attr('action'), // Здесь указываем URL-адрес серверного обработчика
+//                 type: "post",
+//                 data: new_website,
+//                 success: function (response) {
+//                     // Обработка успешной отправки данных
+//                     $("#peek_results").html(response)
+//                     console.log("there has been a responce");
+//                 },
+//                 error: function (error) {
+//                     // Обработка ошибок при отправке данных
+//                     $("#peek_results").html("There has been an error!")
+//                     console.error("Ошибка при отправке данных: ", error);
+//                 },
+//             });
 
 
             website_div.innerHTML = old_html;

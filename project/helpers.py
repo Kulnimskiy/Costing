@@ -1,11 +1,18 @@
 import sys
+import time
 import decimal
 import inspect
 import requests
 import validators
 import importlib.util
 from datetime import datetime
+from selenium import webdriver
+from selenium.common import TimeoutException
+from selenium.webdriver.chrome.options import Options
 from email_validator import validate_email, EmailNotValidError
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 
 def email_checker(email):
@@ -173,6 +180,26 @@ def get_link(link):
         link = "https://" + link
         if validators.url(link):
             return link
+    return None
+
+
+def get_web(link, class_waiting_tag):
+    link = get_link(link)
+    if link:
+        try:
+            chrome_options = Options()
+            # chrome_options.add_argument("---headless")
+            timeout = 8
+            driver = webdriver.Chrome(options=chrome_options)
+            driver.get(link)
+            wait = WebDriverWait(driver, timeout).until(EC.presence_of_element_located((By.CLASS_NAME, class_waiting_tag)))
+            print("Page is ready!")
+            print("Loading took too much time!")
+            res = driver.page_source
+            driver.close()
+            return res
+        except TimeoutException:
+            print("Error getting a link")
     return None
 
 

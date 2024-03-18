@@ -126,6 +126,7 @@ def refresh_item_prices():
         for competitor in available_competitors:
             if competitor.competitor_website in item["link"]:
                 links.append((competitor.competitor_inn, item["link"]))
+    print(links)
     results = run_search_all_links(user_id, links)
     date = get_cur_date()
     for result in results:

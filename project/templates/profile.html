@@ -118,7 +118,7 @@
             {% set item_link = item["link"] %}
         <tr>
                 <td>{{loop.index}}</td>
-                <td><a class="link" href="{{item_link}}" target="_blank">{{item["name"]}}</a></td>
+                <td><a class="result" href="{{item_link}}" target="_blank">{{item["name"]}}</a></td>
                 {% if competitors %}
                     {% for competitor in competitors %}
                     {% set comp_inn = competitor.competitor_inn %}
@@ -126,15 +126,13 @@
                         <span>
                             <input type="hidden" class="element_id" value="{{item.item_id}}_{{competitor.competitor_inn}}" id="{{item.item_id}}_{{competitor.competitor_inn}}">
                             {% if info[item_link][comp_inn] %}
-                            <a class="link" href={{info[item_link][comp_inn]}} target="_blank">{{info[item_link][comp_inn][8:20]}}...</a>
+                            <a class="result" href={{info[item_link][comp_inn]}} target="_blank">{{info[item_link][comp_inn][8:20]}}...</a>
                             {% else %}
-                            <a class="link" href="" target="_blank">None</a>
+                            <a class="result" href="" target="_blank">...</a>
                             {% endif %}
-                            {% if website.status == "disconnected" %}
-                            <button type="button" name="interact_btn"><img class="button-pic item_link"
+                            <button type="button" name="interact_btn" class="item_link"><img class="button-pic"
                                                                          src="/static/images/black_pensil.png"
                                                                          alt="Change"/></button>
-                            {% endif %}
                         </span>
                     {% endfor %}
                 <td>

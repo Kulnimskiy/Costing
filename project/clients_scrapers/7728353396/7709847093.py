@@ -4,7 +4,7 @@ import sys
 import time
 import requests
 from bs4 import BeautifulSoup
-from project.helpers import get_cls_from_module, operate, convert_to_rub, calculate_relevance
+from project.helpers import get_cls_from_module, operate, convert_to_rub, calculate_relevance, get_web
 
 
 class Kkdmlhkdmg:
@@ -18,7 +18,10 @@ class Kkdmlhkdmg:
             req = await session.get(Kkdmlhkdmg.SEARCH_URL.format(item))
             res = await req.text()
             doc = BeautifulSoup(res, "html.parser")
-
+            check = operate(lambda: doc.find("div", class_="short-search").find_all("div", class_="item-mini"))
+            if not check:
+                res = get_web(Kkdmlhkdmg.SEARCH_URL.format(item), "short-search")
+                doc = BeautifulSoup(res, "html.parser")
             items_found_raw = doc.find("div", class_="short-search").find_all("div", class_="item-mini")
             items_lst = []
             for item in items_found_raw:
@@ -73,3 +76,19 @@ class Kkdmlhkdmg:
             price_int = None
         return price_int
 
+
+async def test_search(item):
+    async with aiohttp.ClientSession() as session:
+        result = await Kkdmlhkdmg.get_item_info(item, session)  # link[1] is the url of the item
+        return result
+
+
+def run_test(item):
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+    results = asyncio.run(test_search(
+        "https://www.stomart.ru/catalog/ustanovki_i_aksessuary/fedesa_astral_lux_stomatologicheskaya_ustanovka.html"))
+    print(results)
+
+
+if __name__ == '__main__':
+    run_test("стул")

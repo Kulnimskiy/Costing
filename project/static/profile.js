@@ -1,4 +1,7 @@
-document.getElementById("interact_btn").addEventListener("click", changeWebsite);
+change_available = document.getElementById("interact_btn");
+if (change_available) {
+    change_available.addEventListener("click", changeWebsite);
+}
 let link_buttons = document.getElementsByName("interact_btn")
 document.querySelectorAll('.item_link').forEach((el) => {
     el.addEventListener('click', changeConnection)
@@ -67,7 +70,7 @@ function changeConnection(e) {
                     // Обработка успешной отправки данных
                     link_span_el.innerHTML = link_span_html_old;
                     if (!response.toString().includes("http")) {
-                        link_span_el.querySelector("a").innerText = "None";
+                        link_span_el.querySelector("a").innerText = "Error";
                         link_span_el.querySelector("a").style.color = "red";
                         console.log(response);
                         console.log("Error! link is not valid or sth went wrong or u deleted it");

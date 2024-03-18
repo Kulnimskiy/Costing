@@ -246,6 +246,12 @@ def db_add_item_mnl(user_id, company_inn, item_name, price, link):
 
 
 def db_add_refreshed_item(item_name, company_inn, price, link, date):
+    item_records = db_get_item_records(link)
+    if item_records:
+        last_date = item_records[0].date
+        if date == last_date:
+            print(last_date, "already checked today")
+            return
     item = ItemsRecords(item_name=item_name,
                         company_inn=company_inn,
                         price=price,

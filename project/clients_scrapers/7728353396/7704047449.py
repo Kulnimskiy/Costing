@@ -53,3 +53,19 @@ class Kkdhdhkhhm:
             print(error, Kkdhdhkhhm.BASE_URL)
             return None
 
+
+async def test_search(item):
+    async with aiohttp.ClientSession() as session:
+        result = await Kkdhdhkhhm.get_item_info(item, session)  # link[1] is the url of the item
+        return result
+
+
+def run_test(item):
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+    results = asyncio.run(test_search(
+        "https://stomatorg.ru/product/tomograf_vatech_green_16_fov_16_x_9_118929/222670/"))
+    print(results)
+
+
+if __name__ == '__main__':
+    run_test("стул")

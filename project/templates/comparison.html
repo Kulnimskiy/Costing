@@ -5,6 +5,11 @@
 {% block body %}
 <div class="container-md mt-4">
     <div class="row mb-3">
+        <div class="refresh">
+            <form action="/company-goods/refresh_all">
+                <button type="submit" class="btn btn-success">Refresh now</button>
+            </form>
+        </div>
         <table class="table table-hover">
             <thead>
             <tr class="table-active">
@@ -28,11 +33,11 @@
             {% set item_link = item["link"] %}
             <tr>
                 <td>{{loop.index}}</td>
-                <td><a class="link" href="{{item_link}}" target="_blank">{{item["name"]}}</a></td>
-                <td>{{items_info[item_link]["my_price"]}}</td>
-                <td>{{items_info[item_link]["min_price"]}}</td>
-                <td>{{items_info[item_link]["avg_price"]}}</td>
-                <td>{{items_info[item_link]["max_price"]}}</td>
+                <td><a class="result" href="{{item_link}}" target="_blank">{{item["name"]}}</a></td>
+                <td class="my_price">{{items_info[item_link]["my_price"]}}</td>
+                <td class="min_price">{{items_info[item_link]["min_price"]}}</td>
+                <td class="avg_price">{{items_info[item_link]["avg_price"]}}</td>
+                <td class="max_price">{{items_info[item_link]["max_price"]}}</td>
                 {% if competitors %}
                 {% set cr_prices = items_info[item_link]["cr_prices"] %}
                 {% for competitor in competitors %}
@@ -44,9 +49,9 @@
                                    value="{{item.item_id}}_{{competitor.competitor_inn}}"
                                    id="{{item.item_id}}_{{competitor.competitor_inn}}">
                             {% if cr_prices[comp_inn] %}
-                            <a class="link" href={{cr_prices[comp_inn]["link"]}} target="_blank">{{cr_prices[comp_inn]["last_price"]}}...</a>
+                            <a class="result" href={{cr_prices[comp_inn]["link"]}} target="_blank">{{cr_prices[comp_inn]["last_price"]}}</a>
                             {% else %}
-                            <a class="link" href="" target="_blank">None</a>
+                            <a class="result" href="" target="_blank"></a>
                             {% endif %}
                         </span>
                     {% endfor %}
@@ -58,4 +63,5 @@
         </table>
     </div>
 </div>
+<script src="/static/compare.js" crossorigin="anonymous"></script>
 {% endblock %}

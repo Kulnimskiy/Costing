@@ -82,7 +82,6 @@ class Jmifddlkkg:
         except Exception as error:
             print(error, Jmifddlkkg.BASE_URL)
             return None
-            return None
 
 
 
