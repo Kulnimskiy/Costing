@@ -23,12 +23,12 @@ def create_scraper_file(user_inn: str, comp_inn: str):
         path = f""".\project\clients_scrapers\{user_inn}\{str(comp_inn)}.py"""
         with open(path, "a") as file:
             file.write(f"""import asyncio
+import logging
 import aiohttp
-import sys
-import time
-import requests
+from typing import Union
 from bs4 import BeautifulSoup
-from project.helpers import get_classes, operate, convert_to_rub, calculate_relevance
+from project.helpers import operate, convert_to_rub, get_web
+from project.credentials import TIMEOUT
 
 
 class {class_name}:

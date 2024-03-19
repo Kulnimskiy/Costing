@@ -1,10 +1,10 @@
 import asyncio
+import logging
 import aiohttp
-import sys
-import time
-import requests
+from typing import Union
 from bs4 import BeautifulSoup
-from project.helpers import get_cls_from_module, operate, convert_to_rub, calculate_relevance, get_web
+from project.helpers import operate, convert_to_rub, get_web
+from project.credentials import TIMEOUT
 
 
 class Kkdmlhkdmg:
@@ -13,55 +13,76 @@ class Kkdmlhkdmg:
     SEARCH_URL = "https://dentex.ru/search/?q={}&area=everywhere&s="
 
     @staticmethod
-    async def search_relevant_items(item: str, session: aiohttp.ClientSession):
+    async def search_relevant_items(item: str, session: aiohttp.ClientSession) -> Union[list, None]:
+        """Get a list of relevant items from the competitor's website"""
         try:
+            logging.warning(f"Sent to {Kkdmlhkdmg.BASE_URL}")
             req = await session.get(Kkdmlhkdmg.SEARCH_URL.format(item))
             res = await req.text()
             doc = BeautifulSoup(res, "html.parser")
-            check = operate(lambda: doc.find("div", class_="short-search").find_all("div", class_="item-mini"))
-            if not check:
-                res = get_web(Kkdmlhkdmg.SEARCH_URL.format(item), "short-search")
-                doc = BeautifulSoup(res, "html.parser")
-            items_found_raw = doc.find("div", class_="short-search").find_all("div", class_="item-mini")
-            items_lst = []
-            for item in items_found_raw:
-                name = operate(lambda: str(item.find("a", class_="cover-link")["title"]))
+            logging.warning(f"Got from {Kkdmlhkdmg.BASE_URL}")
 
-                # get the new price if there are 2 of them
+            # check if the page is loaded correctly. If not, try getting it through the browser
+            check = operate(lambda: doc.find("div", class_="short-search"))
+            if not check:
+                logging.warning(f"BROWSER IS WORKING IN {Kkdmlhkdmg.BASE_URL}")
+                res = get_web(Kkdmlhkdmg.SEARCH_URL.format(item), "short-search", TIMEOUT)
+                doc = BeautifulSoup(res, "html.parser")
+
+            items_found = doc.find("div", class_="short-search").find_all("div", class_="item-mini")
+            items_lst = []
+            for item in items_found:
+                # give it the path to the name
+                name = operate(lambda: str(item.find("a", class_="cover-link")["title"]))
+                if not name:
+                    logging.warning(f"There is no name. Item has been skipped")
+                    continue
+
+                # there often are old and new price. Get the new one
                 price = operate(lambda: str(item.find("div", class_="price").text))
-                price_int = Kkdmlhkdmg.price_format(price)
+
+                # change the type of the price to an int. None if there are no digits.
+                price = Kkdmlhkdmg.price_format(price)
+
+                # links are provided with no base url
                 link = operate(lambda: Kkdmlhkdmg.BASE_URL + str(item.find("a", class_="cover-link")["href"]))
-                items_lst.append({"name": name, "price": price_int, "url": link})
+                items_lst.append({"name": name, "price": price, "url": link})
             return items_lst
         except Exception as error:
-            print(error, Kkdmlhkdmg.BASE_URL)
+            logging.warning(f"ERROR: {error} IN: {Kkdmlhkdmg.BASE_URL}")
             return None
 
     @staticmethod
-    async def get_item_info(link: str, session):
+    async def get_item_info(link: str, session: aiohttp.ClientSession) -> Union[dict, None]:
+        """ Get the name, price and link of a competitor's product via the provided web page """
         if Kkdmlhkdmg.BASE_URL not in link:
-            print("Wrong link")
+            logging.warning(f"WRONG LINK PROVIDED FOR {Kkdmlhkdmg.BASE_URL}")
             return None
         try:
-            print("sent")
+            logging.warning(f"Sent to {Kkdmlhkdmg.BASE_URL}")
             req = await session.get(link)
             doc = await req.text()
-            print("got3")
+            logging.warning(f"Got from {Kkdmlhkdmg.BASE_URL}")
             doc = BeautifulSoup(doc, "html.parser")
+
+            # check if the page is loaded correctly. If not, try getting it through the browser
+            check = doc.find(class_="item-head")
+            if not check:
+                doc = get_web(link, "recover-password-cabinet-1c")
+                doc = BeautifulSoup(doc, "html.parser")
+
             page = doc.find(class_="item-head")
-            if not page:
-                return None
 
             name = operate(lambda: page.find("h1").get_text())
-            # when there is no such item
             if not name:
-                print("There is no items")
+                logging.warning(f"There is no items in {link}")
                 return None
+
             price = operate(lambda: page.find(class_="price").find(class_="currency").text)
-            price_int = Kkdmlhkdmg.price_format(price)
-            return {"name": name, "price": price_int, "url": link}
+            price = Kkdmlhkdmg.price_format(price)
+            return {"name": name, "price": price, "url": link}
         except Exception as error:
-            print(error, Kkdmlhkdmg.BASE_URL)
+            logging.warning(f"ERROR: {error} IN: {Kkdmlhkdmg.BASE_URL}")
             return None
 
     @staticmethod
@@ -79,14 +100,13 @@ class Kkdmlhkdmg:
 
 async def test_search(item):
     async with aiohttp.ClientSession() as session:
-        result = await Kkdmlhkdmg.get_item_info(item, session)  # link[1] is the url of the item
+        result = await Kkdmlhkdmg.search_relevant_items(item, session)  # link[1] is the url of the item
         return result
 
 
 def run_test(item):
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
-    results = asyncio.run(test_search(
-        "https://www.stomart.ru/catalog/ustanovki_i_aksessuary/fedesa_astral_lux_stomatologicheskaya_ustanovka.html"))
+    results = asyncio.run(test_search(item))
     print(results)
 
 

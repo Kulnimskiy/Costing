@@ -5,13 +5,14 @@ import inspect
 import requests
 import validators
 import importlib.util
+from bs4 import BeautifulSoup
 from datetime import datetime
+from email_validator import validate_email, EmailNotValidError
 from selenium import webdriver
+from selenium.webdriver.common.by import By
 from selenium.common import TimeoutException
 from selenium.webdriver.chrome.options import Options
-from email_validator import validate_email, EmailNotValidError
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 
@@ -148,8 +149,7 @@ def check_price(price: str):
         return None
 
 
-def format_search_all_result(item, result: dict, competitors, min_price=None, max_price=None,):
-
+def format_search_all_result(item, result: dict, competitors, min_price=None, max_price=None, ):
     for r in result:
         if r["price"] is None:
             r["price"] = 0
@@ -183,23 +183,33 @@ def get_link(link):
     return None
 
 
-def get_web(link, class_waiting_tag):
+def get_web(link, class_waiting_tag, timeout):
+    """Get the page using your browser if nothing else is working
+    timeout - the time for the program to try to find the target element
+    class_waiting_tag - target element to validate that the page has loaded correctly"""
     link = get_link(link)
     if link:
         try:
-            chrome_options = Options()
-            # chrome_options.add_argument("---headless")
             timeout = 8
+            chrome_options = Options()
+            chrome_options.add_argument("---headless")
             driver = webdriver.Chrome(options=chrome_options)
-            driver.get(link)
-            wait = WebDriverWait(driver, timeout).until(EC.presence_of_element_located((By.CLASS_NAME, class_waiting_tag)))
-            print("Page is ready!")
-            print("Loading took too much time!")
-            res = driver.page_source
-            driver.close()
-            return res
-        except TimeoutException:
-            print("Error getting a link")
+            driver.get(link)  # This is a dummy website URL
+            for i in range(timeout * 2):
+                res = driver.page_source
+                doc = BeautifulSoup(res, "html.parser")
+                if doc.find(class_=class_waiting_tag):
+                    print("The page is ready")
+                    driver.quit()
+                    return res
+                else:
+                    time.sleep(0.5)
+            else:
+                driver.quit()
+                print("Error getting a link")
+                print("Loading took too much time!")
+        finally:
+            print("Finally The page is ready")
     return None
 
 
