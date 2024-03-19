@@ -124,10 +124,10 @@ def db_update_con_status(user_id, com_inn, new_status="requested"):
 def db_delete_competitor(user_id, com_inn):
     company = db_get_competitor(user_id, com_inn)
     if company:
-        print(company)
         db.session.delete(company)
         db.session.commit()
-    return
+        return True
+    return False
 
 
 def get_all_competitors():
@@ -149,13 +149,15 @@ def db_add_scraper(user_inn, comp_inn: str):
     return False
 
 
-def db_get_scr_from_id(user_id, comp_inn=None):
+def db_get_scr_from_id(user_id, comp_inn=None, path=False):
     """ If competitor's inn is not provided, it returns a list of all the scrapers connected
     to the user by their id. Else it returns a scraper for a specific competitor"""
     if comp_inn:
         competitor = db_get_competitor(user_id, comp_inn)
         if competitor:
             scr_path = Scrapers.query.filter_by(company_inn=comp_inn).first().scraper_path
+            if path:
+                return scr_path
             if competitor.connection_status == "connected":
                 cls = get_cls_from_path(scr_path)[0]
                 return cls
@@ -167,6 +169,14 @@ def db_get_scr_from_id(user_id, comp_inn=None):
     scr_path = Scrapers.query.filter(Scrapers.company_inn.in_(inns_)).all()
     classes = [get_cls_from_path(scr.scraper_path)[0] for scr in scr_path]
     return classes
+
+
+def db_delete_scr_path(user_id, comp_inn):
+    competitor = db_get_competitor(user_id, comp_inn)
+    if competitor:
+        scr_path = Scrapers.query.filter_by(company_inn=comp_inn).first()
+        db.session.delete(scr_path)
+        db.session.commit()
 
 
 def db_add_item(user_id, company_inn, link):

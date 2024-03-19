@@ -95,3 +95,26 @@ function changeConnection(e) {
         }
     });
 }
+
+function filterFunction() {
+        // Объявить переменные
+        let input, filter, table, tr, td, i, txtValue;
+        input = document.getElementById("filterInput");
+        filter = input.value.toUpperCase();
+        table = document.getElementById("goodsTable");
+        tr = table.getElementsByTagName("tr");
+
+        // Перебирайте все строки таблицы и скрывайте тех, кто не соответствует поисковому запросу
+        // Поиск по столбцу с индексом ("td")[1]
+        for (i = 0; i < tr.length; i++) {
+            td = tr[i].getElementsByTagName("td")[1];
+            if (td) {
+                txtValue = td.textContent || td.innerText;
+                if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                    tr[i].style.display = "";
+                } else {
+                    tr[i].style.display = "none";
+                }
+            }
+        }
+    }

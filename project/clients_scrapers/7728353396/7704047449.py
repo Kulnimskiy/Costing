@@ -3,7 +3,7 @@ import logging
 import aiohttp
 from typing import Union
 from bs4 import BeautifulSoup
-from project.helpers import operate, convert_to_rub, get_web
+from project.helpers import operate, convert_to_rub, get_web, check_price
 from project.credentials import TIMEOUT
 
 
@@ -55,7 +55,7 @@ class Kkdhdhkhhm:
                 return None
 
             price = operate(lambda: doc.find(class_="element-stickyinfo-prices__curprice").get_text())
-            price = operate(lambda: int("".join([i for i in price if i.isdigit()])))
+            price = check_price(price)
             return {"name": name, "price": price, "url": link}
         except Exception as error:
             logging.warning(f"ERROR: {error} IN: {Kkdhdhkhhm.BASE_URL}")

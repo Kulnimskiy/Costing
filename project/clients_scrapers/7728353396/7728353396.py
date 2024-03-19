@@ -3,7 +3,7 @@ import logging
 import aiohttp
 from typing import Union
 from bs4 import BeautifulSoup
-from project.helpers import operate, convert_to_rub, get_web
+from project.helpers import operate, convert_to_rub, get_web, check_price, get_link
 from project.credentials import TIMEOUT
 
 
@@ -29,6 +29,10 @@ class Kkflgiggmj:
 
             # get the list of items from the page
             items_found = operate(lambda: doc.find_all(class_="productColText"))
+            if not items_found:
+                logging.warning(f"There are no items in {Kkflgiggmj.BASE_URL}")
+                return None
+
             items_lst = []
             for item in items_found:
                 # give it the path to the name
@@ -37,14 +41,17 @@ class Kkflgiggmj:
                     logging.warning(f"There is no name. Item has been skipped")
                     continue
 
+                link = get_link(operate(lambda: Kkflgiggmj.BASE_URL + str(item.find(class_="name")["href"])))
+                if not link:
+                    logging.warning(f"LINK FOR THE ITEM HASN'T BEEN FOUND. ITEM NAME: " + name)
+                    continue
+
                 # there often are old and new price. Get the new one
                 price = operate(lambda: item.find(class_="price").text)
 
                 # change the type of the price to an int. None if there are no digits.
-                price = operate(lambda: int("".join([i for i in price if i.isdigit()])))
+                price = check_price(price)
 
-                # links are provided with no base url
-                link = operate(lambda: Kkflgiggmj.BASE_URL + str(item.find(class_="name")["href"]))
                 items_lst.append({"name": name, "price": price, "url": link})
             return items_lst
         except Exception as error:
@@ -75,7 +82,7 @@ class Kkflgiggmj:
                 return None
 
             price = operate(lambda: doc.find(class_="priceVal").text)
-            price = operate(lambda: int("".join([i for i in price if i.isdigit()])))
+            price = check_price(price)
             return {"name": name, "price": price, "url": link}
         except Exception as error:
             logging.warning(f"ERROR: {error} IN: {Kkflgiggmj.BASE_URL}")

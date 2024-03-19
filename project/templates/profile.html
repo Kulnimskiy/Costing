@@ -64,6 +64,7 @@
     </div>
     <div class="row">
         <div class="col col-5">
+            {% if user_con and user_con.connection_status == "connected" %}
             <form class="mb-1" action="/profile" method="post">
                 <div>
                     <button class="btn btn-success w-100" type="submit" name="autoload" disabled>Autoload Associations
@@ -75,15 +76,37 @@
                     <button class="btn btn-success w-100" type="submit" name="load_link" disabled>Load Items</button>
                 </div>
             </form>
-            <form class="mb-1" action="/profile" method="post">
+            <form class="mb-1" action="/profile/load_item" method="post">
                 <div>
                     <div>
                         <input type="text" class="form-control" name="item_link" placeholder="Item link from your web"
                                required>
-                        <button class="btn btn-success" type="submit" id="" disabled>Load Item</button>
+                        <button class="btn btn-success" type="submit">Load Item</button>
                     </div>
                 </div>
             </form>
+            {% else %}
+            <form class="mb-1" action="/profile" method="post">
+                <div>
+                    <button class="btn btn-success w-100" type="submit" name="autoload" disabled>Autoload Associations
+                    </button>
+                </div>
+            </form>
+            <form class="mb-1" action="/profile" method="post">
+                <div>
+                    <button class="btn btn-success w-100" type="submit" name="load_link" disabled>Load Items</button>
+                </div>
+            </form>
+            <form class="mb-1" action="/profile/load_item" method="post">
+                <div>
+                    <div>
+                        <input type="text" class="form-control" name="item_link" placeholder="Item link from your web"
+                               required>
+                        <button class="btn btn-success" type="submit" disabled>Load Item</button>
+                    </div>
+                </div>
+            </form>
+            {% endif %}
             <br>
         </div>
         <div class="col col-7">
@@ -99,7 +122,8 @@
             </form>
         </div>
     </div>
-    <table class="table table-hover">
+    <input class="form-control w-25 mb-2" type="text" id="filterInput" onkeyup="filterFunction()" placeholder="Goods search..">
+    <table class="table table-hover" id="goodsTable">
         <thead>
         <tr class="table-active">
             <th scope="col">№</th>

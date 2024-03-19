@@ -1,15 +1,12 @@
 import logging
 import decimal
+from project.file_manager import delete_empty_scraper
 from flask import Blueprint, render_template, redirect, request, url_for
 from flask_login import login_required, current_user
 from project.helpers import inn_checker, format_search_all_result, check_price, unhash_inn, get_link, get_cur_date
 from project.request_connection import send_connect_request
 from project.async_search import run_search_link, run_search_all_items, run_search_all_links
-from project.db_manager import load_company_data, db_add_competitor, db_get_competitors, db_delete_competitor, \
-    db_get_competitor, db_update_con_status, db_add_scraper, db_add_item, db_get_items, db_add_refreshed_item, \
-    db_delete_item_connection, db_get_user_website, db_change_website, db_add_item_mnl, db_get_item_link_new, \
-    db_get_item_link, db_get_item_connection, db_add_item_connection, db_get_inn, db_get_users_connections, \
-    db_delete_connection, db_get_item
+from project.db_manager import *
 
 main = Blueprint("main", __name__)
 
@@ -39,6 +36,7 @@ def index():
 def profile():
     _inn = current_user.company_inn
     user_id = current_user.get_id()
+    user_con = db_get_competitor(user_id, _inn)
     if request.method == "POST":
         # here u don't have to check if the user's web is connected
         item_name = request.form.get("item_name")
@@ -83,11 +81,30 @@ def profile():
                        "status": requested_connection.connection_status}
             return render_template("profile.html", user=current_user, company_info=company_info, website=website,
                                    competitor=requested_connection, competitors=competitors, items=own_items,
-                                   info=items_info)
+                                   info=items_info, user_con=user_con)
         website = {"link": get_link(company_info.website), "status": "disconnected"}
         return render_template("profile.html", user=current_user, company_info=company_info, website=website,
-                               competitor=None, competitors=competitors, items=own_items, info=items_info)
-    return render_template("profile.html", competitors=competitors, items=own_items, info=items_info)
+                               competitor=None, competitors=competitors, items=own_items, info=items_info, user_con=user_con)
+    return render_template("profile.html", competitors=competitors, items=own_items, info=items_info, user_con=user_con)
+
+
+@main.route("/profile/load_item", methods=["POST"])
+@login_required
+def load_user_item():
+    user_id = current_user.get_id()
+    user_inn = current_user.company_inn
+    user_con = db_get_competitor(user_id, user_inn)
+    if not user_con or user_con.connection_status != "connected":
+        return redirect(url_for("main.profile"))
+    item_link = get_link(request.form.get("item_link"))
+    if not item_link:
+        print("No link")
+        return redirect(url_for("main.profile"))
+    if user_con.competitor_website not in item_link:
+        print("wrong link")
+        return redirect(url_for("main.profile"))
+    item = db_add_item(user_id, user_inn, item_link)
+    return redirect(url_for("main.profile"))
 
 
 @main.route("/company-goods", methods=["POST", "GET"])
@@ -106,6 +123,7 @@ def company_goods():
                 competitor_inn = competitor.competitor_inn
         if not competitor_inn or competitor_inn not in [competitor.competitor_inn for competitor in
                                                         available_competitors]:
+            print(competitor_inn)
             return render_template("company-goods.html", competitors=available_competitors, items=items)
         item = db_add_item(user_id, competitor_inn, item_link)
         if not item:
@@ -244,14 +262,19 @@ def price_looker():
             result = format_search_all_result(item_search_field, result, available_competitors)
             return render_template("price-looker_layout.html", competitors=available_competitors,
                                    items=result)
-    return render_template("price-looker.html", competitors=available_competitors)
+    return render_template("price-looker.html", competitors=available_competitors, user_inn=current_user.company_inn)
 
 
 @main.route("/profile/delete_competitor/<com_inn>", methods=["POST"])
 @login_required
 def delete_competitor(com_inn):
+    user_id = current_user.get_id()
     com_inn = inn_checker(com_inn)
-    db_delete_competitor(user_id=current_user.get_id(), com_inn=com_inn)
+    scraper_path = db_get_scr_from_id(user_id=user_id, comp_inn=com_inn, path=True)
+    if db_delete_competitor(user_id=user_id, com_inn=com_inn):
+        if delete_empty_scraper(scraper_path, com_inn):
+            print("innnnnnnnnnn")
+            db_delete_scr_path(user_id, com_inn)
     if "profile" in request.referrer:
         return redirect(url_for("main.profile"))
     return redirect(url_for("main.competitor_monitoring"))
@@ -270,6 +293,7 @@ def request_connection(com_inn):
     if db_update_con_status(user_id, com_inn):
         send_connect_request(current_user, competitor)
         db_add_scraper(user_inn=current_user.company_inn, comp_inn=current_user.company_inn)
+        print("scr made")
         if "profile" in request.referrer:
             return redirect(url_for("main.profile"))
         return redirect(url_for("main.competitor_monitoring"))

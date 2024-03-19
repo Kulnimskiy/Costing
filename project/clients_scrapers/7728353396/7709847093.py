@@ -3,7 +3,7 @@ import logging
 import aiohttp
 from typing import Union
 from bs4 import BeautifulSoup
-from project.helpers import operate, convert_to_rub, get_web
+from project.helpers import operate, convert_to_rub, get_web, check_price, get_link
 from project.credentials import TIMEOUT
 
 
@@ -29,7 +29,11 @@ class Kkdmlhkdmg:
                 res = get_web(Kkdmlhkdmg.SEARCH_URL.format(item), "short-search", TIMEOUT)
                 doc = BeautifulSoup(res, "html.parser")
 
-            items_found = doc.find("div", class_="short-search").find_all("div", class_="item-mini")
+            items_found = operate(lambda: doc.find("div", class_="short-search").find_all("div", class_="item-mini"))
+            if not items_found:
+                logging.warning(f"There are no items in {Kkdmlhkdmg.BASE_URL}")
+                return None
+
             items_lst = []
             for item in items_found:
                 # give it the path to the name
@@ -38,14 +42,18 @@ class Kkdmlhkdmg:
                     logging.warning(f"There is no name. Item has been skipped")
                     continue
 
+                # links are provided with no base url
+                link = get_link(operate(lambda: Kkdmlhkdmg.BASE_URL + str(item.find("a", class_="cover-link")["href"])))
+                if not link:
+                    logging.warning(f"LINK FOR THE ITEM HASN'T BEEN FOUND. ITEM NAME: " + name)
+                    continue
+
                 # there often are old and new price. Get the new one
                 price = operate(lambda: str(item.find("div", class_="price").text))
 
                 # change the type of the price to an int. None if there are no digits.
                 price = Kkdmlhkdmg.price_format(price)
 
-                # links are provided with no base url
-                link = operate(lambda: Kkdmlhkdmg.BASE_URL + str(item.find("a", class_="cover-link")["href"]))
                 items_lst.append({"name": name, "price": price, "url": link})
             return items_lst
         except Exception as error:
@@ -88,7 +96,7 @@ class Kkdmlhkdmg:
     @staticmethod
     def price_format(price):
         """converts the price into the right currency and turnes it into an int"""
-        price_int = operate(lambda: int("".join([i for i in price if i.isdigit()])))
+        price_int = check_price(price)
         if "€" in price.lower():
             price_int = convert_to_rub(price_int, "EUR")
         elif "$" in price.lower():

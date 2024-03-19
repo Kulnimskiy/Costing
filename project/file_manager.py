@@ -1,5 +1,18 @@
 import os
-from .helpers import hash_inn, unhash_inn, get_cls_from_module
+import logging
+from project.helpers import hash_inn, unhash_inn
+
+
+def read_file(path):
+    try:
+        text = ""
+        with open(path, "r", encoding="UTF-8") as file:
+            for line in file.readlines():
+                text = text + line
+        return text
+    except FileNotFoundError:
+        logging.warning(f"ERROR: FILE {path} NOT FOUND")
+        return None
 
 
 def create_client_folder(user_inn: str):
@@ -13,59 +26,49 @@ def create_client_folder(user_inn: str):
         print(error)
 
 
+def get_cls_template(new_cls_name, comp_inn):
+    template = read_file(".\project\class_template.txt")
+    if template:
+        new_cls = template.replace("CLASS_NAME", new_cls_name)
+        new_cls = new_cls.replace("COMPANY_INN", str(comp_inn))
+        return new_cls
+    return None
+
+
 def create_scraper_file(user_inn: str, comp_inn: str):
     """returns the path where the scraper has been created"""
     try:
-        # user_inn = hash_inn(user_inn)W
-        # class_name = hash_inn(comp_inn)
         class_name = hash_inn(comp_inn)
         user_inn = str(user_inn)
         path = f""".\project\clients_scrapers\{user_inn}\{str(comp_inn)}.py"""
-        with open(path, "a") as file:
-            file.write(f"""import asyncio
-import logging
-import aiohttp
-from typing import Union
-from bs4 import BeautifulSoup
-from project.helpers import operate, convert_to_rub, get_web
-from project.credentials import TIMEOUT
-
-
-class {class_name}:
-    INN = {comp_inn}
-    BASE_URL = ""
-    SEARCH_URL = ""
-
-    @staticmethod
-    async def search_relevant_items(item: str, session: aiohttp.ClientSession):
-        try:
-            print(f"hello {comp_inn}")
-        except Exception as error:
-            print(error, {class_name}.BASE_URL)
-            return None
-
-    @staticmethod
-    def get_item_info(link: str):
-        try:
-            print("hello item")
-        except Exception as e:
-            print(e, {class_name}.BASE_URL)
-            return None
-
-""")
-        return path.replace("\project", "")
+        new_cls = get_cls_template(class_name, comp_inn=comp_inn)
+        if new_cls:
+            with open(path, "a") as file:
+                file.write(new_cls)
+            return path
     except FileNotFoundError as error:
-        print(error)
+        logging.warning(f"SCRAPER WASN'T CREATED FOR {user_inn} AS {error}")
         return None
 
 
-def delete_empty_scraper():
-    pass
-
+def delete_empty_scraper(path, comp_inn):
+    """Deletes a scraper only if it's never been changed"""
+    class_name = hash_inn(comp_inn)
+    template = get_cls_template(class_name, comp_inn)
+    scraper = read_file(path)
+    if template == scraper:
+        print("in 2")
+        try:
+            os.remove(path)
+            return True
+        except Exception as error:
+            logging.warning(f"ERROR: FILE {path} WASN'T DELETED: {error}")
+            return False
+    logging.warning(f"ERROR: FILE {path} WASN'T DELETED")
 
 
 if __name__ == "__main__":
-    create_client_folder("test")
-    create_scraper_file("test", "123456789101")
+    # create_client_folder("test")
+    create_scraper_file("test", "123456789101", "123456789")
     print(hash_inn("2345"))
     print(unhash_inn(hash_inn("2345")))
