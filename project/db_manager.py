@@ -172,10 +172,9 @@ def db_get_scr_from_id(user_id, comp_inn=None, path=False):
 
 
 def db_delete_scr_path(user_id, comp_inn):
-    competitor = db_get_competitor(user_id, comp_inn)
-    if competitor:
-        scr_path = Scrapers.query.filter_by(company_inn=comp_inn).first()
-        db.session.delete(scr_path)
+    scraper = Scrapers.query.filter_by(company_inn=comp_inn).first()
+    if scraper:
+        db.session.delete(scraper)
         db.session.commit()
 
 
