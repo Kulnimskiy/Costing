@@ -1,25 +1,37 @@
+
+Last possible features:
+Necessary 
+- make it so that on the profile there was the correct number of goods, competitors 
+- add connection though the price looker
+- add item through the price looker
+- show names of the items in the profile, Not links
+- autoload associations (takes every user's item and looks for it on every competitor's site getting  items with a
+set similarity wiggle room) Need to get the needed similarity from the Competitors and items file
+- add connection to existing items using a dropdown or input autocomplete field in tracked goods
+- filters by the color of the price on the comparison page
+- refine the code
+- refine the view of the pages
+- clear the db and test
+
+Preferred
+- filters by competitor
+- load items (using an Excel spreadsheet with 3 columns (name, price, link)) and add a button to get a template excel
+
+
+
+
+
+
 Make profile and web links vital to work with
 
 
-Profile
+Profile (DONE)
  - html for request to connect your site to return
    - displays: input link to request connection to the clients website
    - displays: request connection button
    - or add items manually
    - 
  - 
-
-Your goods
-
-
-Competitors
-
-
-
-Search
-
-
-
 
 
 

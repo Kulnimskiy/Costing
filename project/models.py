@@ -29,28 +29,36 @@ class Companies(db.Model):
 
 
 class Competitors(db.Model):
+    """ Stores the info about users' competitors and their connection statuses.
+    The required connection statuses are disconnected, connected, requested """
     connection_id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, nullable=False)
     competitor_inn = db.Column(db.Integer, nullable=False)
     competitor_nickname = db.Column(db.String(100))
     competitor_website = db.Column(db.String(200))
-    # connection statuses are disconnected, connected, requested
     connection_status = db.Column(db.String(200), default="disconnected", nullable=False)
 
 
 class Scrapers(db.Model):
+    """ Stores paths to the companies websites scrapers.
+    For each company there can be only 1 scraper file to save storage space and not
+    write the same web scraper twice"""
     scraper_id = db.Column(db.Integer, primary_key=True)
     company_inn = db.Column(db.Integer, nullable=False)
     scraper_path = db.Column(db.String(200), nullable=False)
 
 
 class UsersItems(db.Model):
+    """ Stores all the  unique connections between users and theis items.
+    When an item gets deleted, it gets deleted only here """
     connection_id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, nullable=False)
     link = db.Column(db.String(200), nullable=False, unique=True)
 
 
 class ItemsRecords(db.Model):
+    """ Stores all the records of items' prices.
+    Nothing ever gets deleted from this table."""
     item_id = db.Column(db.Integer, primary_key=True)
     item_name = db.Column(db.String(300), nullable=False)
     company_inn = db.Column(db.String(200), nullable=False)
@@ -60,6 +68,9 @@ class ItemsRecords(db.Model):
 
 
 class ItemsConnections(db.Model):
+    """ Stores connections between items.
+    Records keep existing even when the item is deleted in case the user
+    restores it or for other future features"""
     connection_id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, nullable=False)
     item_link = db.Column(db.String(200), nullable=False)
