@@ -5,7 +5,7 @@ from datetime import datetime
 from project import db
 from project.models import Companies, Competitors, Scrapers, ItemsRecords, UsersItems, ItemsConnections
 from project.corpotate_scrapers.company_info_search import Company
-from project.file_manager import create_scraper_file
+from project.file_manager import create_scraper_file, delete_empty_scraper
 from project.helpers import get_cls_from_path, get_cur_date, get_link
 from project import async_search
 
@@ -123,9 +123,14 @@ def db_update_con_status(user_id, com_inn, new_status="requested"):
 
 def db_delete_competitor(user_id, com_inn):
     company = db_get_competitor(user_id, com_inn)
+    scraper_path = db_get_scr_from_id(user_id=user_id, comp_inn=com_inn, path=True)
     if company:
         db.session.delete(company)
         db.session.commit()
+        scraper_used = Competitors.query.filter_by(competitor_inn=com_inn).all()
+        if len(scraper_used) == 0:
+            if delete_empty_scraper(scraper_path, com_inn):
+                db_delete_scr_path(user_id, com_inn)
         return True
     return False
 

@@ -270,11 +270,7 @@ def price_looker():
 def delete_competitor(com_inn):
     user_id = current_user.get_id()
     com_inn = inn_checker(com_inn)
-    scraper_path = db_get_scr_from_id(user_id=user_id, comp_inn=com_inn, path=True)
-    if db_delete_competitor(user_id=user_id, com_inn=com_inn):
-        if delete_empty_scraper(scraper_path, com_inn):
-            print("innnnnnnnnnn")
-            db_delete_scr_path(user_id, com_inn)
+    db_delete_competitor(user_id=user_id, com_inn=com_inn)
     if "profile" in request.referrer:
         return redirect(url_for("main.profile"))
     return redirect(url_for("main.competitor_monitoring"))

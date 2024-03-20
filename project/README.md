@@ -1,7 +1,7 @@
 
 Last possible features:
 Necessary 
-- make it so that on the profile there was the correct number of goods, competitors 
+- make it so that on the profile there was the correct number of goods, competitors (DONE)
 - add connection though the price looker
 - add item through the price looker
 - show names of the items in the profile, Not links
