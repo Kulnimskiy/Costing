@@ -1,3 +1,4 @@
+import json
 import logging
 import decimal
 from project.file_manager import delete_empty_scraper
@@ -144,7 +145,6 @@ def refresh_item_prices():
         for competitor in available_competitors:
             if competitor.competitor_website in item["link"]:
                 links.append((competitor.competitor_inn, item["link"]))
-    print(links)
     results = run_search_all_links(user_id, links)
     date = get_cur_date()
     for result in results:
@@ -166,7 +166,6 @@ def refresh_item_prices():
 def delete_item():
     item_id = request.form.get("item_id")
     user_id = current_user.get_id()
-    print(item_id)
     if db_delete_item_connection(user_id, item_id):
         if "profile" in request.referrer:
             return redirect(url_for("main.profile"))
@@ -360,3 +359,14 @@ def link_items():
     if db_add_item_connection(user_id=user_id, item_link=item_link, connected_item_link=new_link, comp_inn=comp_inn):
         return new_link
     return old_link.connected_item_link if old_link else "Wrong inn or same link"
+
+
+@main.route("/items_owned")
+def items_owned():
+    """ Returns a list of items owned by user"""
+    user_id = current_user.get_id()
+    user_inn = current_user.company_inn
+    all_items = db_get_items(user_id)
+    own_items = list(filter(lambda x: inn_checker(x["competitor_inn"]) == user_inn, all_items))
+    json_items = json.dumps(own_items)
+    return json_items

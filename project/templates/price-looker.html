@@ -10,6 +10,31 @@
                 <div class="card">
                     <article class="card-group-item">
                         <header class="card-header  text-white bg-secondary">
+                            <h6 class="title">Add connection</h6>
+                        </header>
+                        <div class="filter-content">
+                            <div class="card-body">
+                                <div class="form-row">
+                                    <div class="form-group col-md-10">
+                                        <label>Choose your item</label>
+                                        <div class="input-group">
+                                            <div class="col-md-8">
+                                                <input class="prompt" type="text" placeholder="1 countries...">
+                                            </div>
+                                            <button name="interact_btn" type="button"><img class="button-pic"
+                                                                                           src="/static/images/magnifying_glass.png"
+                                                                                           alt=""
+                                                                                           title="Look for this particular item on your competitors websites">
+                                            </button>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div> <!-- card-body.// -->
+                        </div>
+                    </article> <!-- card-group-item.// -->
+                    <article class="card-group-item">
+                        <header class="card-header  text-white bg-secondary">
                             <h6 class="title">Prices range</h6>
                         </header>
                         <div class="filter-content">
@@ -64,8 +89,6 @@
             </div>
         </div>
     </div>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script src="/static/price_looker.js" crossorigin="anonymous"></script>
 </form>
-
+<script src="/static/price_looker.js" crossorigin="anonymous"></script>
 {% endblock %}

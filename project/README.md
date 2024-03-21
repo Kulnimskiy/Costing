@@ -1,8 +1,13 @@
+source to get the select with filter https://www.youtube.com/watch?v=qNO37iMzmFY
+
 
 Last possible features:
 Necessary 
 - make it so that on the profile there was the correct number of goods, competitors (DONE)
-- add connection though the price looker
+- add connection though the price looker 
+- - chosen user's item input field 
+- - if the item is chosen, add an item and add connection to the item
+- - if the item is empty, the item just gets added to the tracked item's list
 - add item through the price looker
 - show names of the items in the profile, Not links
 - autoload associations (takes every user's item and looks for it on every competitor's site getting  items with a

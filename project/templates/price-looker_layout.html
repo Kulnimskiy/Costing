@@ -62,32 +62,30 @@
                 </div>
                 <div id="peek_results">
                     <div>
-    <table class="table mx-auto">
-        <thead>
-        <tr class="table-secondary">
-            <th>Name</th>
-            <th>Price</th>
-            <th>Link</th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for item in items %}
-        <tr>
-            <td>{{item.name}}</td>
-            <td>{{item.price}}</td>
-            <td style="max-width: 100%"><a href={{item.url}} target="_blank">{{item.url[8:25]}}...</a></td>
-        </tr>
-        {% endfor %}
-        </tbody>
-    </table>
-</div>
+                        <table class="table mx-auto">
+                            <thead>
+                            <tr class="table-secondary">
+                                <th>Name</th>
+                                <th>Price</th>
+                                <th>Link</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for item in items %}
+                            <tr>
+                                <td>{{item.name}}</td>
+                                <td>{{item.price}}</td>
+                                <td style="max-width: 100%"><a href={{item.url}}
+                                                               target="_blank">{{item.url[8:25]}}...</a></td>
+                            </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-
             </div>
         </div>
     </div>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script src="/static/price_looker.js" crossorigin="anonymous"></script>
 </form>
 
 {% endblock %}
