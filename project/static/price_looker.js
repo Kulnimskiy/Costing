@@ -4,7 +4,8 @@ $(document).ready(function () {
 
     // Получаем данные из полей формы
     var formData = $(this).serialize();
-
+    console.log("in");
+    $("#peek_results").html("<img class='text-center' style='width: 80px; display: block; margin-left: auto; margin-right: auto;' src='/static/images/loading.gif'>");
     // Отправляем данные на сервер с помощью AJAX
     $.ajax({
       url: $(this).attr('action'), // Здесь указываем URL-адрес серверного обработчика
