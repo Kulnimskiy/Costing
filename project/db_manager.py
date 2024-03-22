@@ -197,6 +197,8 @@ def db_add_item(user_id, company_inn, link):
             if not item:
                 print("there is no such item")
                 return False
+            if not item["price"]:
+                item["price"] = 0
             print("Not checked today. Last time is", last_date)
             item = ItemsRecords(item_name=item["name"],
                                 company_inn=company_inn,
@@ -209,6 +211,8 @@ def db_add_item(user_id, company_inn, link):
         if not item:
             print("there is no such item")
             return False
+        if not item["price"]:
+            item["price"] = 0
         print("Has never been added. Adding...")
         item = ItemsRecords(item_name=item["name"],
                             company_inn=company_inn,

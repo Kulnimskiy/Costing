@@ -156,6 +156,7 @@ def format_search_all_result(item, result: dict, competitors, min_price=None, ma
         for competitor in competitors:
             if competitor.competitor_website in r["url"]:
                 r["competitor"] = competitor.competitor_nickname
+                r["competitor_inn"] = competitor.competitor_inn
     if min_price:
         result = filter(lambda x: x["price"] >= min_price, result)
     if max_price:

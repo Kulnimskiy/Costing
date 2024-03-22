@@ -124,13 +124,13 @@ def company_goods():
                 competitor_inn = competitor.competitor_inn
         if not competitor_inn or competitor_inn not in [competitor.competitor_inn for competitor in
                                                         available_competitors]:
-            print(competitor_inn)
             return render_template("company-goods.html", competitors=available_competitors, items=items)
         item = db_add_item(user_id, competitor_inn, item_link)
         if not item:
             print("there is no such item")
             return render_template("company-goods.html", competitors=available_competitors, items=items)
         items = db_get_items(user_id)
+
     return render_template("company-goods.html", competitors=available_competitors, items=items)
 
 
@@ -221,12 +221,12 @@ def comparison():
                 cr_inn = int(db_get_inn(linked_item.connected_item_link))
                 cr_item = db_get_item(user_id=user_id, item_link=linked_item.connected_item_link)
                 info["cr_prices"][cr_inn] = cr_item
-        cr_prices = [item["last_price"] for item in info["cr_prices"].values()]
+        cr_prices = [item["last_price"] for item in info["cr_prices"].values() if item["last_price"] > 0]
         if cr_prices:
             info["max_price"] = max(cr_prices)
-            print(info["max_price"])
             info["min_price"] = min(cr_prices)
-            info["avg_price"] = sum(cr_prices) / len(cr_prices)
+            print("sum", sum(cr_prices), "len ", len(cr_prices))
+            info["avg_price"] = round(sum(cr_prices) / len(cr_prices),4)
         items_info[f"{item_url}"] = info
     return render_template("comparison.html", items=own_items, items_info=items_info, competitors=crs)
 
@@ -339,7 +339,6 @@ def link_items():
     item_link = db_get_item_link(user_id=user_id, item_id=item_id)
     if not item_link:
         return "You don't have this item"
-
     comp_inn = inn_checker(request.form.get("comp_inn"))
     if not comp_inn:
         return "This comp isn't added"
@@ -355,8 +354,8 @@ def link_items():
         return "deleted"
     if not db_add_item(user_id=user_id, company_inn=comp_inn, link=new_link):
         return "Cannot get item info!"
-    print(comp_inn)
     if db_add_item_connection(user_id=user_id, item_link=item_link, connected_item_link=new_link, comp_inn=comp_inn):
+        print(item_link, "connected to ", new_link)
         return new_link
     return old_link.connected_item_link if old_link else "Wrong inn or same link"
 
@@ -368,5 +367,9 @@ def items_owned():
     user_inn = current_user.company_inn
     all_items = db_get_items(user_id)
     own_items = list(filter(lambda x: inn_checker(x["competitor_inn"]) == user_inn, all_items))
-    json_items = json.dumps(own_items)
-    return json_items
+    # json_items = json.dumps(own_items)
+    search = request.args.get('term')
+    if not search:
+        return {"0": "Nothing will connect"}
+    resp = list(filter(lambda x: search.lower() in x["name"].lower(), own_items))
+    return resp

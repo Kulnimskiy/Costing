@@ -6,6 +6,7 @@
             <th>Name</th>
             <th class="price">Price</th>
             <th class="competitor">Competitor</th>
+            <th class="mx-auto"></th>
         </tr>
         </thead>
         <tbody>
@@ -14,6 +15,9 @@
             <td><a class="result" href={{item.url}} target="_blank">{{item.name}}</a></td>
             <td>{{item.price}}</td>
             <td>{{item.competitor[0:15]}}</td>
+            <td><button type="button" class="btn_link_items">+</button>
+            <input name="competitor_inn" value="{{item.competitor_inn}}" type="hidden">
+            <input name="item_link" value="{{item.url}}" type="hidden"></td>
         </tr>
         {% endfor %}
         </tbody>
