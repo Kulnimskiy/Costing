@@ -133,3 +133,16 @@ th.price {
 th.competitor {
     min-width: 180px;
 }
+
+.btn_link_items {
+    border: 2px black;
+    border-radius: 5px;
+}
+
+.btn_link_items:hover {
+    background: #e5e5e5;
+}
+
+.btn-btn_link_items:focus {
+    background: "grey";
+}

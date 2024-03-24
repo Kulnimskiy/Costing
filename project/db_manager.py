@@ -270,6 +270,8 @@ def db_add_refreshed_item(item_name, company_inn, price, link, date):
         if date == last_date:
             print(last_date, "already checked today")
             return
+    if not price:
+        price = 0
     item = ItemsRecords(item_name=item_name,
                         company_inn=company_inn,
                         price=price,
