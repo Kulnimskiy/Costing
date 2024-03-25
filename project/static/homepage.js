@@ -1,4 +1,8 @@
-document.getElementById("interact_btn").addEventListener("click", changeWebsite);
+let website_btn = document.getElementById("interact_btn")
+if (website_btn) {
+    document.getElementById("interact_btn").addEventListener("click", changeWebsite);
+}
+
 
 function changeWebsite() {
     let website_div = document.getElementById("website")

@@ -13,7 +13,10 @@ $(document).ready(function () {
             success: function (response) {
                 // Обработка успешной отправки данных
                 $("#peek_results").html(response)
+                document.querySelectorAll('.btn_link_items').forEach((el) => {
+                    el.addEventListener('click', AddConnectionTo)
                 console.log("there has been a responce");
+                })
             },
             error: function (error) {
                 // Обработка ошибок при отправке данных
@@ -71,8 +74,10 @@ function SearchUserItem(){
 }
 
 function AddConnectionTo() {
-        let item_id_el = $("#add_connection_item").children()[1];
-        if (item_id_el.value) {
+        let btn_add_con = $(this);
+        let item_id_el = btn_add_con.children()[1];
+        console.log(btn_add_con);
+        if (item_id_el) {
             console.log(item_id_el.value);
             let item_id = item_id_el.value;
             let comp_inn = $(this).siblings()[0].value;
@@ -84,12 +89,17 @@ function AddConnectionTo() {
                 data: data,
                 success: function (response) {
                     // Обработка успешной отправки данных
-                    item_id_el.innerHTML = "Done con";
+                    btn_add_con.innerHTML = "Done con";
+                    btn_add_con.style.background = "green";
+                    document.querySelectorAll('.btn_link_items').forEach((el) => {
+                            el.addEventListener('click', AddConnectionTo)
+                    })
                     console.log("there has been a responce");
                 },
                 error: function (error) {
                     // Обработка ошибок при отправке данных
-                    item_id_el.innerHTML = "Error connecting";
+                    btn_add_con.innerHTML = "Error connecting";
+                    btn_add_con.style.background = "red"
                     console.error("Ошибка при отправке данных: ", error);
                 },
             });
@@ -101,13 +111,14 @@ function AddConnectionTo() {
                 type: "post",
                 data: {"item_link" : new_link},
                 success: function (response) {
-                    item_id_el.innerHTML = "Added";
+                    btn_add_con.innerHTML = "Added";
+                    btn_add_con.style.background = "green";
                     console.log("there has been a responce");
                 },
                 error: function (error) {
                     // Обработка ошибок при отправке данных
-                    item_id_el.innerHTML = "Error Adding";
-                    $("#peek_results").html("There has been an error!")
+                    btn_add_con.innerHTML = "Error Adding";
+                    btn_add_con.style.background = "red";
                     console.error("Ошибка при отправке данных: ", error);
                 },
             });
