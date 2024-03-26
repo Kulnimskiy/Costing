@@ -15,9 +15,15 @@
             <td><a class="result" href={{item.url}} target="_blank">{{item.name}}</a></td>
             <td>{{item.price}}</td>
             <td>{{item.competitor[0:15]}}</td>
+            {% if item.added %}
+            <td><button type="button" class="btn_link_items bg-success">Added</button>
+            <input name="competitor_inn" value="{{item.competitor_inn}}" type="hidden">
+            <input name="item_link" value="{{item.url}}" type="hidden"></td>
+            {% else %}
             <td><button type="button" class="btn_link_items">+</button>
             <input name="competitor_inn" value="{{item.competitor_inn}}" type="hidden">
             <input name="item_link" value="{{item.url}}" type="hidden"></td>
+            {% endif %}
         </tr>
         {% endfor %}
         </tbody>

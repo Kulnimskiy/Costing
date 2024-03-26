@@ -14,6 +14,7 @@ from selenium.common import TimeoutException
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
 
 def email_checker(email):
@@ -168,7 +169,6 @@ def format_search_all_result(item, result: dict, competitors, min_price=None, ma
         else:
             r["price"] = decimal.Decimal(str(r["price"]))
             r["price"] = '{0:,}'.format(r["price"]).replace(',', ' ')
-    print(result)
     return result
 
 
@@ -184,16 +184,16 @@ def get_link(link):
     return None
 
 
-def get_web(link, class_waiting_tag, timeout):
+def get_web(link, class_waiting_tag, timeout=8):
     """Get the page using your browser if nothing else is working
     timeout - the time for the program to try to find the target element
     class_waiting_tag - target element to validate that the page has loaded correctly"""
     link = get_link(link)
     if link:
         try:
-            timeout = 8
             chrome_options = Options()
             chrome_options.add_argument("---headless")
+            chrome_options.page_load_strategy = 'normal'
             driver = webdriver.Chrome(options=chrome_options)
             driver.get(link)  # This is a dummy website URL
             for i in range(timeout * 2):

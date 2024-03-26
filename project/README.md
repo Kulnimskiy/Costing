@@ -7,8 +7,7 @@ Necessary
 - add connection though the price looker (DONE)
 - - chosen user's item input field (DONE)
 - - if the item is chosen, add an item and add connection to the item (DONE)
-- - if the item is empty, the item just gets added to the tracked item's list
-- add item through the price looker
+- - if the item is empty, the item just gets added to the tracked item's list (DONE)
 - show names of the items in the profile, Not links
 - autoload associations (takes every user's item and looks for it on every competitor's site getting  items with a
 set similarity wiggle room) Need to get the needed similarity from the Competitors and items file

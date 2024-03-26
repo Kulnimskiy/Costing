@@ -42,6 +42,7 @@ $(document).ready(function () {
             }
         },
         placeholder: "Item name...",
+        allowClear: true,
         minimumInputLength: 0,
     });
 });
@@ -75,11 +76,17 @@ function SearchUserItem(){
 
 function AddConnectionTo() {
         let btn_add_con = $(this);
-        let item_id_el = btn_add_con.children()[1];
-        console.log(btn_add_con);
-        if (item_id_el) {
-            console.log(item_id_el.value);
-            let item_id = item_id_el.value;
+        let item = document.getElementById("select2-add_connection_item-container");
+        let item_id_el = $("#add_connection_item").children();
+            let item_id = null;
+            for (let i = 0; i < item_id_el.length; i++) {
+                let item_searched = item.title
+                if (!item_searched.localeCompare(item_id_el[i].innerText)) {
+                    item_id = item_id_el[i].value;
+                    console.log(item_id);
+                }
+            }
+        if (item_id) {
             let comp_inn = $(this).siblings()[0].value;
             let new_link = $(this).siblings()[1].value;
             let data = {"item_id": item_id, "comp_inn": comp_inn, "new_link": new_link}
@@ -89,8 +96,8 @@ function AddConnectionTo() {
                 data: data,
                 success: function (response) {
                     // Обработка успешной отправки данных
-                    btn_add_con.innerHTML = "Done con";
-                    btn_add_con.style.background = "green";
+                    btn_add_con.html("Done con");
+                    btn_add_con.css("background-color","green");
                     document.querySelectorAll('.btn_link_items').forEach((el) => {
                             el.addEventListener('click', AddConnectionTo)
                     })
@@ -98,11 +105,12 @@ function AddConnectionTo() {
                 },
                 error: function (error) {
                     // Обработка ошибок при отправке данных
-                    btn_add_con.innerHTML = "Error connecting";
-                    btn_add_con.style.background = "red"
+                    btn_add_con.html("Error connecting");
+                    btn_add_con.css("background-color","red");
                     console.error("Ошибка при отправке данных: ", error);
                 },
             });
+
         }
         else {
             let new_link = $(this).siblings()[1].value;
@@ -111,18 +119,17 @@ function AddConnectionTo() {
                 type: "post",
                 data: {"item_link" : new_link},
                 success: function (response) {
-                    btn_add_con.innerHTML = "Added";
-                    btn_add_con.style.background = "green";
+                    btn_add_con.html("Added");
+                    btn_add_con.css("background-color","green");
                     console.log("there has been a responce");
                 },
                 error: function (error) {
                     // Обработка ошибок при отправке данных
-                    btn_add_con.innerHTML = "Error Adding";
-                    btn_add_con.style.background = "red";
+                    btn_add_con.html("Error Adding");
+                    btn_add_con.css("background-color","red");
                     console.error("Ошибка при отправке данных: ", error);
                 },
             });
-
         }
 };
 //$.ajax({

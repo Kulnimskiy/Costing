@@ -234,6 +234,7 @@ def comparison():
 @main.route("/price-looker", methods=["GET", "POST"])
 @login_required
 def price_looker():
+    user_id = current_user.get_id()
     available_competitors = db_get_competitors(current_user.get_id(), "connected")
     if request.method == "POST":
         # returns a html table with search results for ajax
@@ -250,6 +251,11 @@ def price_looker():
         max_price = check_price(request.form.get("max_price"))
         result = run_search_all_items(current_user.get_id(), item=item, chosen_comps=chosen_competitors)
         result = format_search_all_result(item, result, available_competitors, min_price, max_price)
+        for r in result:
+            if db_get_item(user_id, r["url"]):
+                r["added"] = True
+            else:
+                r["added"] = False
         return render_template("price-looker-results.html", items=result)
     if request.method == "GET":
         item_search_field = request.args.get("item-search-field")
