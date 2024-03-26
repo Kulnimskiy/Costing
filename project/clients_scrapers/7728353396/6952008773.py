@@ -25,7 +25,7 @@ class Jmifddlkkg:
             # check if the page is loaded correctly. If not, try getting it through the browser
             check = operate(lambda: doc.find(id="catalog-products").find_all(class_="item"))
             if not check:
-                logging.warning(f"BROWSER IS WORKING IN {Jmifddlkkg.BASE_URL}")
+                logging.warning(f"BROWSER IS WORKING IN {Jmifddlkkg.SEARCH_URL.format(item)}")
                 res = get_web(Jmifddlkkg.SEARCH_URL.format(item), "item", TIMEOUT)
                 doc = BeautifulSoup(res, "html.parser")
 

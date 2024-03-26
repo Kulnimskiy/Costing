@@ -23,7 +23,7 @@ class Kkflgiggmj:
             # check if the page is loaded correctly. If not, try getting it through the browser
             check = operate(lambda: doc.find_all(class_="productColText"))
             if not check:
-                logging.warning(f"BROWSER IS WORKING IN {Kkflgiggmj.BASE_URL}")
+                logging.warning(f"BROWSER IS WORKING IN {Kkflgiggmj.SEARCH_URL.format(item)}")
                 res = get_web(Kkflgiggmj.SEARCH_URL.format(item), "item", TIMEOUT)
                 doc = BeautifulSoup(res, "html.parser")
 

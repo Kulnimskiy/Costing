@@ -1,3 +1,4 @@
+import re
 import sys
 import time
 import decimal
@@ -195,7 +196,7 @@ def get_web(link, class_waiting_tag, timeout=50):
             chrome_options = Options()
 
             # Stomart sees when this regime is used and says that we are bots
-            # chrome_options.add_argument("--headless=new")
+            chrome_options.add_argument("--headful")
             chrome_options.page_load_strategy = 'none'
             driver = webdriver.Chrome(options=chrome_options)
             driver.get(link)  # This is a dummy website URL
@@ -218,8 +219,27 @@ def get_web(link, class_waiting_tag, timeout=50):
 
 
 def compare_names(a, b):
-    return SequenceMatcher(None, a, b).ratio() * 0.7 + calculate_relevance(b, a) * 0.3
+    """Used to see if two items relate to each other"""
+    item_1 = a.lower()
+    item_2 = b.lower()
+    models = [word for word in item_1.split() if check_word(word)]
+    counter = 0
+    for model in models:
+        if model in item_2:
+            counter += 1
+    param3 = counter / len(models) if models else 0
+    if param3:
+        return param3 * 0.5 + SequenceMatcher(None, a, b).ratio() * 0.3 + calculate_relevance(b, a) * 0.2
+    else:
+        return SequenceMatcher(None, a, b).ratio() * 0.6 + calculate_relevance(b, a) * 0.4
+
+
+def check_word(word):
+    digits = any(map(str.isdigit, word))
+    latin = any(map(str.isascii, word))
+    return any([digits, latin])
 
 
 if __name__ == "__main__":
-    print(get_link("dentikom/delivery-and-payment/delivery/"))
+    print(check_word("пфвп"))
+    # print(get_link("dentikom/delivery-and-payment/delivery/"))

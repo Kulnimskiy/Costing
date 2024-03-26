@@ -25,7 +25,7 @@ class Kkdmlhkdmg:
             # check if the page is loaded correctly. If not, try getting it through the browser
             check = operate(lambda: doc.find("div", class_="short-search"))
             if not check:
-                logging.warning(f"BROWSER IS WORKING IN {Kkdmlhkdmg.BASE_URL}")
+                logging.warning(f"BROWSER IS WORKING IN {Kkdmlhkdmg.SEARCH_URL.format(item)}")
                 res = get_web(Kkdmlhkdmg.SEARCH_URL.format(item), "short-search", TIMEOUT)
                 doc = BeautifulSoup(res, "html.parser")
 

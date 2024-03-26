@@ -404,7 +404,7 @@ def db_get_item_link_new(user_id, company_inn, item_name):
 def db_get_item_connection(user_id, user_link, comp_inn):
     linked_items = ItemsConnections.query.filter_by(user_id=user_id, item_link=user_link).all()
     for item in linked_items:
-        if str(db_get_inn(item.connected_item_link)) == str(comp_inn):
+        if str(db_get_inn(user_id, item.connected_item_link)) == str(comp_inn):
             return item
     return None
 
@@ -437,12 +437,13 @@ def db_get_item_link(user_id, item_id):
     return None
 
 
-def db_get_inn(link: str):
-    """gets competitor's inn from a given link from the ItemsRecords table"""
-    item = ItemsRecords.query.filter_by(link=link).first()
-    if not item:
-        return None
-    return item.company_inn
+def db_get_inn(user_id, link: str):
+    """gets competitor's inn from a given link from the competitors table"""
+    cps = db_get_competitors(user_id, connection_status="connected")
+    for cp in cps:
+        if cp.competitor_website in link:
+            return cp.competitor_inn
+    return None
 
 
 def db_delete_connection(user_id, item_link, linked_item_link):

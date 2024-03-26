@@ -9,7 +9,7 @@ def get_tasks_items(user_id, item, session, comp_filter=None):
     add the search with each class method to the event loop. You can add tasks either by item or link"""
     classes = db_get_scr_from_id(user_id)
     tasks = []
-    if comp_filter:
+    if comp_filter is not None:
         for cls in classes:
             if unhash_inn(cls.__name__) in comp_filter:
                 tasks.append(asyncio.create_task(cls.search_relevant_items(item, session)))

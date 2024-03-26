@@ -5,3 +5,4 @@ password_real = "Magnit2005_"
 WORKER_EMAIL = "sergeish2012@yandex.ru"
 TIMEOUT = 10
 MIN_RELEVANCE = 0.37
+ITEMS_UPDATE_TIMEOUT_RANGE = 3

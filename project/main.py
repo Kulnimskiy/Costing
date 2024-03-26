@@ -2,7 +2,7 @@ import json
 import logging
 import decimal
 import time
-
+from random import randint
 from project.file_manager import delete_empty_scraper
 from flask import Blueprint, render_template, redirect, request, url_for
 from flask_login import login_required, current_user
@@ -11,7 +11,7 @@ from project.helpers import inn_checker, format_search_all_result, check_price, 
 from project.request_connection import send_connect_request
 from project.async_search import run_search_link, run_search_all_items, run_search_all_links
 from project.db_manager import *
-from project.credentials import MIN_RELEVANCE
+from project.credentials import MIN_RELEVANCE, ITEMS_UPDATE_TIMEOUT_RANGE
 
 main = Blueprint("main", __name__)
 
@@ -224,7 +224,7 @@ def comparison():
                 "cr_prices": dict()}
         for linked_item in all_linked_items:
             if linked_item.item_link == item_url:
-                cr_inn = int(db_get_inn(linked_item.connected_item_link))
+                cr_inn = int(db_get_inn(user_id, linked_item.connected_item_link))
                 cr_item = db_get_item(user_id=user_id, item_link=linked_item.connected_item_link)
                 info["cr_prices"][cr_inn] = cr_item
         cr_prices = [item["last_price"] for item in info["cr_prices"].values() if item["last_price"] > 0]
@@ -396,40 +396,34 @@ def autoload_associations():
     phrase = "Комплект Rextar X и Kodak RVG 6200 - высокочастотный портативный дентальный рентген с визиографом"
     # title_compare(phrase, own_items)
     # the approximate result relevance minimum is 0.37. If there are more than 1, get the highest
+    competitors = db_get_competitors(current_user.get_id())
+    competitors_inn = [str(competitor.competitor_inn) for competitor in competitors if
+                       competitor.competitor_inn != current_user.company_inn]
     lst_relevant = dict()
     for item in own_items:
-        time.sleep(1)
-        lst_relevant[item["name"]] = {}
-        search = run_search_all_items(user_id, item["name"])
+        time.sleep(randint(1, ITEMS_UPDATE_TIMEOUT_RANGE))
+
+        # searches and gets only empty connections
+        all_inns = competitors_inn.copy()
+        available_inns = competitors_inn.copy()
+        for inn in all_inns:
+            if db_get_item_connection(user_id=user_id, user_link=item["link"], comp_inn=inn):
+                available_inns.remove(inn)
+        print(available_inns)
+        time.sleep(2)
+        search = run_search_all_items(user_id, item["name"], available_inns)
+        item_con = dict()
         if not search:
-            return redirect("/profile")
+            continue
         for result in search:
-            competitor_inn = db_get_inn(result["url"])
-            if not lst_relevant[item["name"]].get(competitor_inn):
-                lst_relevant[item["name"]][competitor_inn] = []
-            relevance = compare_names(item["name"], result["name"])
-            if relevance < MIN_RELEVANCE:
-                break
-            lst_relevant[item["name"]][competitor_inn].append(result)
-            # db_add_item_connection(user_id, item["link"], result["url"])
+            competitor_inn = db_get_inn(user_id, result["url"])
+            result["relevance"] = compare_names(item["name"], result["name"])
+            last_relevance = item_con[competitor_inn]["relevance"] if item_con.get(competitor_inn) else 0
+            if result["relevance"] > MIN_RELEVANCE and result["relevance"] >= last_relevance:
+                item_con[competitor_inn] = result
+                continue
+        lst_relevant[item["name"]] = item_con
+    print(lst_relevant)
+    # db_add_item_connection(user_id, item["link"], result["url"])
     return lst_relevant
 
-
-def title_compare(phrase, own_items):
-    for item in own_items:
-        res = compare_names(item["name"], phrase)
-        print("Name 1: ", item["name"])
-        print("Name 2: ", phrase)
-        print("Result : ", res)
-        if res < 0.5:
-            print("----------------------------------")
-            new_phrase = phrase.split()
-            print(len(new_phrase))
-            new_length = int(len(new_phrase) / 2) if len(new_phrase) > 2 else 1
-            print(new_length)
-            new_phrase = " ".join([new_phrase[i] for i in range(new_length)])
-            res = compare_names(item["name"], new_phrase)
-            print("Name 1: ", item["name"])
-            print("Name 2: ", new_phrase)
-            print("Result : ", res)
-        print()
