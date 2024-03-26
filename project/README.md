@@ -8,16 +8,16 @@ Necessary
 - - chosen user's item input field (DONE)
 - - if the item is chosen, add an item and add connection to the item (DONE)
 - - if the item is empty, the item just gets added to the tracked item's list (DONE)
-- show names of the items in the profile, Not links
+- show names of the items in the profile, Not links (DONE)
 - autoload associations (takes every user's item and looks for it on every competitor's site getting  items with a
 set similarity wiggle room) Need to get the needed similarity from the Competitors and items file
-- add connection to existing items using a dropdown or input autocomplete field in tracked goods
 - filters by the color of the price on the comparison page
 - refine the code
 - refine the view of the pages
 - clear the db and test
 
 Preferred
+- add connection to existing items using a dropdown or input autocomplete field in tracked goods
 - filters by competitor
 - load items (using an Excel spreadsheet with 3 columns (name, price, link)) and add a button to get a template excel
 

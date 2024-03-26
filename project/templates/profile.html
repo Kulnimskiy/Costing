@@ -65,9 +65,9 @@
     <div class="row">
         <div class="col col-5">
             {% if user_con and user_con.connection_status == "connected" %}
-            <form class="mb-1" action="/profile" method="post">
+            <form class="mb-1" action="/autoload_associations" method="post">
                 <div>
-                    <button class="btn btn-success w-100" type="submit" name="autoload" disabled>Autoload Associations
+                    <button class="btn btn-success w-100" type="submit" name="autoload">Autoload Associations
                     </button>
                 </div>
             </form>
@@ -150,7 +150,7 @@
                         <span>
                             <input type="hidden" class="element_id" value="{{item.item_id}}_{{competitor.competitor_inn}}" id="{{item.item_id}}_{{competitor.competitor_inn}}">
                             {% if info[item_link][comp_inn] %}
-                            <a class="result" href={{info[item_link][comp_inn]}} target="_blank">{{info[item_link][comp_inn][8:20]}}...</a>
+                            <a class="result" href={{info[item_link][comp_inn]["url"]}} target="_blank">{{info[item_link][comp_inn]["name"]}}</a>
                             {% else %}
                             <a class="result" href="" target="_blank">...</a>
                             {% endif %}

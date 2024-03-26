@@ -1,13 +1,17 @@
 import json
 import logging
 import decimal
+import time
+
 from project.file_manager import delete_empty_scraper
 from flask import Blueprint, render_template, redirect, request, url_for
 from flask_login import login_required, current_user
-from project.helpers import inn_checker, format_search_all_result, check_price, unhash_inn, get_link, get_cur_date
+from project.helpers import inn_checker, format_search_all_result, check_price, unhash_inn, get_link, get_cur_date, \
+    compare_names, calculate_relevance
 from project.request_connection import send_connect_request
 from project.async_search import run_search_link, run_search_all_items, run_search_all_links
 from project.db_manager import *
+from project.credentials import MIN_RELEVANCE
 
 main = Blueprint("main", __name__)
 
@@ -71,8 +75,9 @@ def profile():
         related = dict()
         for linked_item in all_linked_items:
             if item['link'] == linked_item.item_link:
-                comp_inn = int(db_get_inn(linked_item.connected_item_link))
-                related[comp_inn] = linked_item.connected_item_link
+                con_item = db_get_item(user_id, linked_item.connected_item_link)
+                comp_inn = con_item["competitor_inn"]
+                related[comp_inn] = {"url": linked_item.connected_item_link, "name": con_item["name"]}
         items_info[f"{item['link']}"] = related
     if company_info:
         requested_connection = db_get_competitor(user_id=user_id, com_inn=_inn)
@@ -85,7 +90,8 @@ def profile():
                                    info=items_info, user_con=user_con)
         website = {"link": get_link(company_info.website), "status": "disconnected"}
         return render_template("profile.html", user=current_user, company_info=company_info, website=website,
-                               competitor=None, competitors=competitors, items=own_items, info=items_info, user_con=user_con)
+                               competitor=None, competitors=competitors, items=own_items, info=items_info,
+                               user_con=user_con)
     return render_template("profile.html", competitors=competitors, items=own_items, info=items_info, user_con=user_con)
 
 
@@ -226,7 +232,7 @@ def comparison():
             info["max_price"] = max(cr_prices)
             info["min_price"] = min(cr_prices)
             print("sum", sum(cr_prices), "len ", len(cr_prices))
-            info["avg_price"] = round(sum(cr_prices) / len(cr_prices),4)
+            info["avg_price"] = round(sum(cr_prices) / len(cr_prices), 4)
         items_info[f"{item_url}"] = info
     return render_template("comparison.html", items=own_items, items_info=items_info, competitors=crs)
 
@@ -379,3 +385,51 @@ def items_owned():
         return {"0": "Nothing will connect"}
     resp = list(filter(lambda x: search.lower() in x["name"].lower(), own_items))
     return resp
+
+
+@main.route("/autoload_associations", methods=["POST"])
+def autoload_associations():
+    user_id = current_user.get_id()
+    user_inn = current_user.company_inn
+    all_items = db_get_items(user_id)
+    own_items = list(filter(lambda x: inn_checker(x["competitor_inn"]) == user_inn, all_items))
+    phrase = "Комплект Rextar X и Kodak RVG 6200 - высокочастотный портативный дентальный рентген с визиографом"
+    # title_compare(phrase, own_items)
+    # the approximate result relevance minimum is 0.37. If there are more than 1, get the highest
+    lst_relevant = dict()
+    for item in own_items:
+        time.sleep(1)
+        lst_relevant[item["name"]] = {}
+        search = run_search_all_items(user_id, item["name"])
+        if not search:
+            return redirect("/profile")
+        for result in search:
+            competitor_inn = db_get_inn(result["url"])
+            if not lst_relevant[item["name"]].get(competitor_inn):
+                lst_relevant[item["name"]][competitor_inn] = []
+            relevance = compare_names(item["name"], result["name"])
+            if relevance < MIN_RELEVANCE:
+                break
+            lst_relevant[item["name"]][competitor_inn].append(result)
+            # db_add_item_connection(user_id, item["link"], result["url"])
+    return lst_relevant
+
+
+def title_compare(phrase, own_items):
+    for item in own_items:
+        res = compare_names(item["name"], phrase)
+        print("Name 1: ", item["name"])
+        print("Name 2: ", phrase)
+        print("Result : ", res)
+        if res < 0.5:
+            print("----------------------------------")
+            new_phrase = phrase.split()
+            print(len(new_phrase))
+            new_length = int(len(new_phrase) / 2) if len(new_phrase) > 2 else 1
+            print(new_length)
+            new_phrase = " ".join([new_phrase[i] for i in range(new_length)])
+            res = compare_names(item["name"], new_phrase)
+            print("Name 1: ", item["name"])
+            print("Name 2: ", new_phrase)
+            print("Result : ", res)
+        print()

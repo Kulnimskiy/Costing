@@ -87,6 +87,7 @@ function AddConnectionTo() {
                 }
             }
         if (item_id) {
+//            btn_add_con.html("<img class='text-center' style='width: 10px; display: block; margin-left: auto; margin-right: auto;' src='/static/images/loading.gif'>");
             let comp_inn = $(this).siblings()[0].value;
             let new_link = $(this).siblings()[1].value;
             let data = {"item_id": item_id, "comp_inn": comp_inn, "new_link": new_link}
@@ -96,7 +97,7 @@ function AddConnectionTo() {
                 data: data,
                 success: function (response) {
                     // Обработка успешной отправки данных
-                    btn_add_con.html("Done con");
+                    btn_add_con.html("✔");
                     btn_add_con.css("background-color","green");
                     document.querySelectorAll('.btn_link_items').forEach((el) => {
                             el.addEventListener('click', AddConnectionTo)
@@ -119,7 +120,7 @@ function AddConnectionTo() {
                 type: "post",
                 data: {"item_link" : new_link},
                 success: function (response) {
-                    btn_add_con.html("Added");
+                    btn_add_con.html("✔");
                     btn_add_con.css("background-color","green");
                     console.log("there has been a responce");
                 },

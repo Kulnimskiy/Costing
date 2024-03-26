@@ -7,6 +7,7 @@ import validators
 import importlib.util
 from bs4 import BeautifulSoup
 from datetime import datetime
+from difflib import SequenceMatcher
 from email_validator import validate_email, EmailNotValidError
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -184,7 +185,7 @@ def get_link(link):
     return None
 
 
-def get_web(link, class_waiting_tag, timeout=8):
+def get_web(link, class_waiting_tag, timeout=50):
     """Get the page using your browser if nothing else is working
     timeout - the time for the program to try to find the target element
     class_waiting_tag - target element to validate that the page has loaded correctly"""
@@ -192,8 +193,10 @@ def get_web(link, class_waiting_tag, timeout=8):
     if link:
         try:
             chrome_options = Options()
-            chrome_options.add_argument("---headless")
-            chrome_options.page_load_strategy = 'normal'
+
+            # Stomart sees when this regime is used and says that we are bots
+            # chrome_options.add_argument("--headless=new")
+            chrome_options.page_load_strategy = 'none'
             driver = webdriver.Chrome(options=chrome_options)
             driver.get(link)  # This is a dummy website URL
             for i in range(timeout * 2):
@@ -203,15 +206,19 @@ def get_web(link, class_waiting_tag, timeout=8):
                     print("The page is ready")
                     driver.quit()
                     return res
-                else:
-                    time.sleep(0.5)
+                time.sleep(0.5)
+
             else:
                 driver.quit()
                 print("Error getting a link")
                 print("Loading took too much time!")
-        finally:
-            print("Finally The page is ready")
+        except Exception:
+            print("Server Error")
     return None
+
+
+def compare_names(a, b):
+    return SequenceMatcher(None, a, b).ratio() * 0.7 + calculate_relevance(b, a) * 0.3
 
 
 if __name__ == "__main__":
