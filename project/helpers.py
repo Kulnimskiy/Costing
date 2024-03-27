@@ -234,6 +234,17 @@ def compare_names(a, b):
         return SequenceMatcher(None, a, b).ratio() * 0.6 + calculate_relevance(b, a) * 0.4
 
 
+def get_item_model(item_name):
+    """to get the model of an item and make it vague to increase the chances to get the result"""
+    if item_name:
+        models = [word for word in item_name.split() if check_word(word)]
+        if len(models) > 3:
+            models = [models[i] for i in range(len(models)-int(len(models)*0.3))]
+        if models:
+            return " ".join(models)
+    return None
+
+
 def check_word(word):
     digits = any(map(str.isdigit, word))
     latin = any(map(str.isascii, word))

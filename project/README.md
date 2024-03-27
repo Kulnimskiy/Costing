@@ -10,7 +10,7 @@ Necessary
 - - if the item is empty, the item just gets added to the tracked item's list (DONE)
 - show names of the items in the profile, Not links (DONE)
 - autoload associations (takes every user's item and looks for it on every competitor's site getting  items with a
-set similarity wiggle room) Need to get the needed similarity from the Competitors and items file
+set similarity wiggle room) Need to get the needed similarity from the Competitors and items file (DONE)
 - filters by the color of the price on the comparison page
 - refine the code
 - refine the view of the pages

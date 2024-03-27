@@ -7,9 +7,9 @@ from project.file_manager import delete_empty_scraper
 from flask import Blueprint, render_template, redirect, request, url_for
 from flask_login import login_required, current_user
 from project.helpers import inn_checker, format_search_all_result, check_price, unhash_inn, get_link, get_cur_date, \
-    compare_names, calculate_relevance
+    compare_names, calculate_relevance, get_item_model
 from project.request_connection import send_connect_request
-from project.async_search import run_search_link, run_search_all_items, run_search_all_links
+from project.async_search import run_search_link, run_search_all_items, run_search_all_links, run_search_item
 from project.db_manager import *
 from project.credentials import MIN_RELEVANCE, ITEMS_UPDATE_TIMEOUT_RANGE
 
@@ -403,27 +403,50 @@ def autoload_associations():
     for item in own_items:
         time.sleep(randint(1, ITEMS_UPDATE_TIMEOUT_RANGE))
 
-        # searches and gets only empty connections
+        # searches the item only among the competitors the item doesn't have a connection with
         all_inns = competitors_inn.copy()
         available_inns = competitors_inn.copy()
         for inn in all_inns:
             if db_get_item_connection(user_id=user_id, user_link=item["link"], comp_inn=inn):
                 available_inns.remove(inn)
-        print(available_inns)
-        time.sleep(2)
+
         search = run_search_all_items(user_id, item["name"], available_inns)
         item_con = dict()
+        model = get_item_model(item["name"])
+        if not search and model:
+            search = run_search_all_items(user_id, item["name"], available_inns)
         if not search:
             continue
         for result in search:
             competitor_inn = db_get_inn(user_id, result["url"])
+            if str(competitor_inn) in available_inns:
+                available_inns.remove(str(competitor_inn))
             result["relevance"] = compare_names(item["name"], result["name"])
             last_relevance = item_con[competitor_inn]["relevance"] if item_con.get(competitor_inn) else 0
             if result["relevance"] > MIN_RELEVANCE and result["relevance"] >= last_relevance:
                 item_con[competitor_inn] = result
                 continue
-        lst_relevant[item["name"]] = item_con
-    print(lst_relevant)
+
+        # if any of the comps hasn't given the answer, try searching by the model
+        if available_inns:
+            for inn in available_inns:
+                search_again = run_search_item(user_id, inn, model)
+                if not search_again:
+                    continue
+                for result in search_again:
+                    competitor_inn = db_get_inn(user_id, result["url"])
+                    result["relevance"] = compare_names(item["name"], result["name"])
+                    last_relevance = item_con[competitor_inn]["relevance"] if item_con.get(competitor_inn) else 0
+                    if result["relevance"] > MIN_RELEVANCE and result["relevance"] >= last_relevance:
+                        item_con[competitor_inn] = result
+                        continue
+        lst_relevant[item["link"]] = item_con
+    if lst_relevant:
+        for item_link, connections in lst_relevant.items():
+            if connections:
+                for cp_inn, cp_item in connections.items():
+                    db_add_item(user_id, cp_inn, cp_item["url"])
+                    db_add_item_connection(user_id, item_link, cp_item["url"], cp_inn)
     # db_add_item_connection(user_id, item["link"], result["url"])
-    return lst_relevant
+    return redirect("/profile")
 
