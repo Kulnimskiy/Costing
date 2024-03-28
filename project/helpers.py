@@ -2,6 +2,7 @@ import re
 import sys
 import time
 import decimal
+import logging
 import inspect
 import requests
 import validators
@@ -144,12 +145,20 @@ def get_cls_from_path(path):
         return None
 
 
-def check_price(price: str):
+def check_price(price: str) -> int:
+    """ Returns all the digits from a string as an int if possible
+        Used in a class pattern. Do not change the name of the function"""
     try:
         price = int("".join([digit for digit in price if digit.isdigit()]))
         return price
     except (TypeError, ValueError):
-        return None
+        return 0
+
+
+def check_int(number: str) -> int:
+    if all([symbol.isdigit() for symbol in number]):
+        return int(number)
+    return 0
 
 
 def format_search_all_result(item, result: dict, competitors, min_price=None, max_price=None, ):
@@ -239,7 +248,7 @@ def get_item_model(item_name):
     if item_name:
         models = [word for word in item_name.split() if check_word(word)]
         if len(models) > 3:
-            models = [models[i] for i in range(len(models)-int(len(models)*0.3))]
+            models = [models[i] for i in range(len(models) - int(len(models) * 0.3))]
         if models:
             return " ".join(models)
     return None
@@ -251,6 +260,96 @@ def check_word(word):
     return any([digits, latin])
 
 
+class Date:
+    """ An object can take a date in the format '5 августа 2014' (года)-optional """
+    DATE_FORMAT = "%d.%m.%Y"
+    DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
+    MONTHS = {"января": "01", "февраля": "02", "марта": "03",
+              "апреля": "04", "мая": "05", "июня": "06",
+              "июля": "07", "августа": "08", "сентября": "09",
+              "октября": "10", "ноября": "11", "декабря": "12"}
+
+    def __init__(self, date: str):
+        self.date = date
+
+    @property
+    def day(self):
+        _day = self.__split_date[0]
+        if not check_int(_day):
+            return None
+        return _day
+
+    @property
+    def month(self):
+        month = self.__split_date[1]
+        if month in Date.MONTHS:
+            return Date.MONTHS[month]
+        return None
+
+    @property
+    def year(self):
+        _year = self.__split_date[2]
+        if not check_int(_year):
+            return None
+        return _year
+
+    def format_date(self):
+        form = Date.DATE_FORMAT
+        if not all([self.year, self.month, self.day]):
+            return None
+        date = form.replace("%Y", self.year).replace("%m", self.month).replace("%d", self.day)
+        return date
+
+    def format_datetime(self):
+        form = Date.DATETIME_FORMAT
+        if not all([self.year, self.month, self.day]):
+            return None
+        date = form.replace("%Y", self.year).replace("%m", self.month).replace("%d", self.day)
+        date = date.replace("%H", "00").replace("%M", "00").replace("%S", "00")
+        return date
+
+    def __repr__(self):
+        return self.format_date()
+
+    @property
+    def __split_date(self):
+        """ If values"""
+        try:
+            _split_date = self.date.split()
+            if len(_split_date) < 3:
+                raise ValueError
+            return _split_date
+        except ValueError as error:
+            logging.warning(error)
+            return None
+
+
+class DateCur(Date):
+    """ Works with the current date"""
+
+    @staticmethod
+    def cur_date():
+        """ Returns the date at the moment in the right format"""
+        return datetime.today().strftime(DateCur.DATE_FORMAT)
+
+    @staticmethod
+    def cur_datetime() -> str:
+        cur_date_str = datetime.now().strftime(DateCur.DATETIME_FORMAT)
+        return cur_date_str
+
+    @staticmethod
+    def days_passed(date: str) -> int:
+        date = datetime.strptime(date, "%Y-%m-%d %H:%M:%S")
+        days_passed = (datetime.now() - date).days
+        return days_passed
+
+    @staticmethod
+    def minutes_passed(date: str):
+        date = datetime.strptime(date, "%Y-%m-%d %H:%M:%S")
+        minutes_passed = round((datetime.now() - date).total_seconds() / 60.0)
+        return minutes_passed
+
+
 if __name__ == "__main__":
-    print(check_word("пфвп"))
+    print(Date("5 августа 2014").format_datetime())
     # print(get_link("dentikom/delivery-and-payment/delivery/"))
