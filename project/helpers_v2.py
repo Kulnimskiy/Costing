@@ -1,161 +1,12 @@
-import re
-import sys
-import time
-import decimal
-import logging
-
-from typing import Union
-import requests
-import validators
-
-from bs4 import BeautifulSoup
 from datetime import datetime
 from difflib import SequenceMatcher
+import decimal
+import logging
+import time
+from project.managers import UrlManager
+from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
-from project.interfaces import Manager, Hasher
-
-
-
-class LoginManager(Manager):
-    def __init__(self, login: str):
-        self._login = login
-
-    @property
-    def login(self):
-        return self._login
-
-    @login.setter
-    def login(self, value):
-        self._login = value.strip()
-
-    def check(self) -> Union[str, None]:
-        """ Checks if the email is valid and returns None if It is not """
-        no_space_req = all(not symbol.isspace() for symbol in self.login)
-        length_req = len(self.login) >= 3
-        if all([self.login, no_space_req, length_req]):
-            return self.login
-        return None
-
-
-class PasswordManager(Manager):
-    @staticmethod
-    def check(password: str) -> Union[str, bool]:
-        """The password of 6 char lengths has to have digits and alpha char of lower and upper case with no space"""
-
-        password = str(password).strip()
-        length_req = len(password) >= 6
-        number_req = any(symbol.isdigit() for symbol in password)
-        no_space_req = all(not symbol.isspace() for symbol in password)
-        upper_req = any(symbol.isupper() for symbol in password)
-        lower_req = any(symbol.islower() for symbol in password)
-
-        # alpha_req = any(symbol.isalpha() for symbol in password)  ## you don't need this as u have the upper and lower req
-        if all([no_space_req, length_req, number_req, upper_req, lower_req]):
-            return password
-        return False
-
-
-class InnManager(Manager, Hasher):
-    @staticmethod
-    def check(inn: str) -> Union[str, bool]:
-        """for testing purposes the algorithm of checking if the inn exists is not implemented"""
-        inn = inn.strip()
-        people_len = 10
-        company_len = 12
-        if len(inn) != people_len and len(inn) != company_len:
-            return False
-        if any(not digit.isdigit() for digit in inn):
-            return False
-        return inn
-
-    @staticmethod
-    def hash(comp_inn: str):
-        comp_inn = str(comp_inn)
-        value = ""
-        for digit in comp_inn:
-            value += chr(100 + int(digit))
-        return value.lower().capitalize()
-
-    @staticmethod
-    def decode(comp_hash: str):
-        value = ""
-        for letter in comp_hash:
-            value += str(ord(letter.lower()) - 100)
-        return value
-
-
-class PriceManager(Manager):
-    @staticmethod
-    def check(price: str) -> int:
-        """ Returns all the digits from a string as an int if possible
-            Used in a class pattern. Do not change the name of the function"""
-        try:
-            price = int("".join([digit for digit in price if digit.isdigit()]))
-            return price
-        except (TypeError, ValueError):
-            return 0
-
-    @staticmethod
-    def convert_to_rub(amount: (int, float), currency: str):
-        """convert currencies into Russian Ruble """
-        currency = currency.strip().upper()
-        try:
-            data = requests.get('https://www.cbr-xml-daily.ru/latest.js').json()
-            currency_rate = float(data["rates"][f"{currency}"])
-            return int(amount / currency_rate)
-        except Exception as error:
-            print(error)
-            return None
-
-
-class UrlManager(Manager):
-    @staticmethod
-    def get_link(link):
-        if not link:
-            return None
-        if "http" in link and validators.url(link):
-            return link
-        else:
-            link = "https://" + link
-            if validators.url(link):
-                return link
-        return None
-
-    @staticmethod
-    def get_web(link, class_waiting_tag, timeout=50):
-        """Get the page using your browser if nothing else is working
-        timeout - the time for the program to try to find the target element
-        class_waiting_tag - target element to validate that the page has loaded correctly"""
-        link = UrlManager.get_link(link)
-        if link:
-            try:
-                chrome_options = Options()
-
-                # Stomart sees when this regime is used and says that we are bots
-                chrome_options.add_argument("--headful")
-                chrome_options.page_load_strategy = 'none'
-                driver = webdriver.Chrome(options=chrome_options)
-                driver.get(link)  # This is a dummy website URL
-                for i in range(timeout * 2):
-                    res = driver.page_source
-                    doc = BeautifulSoup(res, "html.parser")
-                    if doc.find(class_=class_waiting_tag):
-                        print("The page is ready")
-                        driver.quit()
-                        return res
-                    time.sleep(0.5)
-
-                else:
-                    driver.quit()
-                    print("Error getting a link")
-                    print("Loading took too much time!")
-            except Exception:
-                print("Server Error")
-        return None
-
-
-
 
 
 class OperationalTools:
@@ -338,6 +189,44 @@ class DateCur(Date):
         return minutes_passed
 
 
-if __name__ == "__main__":
-    EmailManager("sk@agv.ag").message(subject="test", text="Привет!")
-    # print(get_link("dentikom/delivery-and-payment/delivery/"))
+class Browser(UrlManager):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def open(self):
+        url = self.check()
+        if not url:
+            return None
+
+    def open
+    def get_web(self, class_waiting_tag, timeout=50):
+        """Get the page using your browser if nothing else is working
+        timeout - the time for the program to try to find the target element
+        class_waiting_tag - target element to validate that the page has loaded correctly"""
+        url = self.check()
+        if not url:
+            return None
+        try:
+            chrome_options = Options()
+
+            # Stomart sees when this regime is used and says that we are bots
+            chrome_options.add_argument("--headful")
+            chrome_options.page_load_strategy = 'none'
+            driver = webdriver.Chrome(options=chrome_options)
+            driver.get(url)  # This is a dummy website URL
+            for i in range(timeout * 2):
+                res = driver.page_source
+                doc = BeautifulSoup(res, "html.parser")
+                if doc.find(class_=class_waiting_tag):
+                    print("The page is ready")
+                    driver.quit()
+                    return res
+                time.sleep(0.5)
+
+            else:
+                driver.quit()
+                print("Error getting a link")
+                print("Loading took too much time!")
+        except Exception:
+            print("Server Error")
+        return None

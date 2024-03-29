@@ -75,3 +75,7 @@ class EmailTemplates:
 
         success = EmailManager(WORKER_EMAIL).message(text=text, subject=subject)
         return success
+
+
+if __name__ == "__main__":
+    EmailManager("sk@agv.ag").message(subject="test", text="Привет!")
