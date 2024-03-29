@@ -8,7 +8,7 @@ from flask import Blueprint, render_template, redirect, request, url_for
 from flask_login import login_required, current_user
 from project.helpers import inn_checker, format_search_all_result, check_price, unhash_inn, get_link, get_cur_date, \
     compare_names, calculate_relevance, get_item_model
-from project.request_connection import send_connect_request
+from project.emails import EmailTemplates
 from project.async_search import run_search_link, run_search_all_items, run_search_all_links, run_search_item
 from project.db_manager import *
 from project.credentials import MIN_RELEVANCE, ITEMS_UPDATE_TIMEOUT_RANGE
@@ -298,7 +298,7 @@ def request_connection(com_inn):
         db_change_website(user_id, com_inn, new_website=company.website)
         competitor = db_get_competitor(user_id=user_id, com_inn=com_inn)
     if db_update_con_status(user_id, com_inn):
-        send_connect_request(current_user, competitor)
+        EmailTemplates.request_connect(current_user, competitor)
         db_add_scraper(user_inn=current_user.company_inn, comp_inn=current_user.company_inn)
         print("scr made")
         if "profile" in request.referrer:

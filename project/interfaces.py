@@ -3,9 +3,9 @@ from typing import Union
 
 
 class Manager(metaclass=ABCMeta):
-    @staticmethod
+
     @abstractmethod
-    def check(inpt: str) -> Union[str, None]:
+    def check(self) -> Union[str, None]:
         pass
 
 
@@ -18,4 +18,10 @@ class Hasher(metaclass=ABCMeta):
     @staticmethod
     @abstractmethod
     def decode(inpt: str) -> Union[str, bool]:
+        pass
+
+
+class Messanger(metaclass=ABCMeta):
+    @abstractmethod
+    def message(self, text: str, subject: str = "Messager"):
         pass
