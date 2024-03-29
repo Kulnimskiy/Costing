@@ -2,6 +2,10 @@ import re
 import sys
 import time
 import decimal
+import ssl
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 import logging
 import inspect
 from typing import Union
@@ -15,29 +19,74 @@ from email_validator import validate_email, EmailNotValidError
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from project.interfaces import Manager, Hasher
+from project.credentials import PROJECT_EMAIL_PASSWORD, PROJECT_EMAIL, WORKER_EMAIL
 
 
 class EmailManager(Manager):
-    @staticmethod
-    def check(email: str) -> Union[str, bool]:
+    SENDER = PROJECT_EMAIL
+    SENDER_PASSWORD = PROJECT_EMAIL_PASSWORD
+
+    def __init__(self, email: str):
+        self.email = email
+
+    def check(self) -> Union[str, None]:
+        """ Checks if the email is valid and returns its value"""
         try:
-            v = validate_email(email)
-            email = v.__dict__["normalized"]
-            return email
+            v = validate_email(self.email)
+            valid_email = v.__dict__["normalized"]
+            return valid_email
         except EmailNotValidError as error:
             logging.warning(error)
+            return None
+
+    def message(self, subject: str, text: str) -> bool:
+        """ Sends messages to the email of the class """
+        context = ssl.create_default_context()  # Create a secure SSL context
+        port = 465  # For SSL
+        receiver = self.check()
+
+        if not receiver:
+            logging.warning(f"ERROR: THE RECEIVER EMAIL {self.email} ISN'T VALID")
+            return False
+
+        try:
+            with smtplib.SMTP_SSL("smtp.mail.ru", port, context=context) as server:
+                server.login(self.SENDER, self.SENDER_PASSWORD)
+                message = MIMEMultipart("alternative")
+
+                # Set the title for the message
+                message["Subject"] = subject
+                message["From"] = self.SENDER
+                message["To"] = receiver
+
+                part = MIMEText(text, "plain")
+                message.attach(part)
+                server.sendmail(self.SENDER, receiver, message.as_string())
+                return True
+        except smtplib.SMTPDataError as error:
+            logging.warning(f"ERROR SENDING EMAIL TO {receiver}: {error}")
             return False
 
 
 class LoginManager(Manager):
-    @staticmethod
-    def check(login: str) -> Union[str, bool]:
-        login = str(login).strip()
-        no_space_req = all(not symbol.isspace() for symbol in login)
-        length_req = len(login) >= 3
-        if all([login, no_space_req, length_req]):
-            return login
-        return False
+    def __init__(self, login: str):
+        self._login = login
+
+    @property
+    def login(self):
+        return self._login
+
+    @login.setter
+    def login(self, value):
+        self._login = value.strip()
+
+    def check(self) -> Union[str, None]:
+        """ Checks if the email is valid and returns None if It is not """
+        no_space_req = all(not symbol.isspace() for symbol in self.login)
+        length_req = len(self.login) >= 3
+        if all([self.login, no_space_req, length_req]):
+            return self.login
+        return None
 
 
 class PasswordManager(Manager):
@@ -367,5 +416,5 @@ class DateCur(Date):
 
 
 if __name__ == "__main__":
-    print(Date("5 августа 2014").format_datetime())
+    EmailManager("sk@agv.ag").message(subject="test", text="Привет!")
     # print(get_link("dentikom/delivery-and-payment/delivery/"))

@@ -5,8 +5,9 @@ from typing import Union
 class Manager(metaclass=ABCMeta):
     @staticmethod
     @abstractmethod
-    def check(inpt: str) -> Union[str, bool]:
+    def check(inpt: str) -> Union[str, None]:
         pass
+
 
 class Hasher(metaclass=ABCMeta):
     @staticmethod

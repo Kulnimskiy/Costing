@@ -1,5 +1,6 @@
 """GMAIL CREDENTIALS   @mail.ru"""
 PROJECT_EMAIL = "costing2024@mail.ru"
+PROJECT_EMAIL_PASSWORD = "aVU8p7Q7h8arM6SpDuFx"
 PASSWORD = "aVU8p7Q7h8arM6SpDuFx"
 password_real = "Magnit2005_"
 WORKER_EMAIL = "sergeish2012@yandex.ru"
