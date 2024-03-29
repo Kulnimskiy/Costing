@@ -7,8 +7,8 @@ from project.helpers import operate, convert_to_rub, get_web, check_price, get_l
 from project.credentials import TIMEOUT
 
 
-class CLASS_NAME:
-    INN = COMPANY_INN
+class {CLASS_NAME}:
+    INN = {COMPANY_INN}
     BASE_URL = ""
     SEARCH_URL = ""
 

@@ -5,7 +5,7 @@ from typing import Union
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email_validator import validate_email, EmailNotValidError
-from project.file_manager import read_file
+from project.systems import FileSystem
 from project.credentials import PROJECT_EMAIL_PASSWORD, PROJECT_EMAIL, WORKER_EMAIL
 from project.interfaces import Manager, Messanger
 
@@ -65,7 +65,7 @@ class EmailTemplates:
         subject = f"Connection Request from {current_user.company_name}"
 
         # replace the placeholders in the email
-        text = read_file(template_path)
+        text = FileSystem(template_path).read()
         text = text.format(USER_ID=current_user.get_id(),
                            USER_INN=current_user.company_inn,
                            USER_NAME=current_user.company_name,

@@ -3,7 +3,6 @@ import logging
 import decimal
 import time
 from random import randint
-from project.file_manager import delete_empty_scraper
 from flask import Blueprint, render_template, redirect, request, url_for
 from flask_login import login_required, current_user
 from project.helpers import inn_checker, format_search_all_result, check_price, unhash_inn, get_link, get_cur_date, \

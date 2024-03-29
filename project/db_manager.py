@@ -5,10 +5,9 @@ from datetime import datetime
 from project import db
 from project.models import Companies, Competitors, Scrapers, ItemsRecords, UsersItems, ItemsConnections
 from project.corpotate_scrapers.company_info_search import Company
-from project.file_manager import create_scraper_file, delete_empty_scraper
+from project.systems import ScraperSystem
 from project.helpers import get_cls_from_path, get_cur_date, get_link
 from project import async_search
-
 
 def load_company_data(_inn):
     """Uses a parser to get data from the web if the last load of the date
@@ -129,7 +128,7 @@ def db_delete_competitor(user_id, com_inn):
         db.session.commit()
         scraper_used = Competitors.query.filter_by(competitor_inn=com_inn).all()
         if len(scraper_used) == 0:
-            if delete_empty_scraper(scraper_path, com_inn):
+            if ScraperSystem(scraper_path, com_inn):
                 db_delete_scr_path(user_id, com_inn)
         return True
     return False
@@ -145,7 +144,7 @@ def db_add_scraper(user_inn, comp_inn: str):
     exists = Scrapers.query.filter_by(company_inn=comp_inn).first()
     if exists:
         return False
-    path = create_scraper_file(user_inn, comp_inn)
+    path = ScraperSystem(user_inn, comp_inn).create()
     if path:
         scraper = Scrapers(company_inn=comp_inn, scraper_path=path)
         db.session.add(scraper)

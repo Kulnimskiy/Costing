@@ -4,8 +4,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from . import db
 from .models import User
 from .helpers import password_checker, email_checker, inn_checker, login_checker
-from .file_manager import create_client_folder
-
+from project.systems import FolderSystem
 auth = Blueprint("auth", __name__)
 
 
@@ -54,7 +53,10 @@ def signup():
         # add the user to the db
         db.session.add(new_user)
         db.session.commit()
-        create_client_folder(user_inn=company_inn_)
+
+        dir_name = user_inn
+
+        FolderSystem(str(company_inn_)).create()
         return redirect("/login")
     return render_template("signup.html")
 

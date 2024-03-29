@@ -3,19 +3,17 @@ import sys
 import time
 import decimal
 import logging
-import inspect
+
 from typing import Union
 import requests
 import validators
-import importlib.util
+
 from bs4 import BeautifulSoup
 from datetime import datetime
 from difflib import SequenceMatcher
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from project.interfaces import Manager, Hasher
-
-
 
 
 
@@ -157,33 +155,7 @@ class UrlManager(Manager):
         return None
 
 
-class ScrapersManager:
 
-    @staticmethod
-    def get_cls_from_module(module_name):
-        """get all the cls instances within a python file without the imported ones
-        use module_name=sys.modules[__name__] to get classes form your file"""
-
-        cls_members = inspect.getmembers(module_name, inspect.isclass)  # get ALL the classes (class_name, class_object)
-        # remove the imported classes
-        cls_objects = [obj for name, obj in cls_members if obj.__dict__.get("BASE_URL", None)]
-        return cls_objects
-
-    @staticmethod
-    def get_cls_from_path(path):
-        """first you import the module, a list of classes and del the module from the file"""
-        try:
-            spec = importlib.util.spec_from_file_location("scraper", path)
-            module = importlib.util.module_from_spec(spec)
-            sys.modules["scraper"] = module
-            spec.loader.exec_module(module)
-            classes = ScrapersManager.get_cls_from_module(module)
-            sys.modules.pop('scraper')
-            return classes
-        except FileNotFoundError as e:
-            print(e)
-            print(f"There is no such scraper on the path: {path}")
-            return None
 
 
 class OperationalTools:
