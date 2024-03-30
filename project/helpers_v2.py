@@ -3,6 +3,8 @@ from difflib import SequenceMatcher
 import decimal
 import logging
 import time
+from typing import Union
+
 from project.managers import UrlManager
 from bs4 import BeautifulSoup
 from selenium import webdriver
@@ -29,74 +31,59 @@ class OperationalTools:
         return 0
 
 
-class Analysis:
-    @staticmethod
-    def calculate_relevance(search: str, result: str):
-        words = search.split()
-        counter = 0
-        for word in words:
-            if len(word) > 5:
-                word = word[1:-2]
-            if word.lower() in result.lower():
-                counter += 1
-        return counter / len(words)
+class ItemName:
+    """ Works wih item names and gets info out of it"""
 
-    @staticmethod
-    def compare_names(a, b):
-        """Used to see if two items relate to each other"""
-        item_1 = a.lower()
-        item_2 = b.lower()
-        models = [word for word in item_1.split() if check_word(word)]
-        counter = 0
-        for model in models:
-            if model in item_2:
-                counter += 1
-        param3 = counter / len(models) if models else 0
-        if param3:
-            return param3 * 0.5 + SequenceMatcher(None, a, b).ratio() * 0.3 + calculate_relevance(b, a) * 0.2
-        else:
-            return SequenceMatcher(None, a, b).ratio() * 0.6 + calculate_relevance(b, a) * 0.4
+    def __init__(self, item_name: str):
+        self.item_name = item_name
 
-    @staticmethod
-    def format_search_all_result(item, result: dict, competitors, min_price=None, max_price=None, ):
-        for r in result:
-            if r["price"] is None:
-                r["price"] = 0
-            for competitor in competitors:
-                if competitor.competitor_website in r["url"]:
-                    r["competitor"] = competitor.competitor_nickname
-                    r["competitor_inn"] = competitor.competitor_inn
-        if min_price:
-            result = filter(lambda x: x["price"] >= min_price, result)
-        if max_price:
-            result = filter(lambda x: x["price"] <= max_price, result)
-        result = sorted(list(result), key=lambda r: (calculate_relevance(item, r["name"]), r["price"]), reverse=True)
-        for r in result:
-            if r["price"] == 0:
-                r["price"] = "Not selling || Not found"
-            else:
-                r["price"] = decimal.Decimal(str(r["price"]))
-                r["price"] = '{0:,}'.format(r["price"]).replace(',', ' ')
-        return result
-
-
-class ItemModel:
-    @staticmethod
-    def get_item_model(item_name):
-        """to get the model of an item and make it vague to increase the chances to get the result"""
-        if item_name:
-            models = [word for word in item_name.split() if ItemModel.check_word(word)]
-            if len(models) > 3:
-                models = [models[i] for i in range(len(models) - int(len(models) * 0.3))]
-            if models:
-                return " ".join(models)
+    def get_model(self) -> Union[str, None]:
+        """ Gets the model of an item and makes it vague to increase the chances to get the result"""
+        models = [word for word in self.item_name.split() if word.isascii()]
+        if len(models) > 3:
+            models = [models[i] for i in range(len(models) - int(len(models) * 0.3))]
+        if models:
+            return " ".join(models)
         return None
 
-    @staticmethod
-    def check_word(word):
-        digits = any(map(str.isdigit, word))
-        latin = any(map(str.isascii, word))
-        return any([digits, latin])
+    def relevance(self, another_item: str):
+        """ Give the possibility of 2 items being the same ones with slightly different names"""
+        words = self.same_words(another_item)
+        model = self.same_model(another_item)
+        sequence = self.same_sequence(another_item)
+        if model is None:
+            return sequence * 0.7 + words * 0.3  # weights of each param have been gotten from practice and stat results
+        return model * 0.5 + sequence * 0.3 + words * 0.2
+
+    def same_words(self, another_item: str) -> float:
+        """ Gets the percentage of the same words in the two items names """
+        item_words = self.item_name.split()
+        counter = 0
+        for word in item_words:
+            if len(word) > 5:
+                word = word[1:-2]
+            if word.lower() in another_item.lower():
+                counter += 1
+        return float(counter / len(item_words))
+
+    def same_model(self, another_item) -> Union[float, None]:
+        """ Gets the percentage of the same words in the two items models """
+        model = self.get_model()
+        if model is None:
+            return None
+        model_words = model.split()
+        counter = 0
+        for model in model_words:
+            if model.lower() in another_item.lower():
+                counter += 1
+        return counter / len(model_words)
+
+    def same_sequence(self, another_item: str) -> float:
+        """ Gets the percentage of the same sequence of words in the two items names """
+
+        item_a = self.item_name.lower()
+        item_b = another_item.lower()
+        return SequenceMatcher(None, item_a, item_b).ratio()
 
 
 class Date:
@@ -190,43 +177,80 @@ class DateCur(Date):
 
 
 class Browser(UrlManager):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    """ Opens pages in Chrome and sets page loading strategies like 'none', 'eager' and 'normal'
+        Can open browser in the headless regime"""
 
-    def open(self):
-        url = self.check()
-        if not url:
-            return None
+    def __init__(self, url: str, headless: bool = False, strategy: str = 'none'):
+        super().__init__(url=url)
+        self.driver = self.__set_up(headless, strategy)
 
-    def open
-    def get_web(self, class_waiting_tag, timeout=50):
-        """Get the page using your browser if nothing else is working
-        timeout - the time for the program to try to find the target element
-        class_waiting_tag - target element to validate that the page has loaded correctly"""
-        url = self.check()
-        if not url:
-            return None
+    @staticmethod
+    def __set_up(headless: bool, strategy: str):
+        """ Note that some websites don't give a valid page in a headless regime"""
+        options = Options()
+        if headless:
+            options.add_argument("--headless")
+        if strategy in ["none", "eager", "normal"]:
+            options.page_load_strategy = strategy
+        return webdriver.Chrome(options=options)
+
+    @staticmethod
+    def __get_tag(page, tag: str) -> bool:
+        doc = BeautifulSoup(page, "html.parser")
+        if doc.find(class_=tag):
+            logging.warning(f"INFO: THE PAGE IS VALID. TAG {tag} IS FOUND")
+            return True
+        return False
+
+    def get_page(self, cls_wait_tag: str = None, attempts: int = 30, delay: float = 0.5):
+        """ Get the page using your browser if nothing else is working. Args: cls_wait_tag - target element to validate
+        that the page has loaded correctly, attempts - number of tries between attempts to find a tag, delay - seconds
+        between attempts """
+
+        url = self.check()  # get the valid url
+        driver = self.driver
         try:
-            chrome_options = Options()
-
-            # Stomart sees when this regime is used and says that we are bots
-            chrome_options.add_argument("--headful")
-            chrome_options.page_load_strategy = 'none'
-            driver = webdriver.Chrome(options=chrome_options)
-            driver.get(url)  # This is a dummy website URL
-            for i in range(timeout * 2):
-                res = driver.page_source
-                doc = BeautifulSoup(res, "html.parser")
-                if doc.find(class_=class_waiting_tag):
-                    print("The page is ready")
+            driver.get(url)
+            if cls_wait_tag is None:
+                return driver.page_source
+            for i in range(attempts):
+                page = driver.page_source
+                if self.__get_tag(page, cls_wait_tag):
                     driver.quit()
-                    return res
-                time.sleep(0.5)
-
+                    return page
+                time.sleep(delay)
             else:
                 driver.quit()
-                print("Error getting a link")
-                print("Loading took too much time!")
-        except Exception:
-            print("Server Error")
+                logging.warning(f"ERROR: TAG {cls_wait_tag} CANNOT BE FOUND OR LOADING TAKES TO MUCH TIME")
+        except Exception as error:
+            logging.warning(f"ERROR: CANNOT GET PAGE {url} \n{error}")
         return None
+
+
+class ResultFormats:
+    """ NEED TO GET RID OF THIS MESS """
+    @staticmethod
+    def search_all_result(item, result: dict, competitors, min_price=None, max_price=None, ):
+        for r in result:
+            if r["price"] is None:
+                r["price"] = 0
+            for competitor in competitors:
+                if competitor.competitor_website in r["url"]:
+                    r["competitor"] = competitor.competitor_nickname
+                    r["competitor_inn"] = competitor.competitor_inn
+        if min_price:
+            result = filter(lambda x: x["price"] >= min_price, result)
+        if max_price:
+            result = filter(lambda x: x["price"] <= max_price, result)
+        result = sorted(list(result), key=lambda r: (ItemName(item).relevance(r["name"]), r["price"]), reverse=True)
+        for r in result:
+            if r["price"] == 0:
+                r["price"] = "Not selling || Not found"
+            else:
+                r["price"] = decimal.Decimal(str(r["price"]))
+                r["price"] = '{0:,}'.format(r["price"]).replace(',', ' ')
+        return result
+
+
+if __name__ == '__main__':
+    print(Browser("dasfsdfsdf.ru").get_page("L3eUgb"))

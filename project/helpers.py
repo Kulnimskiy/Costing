@@ -205,7 +205,7 @@ def get_web(link, class_waiting_tag, timeout=50):
             chrome_options = Options()
 
             # Stomart sees when this regime is used and says that we are bots
-            chrome_options.add_argument("--headful")
+            chrome_options.add_argument("--headless")
             chrome_options.page_load_strategy = 'none'
             driver = webdriver.Chrome(options=chrome_options)
             driver.get(link)  # This is a dummy website URL
@@ -351,5 +351,4 @@ class DateCur(Date):
 
 
 if __name__ == "__main__":
-    print(Date("5 августа 2014").format_datetime())
-    # print(get_link("dentikom/delivery-and-payment/delivery/"))
+    pass
