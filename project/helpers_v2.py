@@ -1,12 +1,11 @@
-from datetime import datetime
-from difflib import SequenceMatcher
+import time
 import decimal
 import logging
-import time
 from typing import Union
-
-from project.managers import UrlManager
+from datetime import datetime
 from bs4 import BeautifulSoup
+from difflib import SequenceMatcher
+from project.managers import UrlManager
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 
