@@ -12,16 +12,18 @@ from selenium.webdriver.chrome.options import Options
 
 class OperationalTools:
     @staticmethod
-    def operate(operation, info=None):
+    def operate(operation):
         """function to process the result from parsing"""
-        try:
-            if info:
-                result = operation(info)
+
+        def wrapper(*args, **kwargs):
+            try:
+                result = operation(*args, **kwargs)
                 return result
-            return operation()
-        except (AttributeError, TypeError, ValueError) as e:
-            print(e)
-            return None
+            except (AttributeError, TypeError, ValueError) as error:
+                logging.warning(error)
+                return None
+
+        return wrapper
 
     @staticmethod
     def check_int(number: str) -> int:
@@ -113,6 +115,7 @@ class Date:
 
     @property
     def year(self):
+        print(self.date)
         _year = self.__split_date[2]
         if not OperationalTools.check_int(_year):
             return None
@@ -228,6 +231,7 @@ class Browser(UrlManager):
 
 class ResultFormats:
     """ NEED TO GET RID OF THIS MESS """
+
     @staticmethod
     def search_all_result(item, result: dict, competitors, min_price=None, max_price=None, ):
         for r in result:

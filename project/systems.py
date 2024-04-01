@@ -107,9 +107,9 @@ class ScraperSystem:
             module = importlib.util.module_from_spec(spec)
             sys.modules["scraper"] = module
             spec.loader.exec_module(module)
-            classes = ScraperSystem.get_from_module(module)
+            cls = ScraperSystem.get_from_module(module)
             sys.modules.pop('scraper')
-            return classes
+            return cls
         except FileNotFoundError as error:
             logging.warning(f"ERROR: THE PATH '{path}' DOESN'T HAVE ANY SCRAPER \n{error}")
             return None

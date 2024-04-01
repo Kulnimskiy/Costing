@@ -1,143 +1,210 @@
 import logging
-import random
 from sqlalchemy import func
-from datetime import datetime
 from project import db
 from project.models import Companies, Competitors, Scrapers, ItemsRecords, UsersItems, ItemsConnections
 from project.corpotate_scrapers.search_company import Company
 from project.systems import ScraperSystem
 from project.helpers import get_cls_from_path, get_cur_date, get_link
+from project.managers import UrlManager
+from helpers_v2 import DateCur
 from project import async_search
 
-def load_company_data(_inn):
-    """Uses a parser to get data from the web if the last load of the date
-    happened more than 2 days ago and updates the data in the db"""
-    days_between_reload = 3
-    cur_date_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    cur_date = datetime.strptime(cur_date_str, "%Y-%m-%d %H:%M:%S")
-    company = Companies.query.filter_by(_inn=_inn).first()
-    if company:
-        last_load_date = datetime.strptime(company.info_loading_date, "%Y-%m-%d %H:%M:%S")
-        days_passed = (cur_date - last_load_date).days
-        if days_passed >= days_between_reload:
-            # update the company info
-            company_info = Company(_inn).get_full_info()
-            company.inn = company_info["inn"]
+DAYS_BEFORE_RELOAD = 3  # Number of days to update the info about a company
 
-            # if there is new info about a website, we change it
-            if company_info["website"]:
-                company.website = company_info["website"]
-            company.organization = company_info["organization"]
-            company.ogrn = company_info["ogrn"]
-            company.registration_date = company_info["registration_date"]
-            company.sphere = company_info["sphere"]
-            company.address = company_info["address"]
-            company.workers_number = company_info["workers_number"]
-            company.ceo = company_info["ceo"]
-            company.info_loading_date = str(cur_date)
-            db.session.commit()
 
-            # need to get that again after the commit
-            company = Companies.query.filter_by(_inn=_inn).first()
-            # print("CHANGE", company.__dict__)
+class CompanyDB:
+    model = Companies
+
+    def __init__(self, inn):
+        self.inn = inn
+
+    def get(self):
+        """ Get the company info from the db """
+        company = self.model.query.filter_by(_inn=self.inn).first()
+        if company:
             return company
-        # print("GET", company.__dict__)
-        return company
+        return None
 
-    # if the company hasn't been added yet, we add it
-    company_info = Company(_inn).get_full_info()
-    new_company = Companies(_inn=company_info["inn"],
-                            website=company_info["website"],
-                            organization=company_info["organization"],
-                            ogrn=company_info["ogrn"],
-                            registration_date=company_info["registration_date"],
-                            sphere=company_info["sphere"],
-                            address=company_info["address"],
-                            workers_number=company_info["workers_number"],
-                            ceo=company_info["ceo"],
-                            info_loading_date=cur_date_str)
-    db.session.add(new_company)
+    def create(self) -> bool:
+        """ Creates a company from its inn and adds it to the db """
 
-    # also we add it to the list of competitors so that it could be connected
-    # db_add_competitor()
-    db.session.commit()
-    company = Companies.query.filter_by(_inn=_inn).first()
-    return company
+        if self.get():  # Check if the company already exists
+            return False
+
+        company_info = Company(self.inn).get_full_info()
+        if company_info is None:
+            logging.warning(f"THE COMPANY {self.inn} WASN'T CREATED")
+            return False
+
+        new_company = Companies(_inn=company_info["inn"],
+                                website=company_info["website"],
+                                organization=company_info["organization"],
+                                ogrn=company_info["ogrn"],
+                                registration_date=company_info["registration_date"],
+                                sphere=company_info["sphere"],
+                                address=company_info["address"],
+                                workers_number=company_info["workers_number"],
+                                ceo=company_info["ceo"],
+                                info_loading_date=DateCur.cur_date())
+        db.session.add(new_company)
+        db.session.commit()
+        return True
+
+    def update(self):
+        """ Updates the info about the company """
+        company = self.get()
+        if not company:  # Check if the company already exists
+            return False
+
+        company_info = Company(self.inn).get_full_info()
+        company.inn = company_info["inn"]
+        company.organization = company_info["organization"]
+        company.ogrn = company_info["ogrn"]
+        company.registration_date = company_info["registration_date"]
+        company.sphere = company_info["sphere"]
+        company.address = company_info["address"]
+        company.workers_number = company_info["workers_number"]
+        company.ceo = company_info["ceo"]
+        company.info_loading_date = DateCur.cur_date()
+
+        # if there is new info about a website, we change it
+        web = company_info["website"]
+        if web and company.website != UrlManager(web).check():
+            company.website = UrlManager(web).check()
+        db.session.commit()
+        return True
+
+    def load(self):
+        """ Gets data using from db or from the web if it's been more than DAYS_BEFORE_RELOAD days"""
+        company = self.get()
+        if company:
+            days_passed = DateCur.days_passed(company.info_loading_date)
+            if days_passed < DAYS_BEFORE_RELOAD:  # reload the company info every other day
+                return company
+            if self.update():
+                company_updated = self.get()
+                return company_updated
+            logging.warning(f"THE COMPANY {self.inn} WASN'T UPDATED!")
+            return company
+
+        if self.create():  # if the company hasn't been added to the db
+            return self.get()
+        return None
 
 
-def create_competitor(data_source, user_id, comp_inn, comp_nickname=None, website=None):
-    comp_nickname = comp_nickname if comp_nickname else data_source.organization
-    website = website if website else data_source.website
-    if website:
-        if "http" not in website and "https" not in website:
-            website = "https://" + website
-    new_competitor = Competitors(user_id=user_id,
-                                 competitor_inn=comp_inn,
-                                 competitor_nickname=comp_nickname,
-                                 competitor_website=website)
-    return new_competitor
+class CompetitorDB:
+    """ Manages competitors in th db. cp - competitor """
+    CONNECTION_STATUS = ["disconnected", "connected", "requested"]
 
+    def __init__(self, user_id, cp_inn):
+        self.user_id = user_id
+        self.cp_inn = cp_inn
 
-def db_add_competitor(user_id, comp_inn, comp_nickname=None, website=None):
-    competitor_already_added = Competitors.query.filter_by(competitor_inn=comp_inn, user_id=user_id).first()
-    if competitor_already_added:
-        print(competitor_already_added.__dict__)
-        print("Competitor is already in the table")
-        return competitor_already_added
+    def get(self):
+        return Competitors.query.filter_by(user_id=self.user_id, competitor_inn=self.cp_inn).first()
 
-    company_exists = Companies.query.filter_by(_inn=comp_inn).first()
-    if company_exists:
-        print("The company exists already in the table")
-        new_competitor = create_competitor(company_exists, user_id, comp_inn, comp_nickname, website)
+    @staticmethod
+    def get_all(user_id, connection_status=""):
+        """connection status can be 'disconnected', 'connected','requested'. Only those are in the db"""
+        if connection_status in CompetitorDB.CONNECTION_STATUS:
+            return Competitors.query.filter_by(user_id=user_id, connection_status=connection_status).all()
+        return Competitors.query.filter_by(user_id=user_id).all()
+
+    def create(self, cp_nickname=None, website=None):
+        """ Creates a competitor and loads him to the db """
+        cp = self.get()
+        if cp:
+            logging.warning(f"COMPETITOR {self.cp_inn} IS ALREADY ADDED TO USER {self.user_id}")
+            return False
+        cp = CompanyDB(self.cp_inn).load()
+        if not cp:
+            logging.warning(f"UNABLE TO GET {self.cp_inn} COMPETITOR FROM THE WEB")
+            return False
+
+        nickname = cp_nickname if cp_nickname else cp.organization  # let the user customize naming
+        web = UrlManager(website).check()  # check if the website the user has given is valid
+        website = web if web else cp.website  # let the user get the needed web if not possible to get from the source
+        new_competitor = Competitors(user_id=self.user_id,
+                                     competitor_inn=self.cp_inn,
+                                     competitor_nickname=nickname,
+                                     competitor_website=website)
         db.session.add(new_competitor)
         db.session.commit()
-        return 0
-    print("adding a company")
-    # if there is no company no competitor with this inn and
-    company = load_company_data(comp_inn)
-    new_competitor = create_competitor(company, user_id, comp_inn, comp_nickname, website)
-    db.session.add(new_competitor)
-    db.session.commit()
 
+        return True
 
-def db_get_competitors(user_id, connection_status=""):
-    """connection status can be 'disconnected', 'connected','requested'. Only those are in the db"""
-    if connection_status:
-        return Competitors.query.filter_by(user_id=user_id, connection_status=connection_status).all()
-    return Competitors.query.filter_by(user_id=user_id).all()
+    def update_status(self, new_status="requested"):
+        """ Change the status of the competitor to the new one """
+        if new_status not in CompetitorDB.CONNECTION_STATUS:
+            logging.warning(f"THE CONNECTION STATUS {new_status} IS NOT SUPPORTED")
+            return False
 
+        cp = self.get()
+        if not cp:
+            logging.warning(f"THE COMPANY {self.cp_inn} IS NOT A COMPETITOR FOR USER: {self.user_id}")
+            return False
 
-def db_get_competitor(user_id, com_inn):
-    return Competitors.query.filter_by(user_id=user_id, competitor_inn=com_inn).first()
-
-
-def db_update_con_status(user_id, com_inn, new_status="requested"):
-    competitor = db_get_competitor(user_id, com_inn)
-    if competitor and competitor.connection_status == "disconnected":
-        competitor.connection_status = new_status
+        cp.connection_status = new_status
         db.session.commit()
         return True
-    return False
 
-
-def db_delete_competitor(user_id, com_inn):
-    company = db_get_competitor(user_id, com_inn)
-    scraper_path = db_get_scr_from_id(user_id=user_id, comp_inn=com_inn, path=True)
-    if company:
-        db.session.delete(company)
-        db.session.commit()
-        scraper_used = Competitors.query.filter_by(competitor_inn=com_inn).all()
+    def delete(self):
+        cp = self.get()
+        if not cp:
+            logging.warning(f"THE COMPANY {self.cp_inn} IS NOT A COMPETITOR FOR USER: {self.user_id}")
+            return False
+        scraper_path = db_get_scr_from_id(user_id=self.user_id, comp_inn=self.cp_inn, path=True)
+        scraper_used = Competitors.query.filter_by(competitor_inn=self.cp_inn).all()
         if len(scraper_used) == 0:
-            if ScraperSystem(scraper_path, com_inn):
-                db_delete_scr_path(user_id, com_inn)
+            if ScraperSystem(scraper_path, self.cp_inn):
+                db_delete_scr_path(self.user_id, self.cp_inn)
+                logging.warning(f"SCRAPER FOR {self.cp_inn} IS NO LONGER NEEDED!")
         return True
-    return False
 
 
-def get_all_competitors():
-    users = Competitors.query.all()
-    for user in users:
-        print(user.__dict__)
+class ScraperDB:
+    def __init__(self, user_id, cp_inn):
+        self.user_id = user_id
+        self.cp_inn = cp_inn
+
+    def get(self):
+        scr = Scrapers.query.filter_by(company_inn=self.cp_inn).first()
+        if scr:
+            return scr
+        return None
+
+    def get_path(self):
+        scr = self.get()
+        if scr:
+            return scr.scraper_path
+        return None
+
+    @staticmethod
+    def get_all(user_id):
+        """ Gets all scrapers for a user """
+        cps = CompetitorDB.get_all(user_id)
+        inns_ = [cp.competitor_inn for cp in cps]
+        scrs = Scrapers.query.filter(Scrapers.company_inn.in_(inns_)).all()
+        return scrs
+
+    def get_cls(self):
+        """ Gets the scraper class from the according file """
+        cp = CompetitorDB(self.user_id, self.cp_inn).get()
+        if not cp or cp.connection_status != CompetitorDB.CONNECTION_STATUS[1]:  # if the competitor is not connected
+            logging.warning(f"THE COMPETITOR {self.cp_inn} IS NOT CONNECTED!")
+            return None
+        scr_path = self.get_path()
+        cls = ScraperSystem.get_from_path(scr_path)
+        return cls
+
+    @staticmethod
+    def get_cls_all(user_id):
+        """ Gets all the scraper classes for the according user """
+        cps = CompetitorDB.get_all(user_id, CompetitorDB.CONNECTION_STATUS[1])
+        inns_ = [cp.competitor_inn for cp in cps]
+        scrs = Scrapers.query.filter(Scrapers.company_inn.in_(inns_)).all()
+        classes = [ScraperSystem.get_from_path(scr.scraper_path)[0] for scr in scrs]
+        return classes
 
 
 def db_add_scraper(user_inn, comp_inn: str):
@@ -151,28 +218,6 @@ def db_add_scraper(user_inn, comp_inn: str):
         db.session.commit()
         return True
     return False
-
-
-def db_get_scr_from_id(user_id, comp_inn=None, path=False):
-    """ If competitor's inn is not provided, it returns a list of all the scrapers connected
-    to the user by their id. Else it returns a scraper for a specific competitor"""
-    if comp_inn:
-        competitor = db_get_competitor(user_id, comp_inn)
-        if competitor:
-            scr_path = Scrapers.query.filter_by(company_inn=comp_inn).first().scraper_path
-            if path:
-                return scr_path
-            if competitor.connection_status == "connected":
-                cls = get_cls_from_path(scr_path)[0]
-                return cls
-            else:
-                print(f"The competitor {comp_inn} is not connected")
-                return None
-    competitors_ = db_get_competitors(user_id, "connected")
-    inns_ = [competitor.competitor_inn for competitor in competitors_]
-    scr_path = Scrapers.query.filter(Scrapers.company_inn.in_(inns_)).all()
-    classes = [get_cls_from_path(scr.scraper_path)[0] for scr in scr_path]
-    return classes
 
 
 def db_delete_scr_path(user_id, comp_inn):
