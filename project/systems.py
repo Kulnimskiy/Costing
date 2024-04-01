@@ -79,6 +79,7 @@ class FolderSystem:
 
 
 class ScraperSystem:
+    """ Used to work with Scraper files """
     def __init__(self, user_inn: str, cp_inn):
         self.user_inn = user_inn
         self.cp_inn = cp_inn
@@ -126,11 +127,11 @@ class ScraperSystem:
         return FileSystem(path).create(scraper_template)
 
     def delete(self, path: str) -> bool:
-        """ Deletes a scraper only if it's never been changed """
+        """ Deletes a scraper file only if it's never been changed """
         class_name = hash_inn(self.cp_inn)
         template = self.get_template(class_name)
-        scraper = FileSystem(path)
-        if template == scraper.read():
-            return scraper.delete()
+        scraper_file = FileSystem(path)
+        if template == scraper_file.read():
+            return scraper_file.delete()
         logging.warning(f"FILE {path} WASN'T DELETED AS IT HAS BEEN CHANGED")
         return False

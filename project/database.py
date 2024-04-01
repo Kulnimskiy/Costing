@@ -1,7 +1,9 @@
 import logging
+from typing import Union
+
 from sqlalchemy import func
 from project import db
-from project.models import Companies, Competitors, Scrapers, ItemsRecords, UsersItems, ItemsConnections
+from project.models import Companies, Competitors, Scrapers, ItemsRecords, UsersItems, ItemsConnections, User
 from project.corpotate_scrapers.search_company import Company
 from project.systems import ScraperSystem
 from project.helpers import get_cls_from_path, get_cur_date, get_link
@@ -10,6 +12,7 @@ from helpers_v2 import DateCur
 from project import async_search
 
 DAYS_BEFORE_RELOAD = 3  # Number of days to update the info about a company
+ITEMS_UPDATE = 1  # Number of days to add new records of the item
 
 
 class CompanyDB:
@@ -18,7 +21,7 @@ class CompanyDB:
     def __init__(self, inn):
         self.inn = inn
 
-    def get(self):
+    def get(self) -> Union[Companies, None]:
         """ Get the company info from the db """
         company = self.model.query.filter_by(_inn=self.inn).first()
         if company:
@@ -50,7 +53,7 @@ class CompanyDB:
         db.session.commit()
         return True
 
-    def update(self):
+    def _update(self):
         """ Updates the info about the company """
         company = self.get()
         if not company:  # Check if the company already exists
@@ -81,7 +84,7 @@ class CompanyDB:
             days_passed = DateCur.days_passed(company.info_loading_date)
             if days_passed < DAYS_BEFORE_RELOAD:  # reload the company info every other day
                 return company
-            if self.update():
+            if self._update():
                 company_updated = self.get()
                 return company_updated
             logging.warning(f"THE COMPANY {self.inn} WASN'T UPDATED!")
@@ -153,12 +156,17 @@ class CompetitorDB:
         if not cp:
             logging.warning(f"THE COMPANY {self.cp_inn} IS NOT A COMPETITOR FOR USER: {self.user_id}")
             return False
-        scraper_path = db_get_scr_from_id(user_id=self.user_id, comp_inn=self.cp_inn, path=True)
-        scraper_used = Competitors.query.filter_by(competitor_inn=self.cp_inn).all()
-        if len(scraper_used) == 0:
-            if ScraperSystem(scraper_path, self.cp_inn):
-                db_delete_scr_path(self.user_id, self.cp_inn)
-                logging.warning(f"SCRAPER FOR {self.cp_inn} IS NO LONGER NEEDED!")
+
+        # save the scraper path to know if it's used anywhere
+        scr_path = ScraperDB(self.user_id, self.cp_inn).get_path()
+
+        db.session.delete(cp)
+        db.session.commit()
+
+        scr_times_used = len(Competitors.query.filter_by(competitor_inn=self.cp_inn).all())
+        if scr_times_used == 0:
+            ScraperSystem(self.user_id, self.cp_inn).delete(scr_path)
+            logging.warning(f"SCRAPER FOR {self.cp_inn} IS NO LONGER NEEDED!")
         return True
 
 
@@ -206,70 +214,150 @@ class ScraperDB:
         classes = [ScraperSystem.get_from_path(scr.scraper_path)[0] for scr in scrs]
         return classes
 
-
-def db_add_scraper(user_inn, comp_inn: str):
-    exists = Scrapers.query.filter_by(company_inn=comp_inn).first()
-    if exists:
+    def create(self):
+        """ Creates and adds the scraper path to the db """
+        scr = self.get()
+        if scr:
+            return False
+        user = UserDB(self.user_id).get()
+        path = ScraperSystem(user.company_inn, self.cp_inn).create()
+        if path:
+            scraper = Scrapers(company_inn=self.cp_inn, scraper_path=path)
+            db.session.add(scraper)
+            db.session.commit()
+            return True
         return False
-    path = ScraperSystem(user_inn, comp_inn).create()
-    if path:
-        scraper = Scrapers(company_inn=comp_inn, scraper_path=path)
-        db.session.add(scraper)
+
+    def delete(self):
+        """ Deletes the scraper path from the db. Used when the file has already been deleted """
+        scr = self.get()
+        if not scr:
+            return False
+        db.session.delete(scr)
+        db.session.commit()
+
+
+class ItemUserDB:
+    def __init__(self, user_id, url):
+        self.user_id = user_id
+        self.url = url
+
+    def get(self) -> Union[UsersItems, None]:
+        """ Gets the item by the link from the db """
+        item = UsersItems.query.filter_by(user_id=self.user_id, link=self.url).first()
+        if item:
+            return item
+        return None
+
+    @staticmethod
+    def get_all(user_id):
+        """ Gets all the user items from the db """
+        items = UsersItems.query.filter_by(user_id=user_id).all()
+        return items
+
+    def get_records(self) -> Union[list, None]:
+        item_records = ItemsRecords.query.filter_by(link=self.url).all()
+        if item_records:
+            item_records = sorted(item_records, key=(lambda x: (x.date[-4:], x.date[-7:-5], x.date[:-8])), reverse=True)
+            return item_records
+        return None
+
+    def get_web_info(self):
+        """ Gets the info about the item from the internet via the link"""
+        cp_inn = self.get_cp_inn()
+        item_record = async_search.run_search_link(self.user_id, cp_inn, self.url)
+        if not item_record:
+            logging.warning(f"THERE IS NO ITEM IN {self.url}")
+            return None
+        return item_record
+
+    def get_cp(self) -> Union[Companies, None]:
+        """ Gets the competitor the items belong to """
+        inn = self.get_cp_inn()
+        if inn:
+            return CompanyDB(inn).get()
+        return None
+
+    def get_cp_inn(self) -> Union[str, None]:
+        """ Gets competitor's inn from a given link from the competitors table"""
+        cps = CompetitorDB.get_all(self.user_id, connection_status="connected")
+        for cp in cps:
+            if cp.competitor_website in self.url:
+                return cp.competitor_inn
+        return None
+
+    def get_format(self):
+        """ Filter the info that gets to the server from the db about the item """
+        item = self.get()
+        item_refined = dict()
+        if not item:
+            return item_refined
+        item_records = self.get_records()
+        last_check = item_records[0]
+        prev_check = item_records[1] if len(item_records) > 1 else last_check
+        competitor_name = self.get_cp().organization
+
+        item_refined["item_id"] = item.connection_id
+        item_refined["name"] = last_check.item_name
+        item_refined["competitor_inn"] = last_check.company_inn
+        item_refined["competitor"] = competitor_name
+        item_refined["last_price"] = last_check.price
+        item_refined["last_date"] = last_check.date
+        item_refined["price_change"] = last_check.price - prev_check.price
+        item_refined["prev_price"] = prev_check.price
+        item_refined["prev_date"] = prev_check.date
+        item_refined["link"] = item.link
+
+        return item_refined
+
+    @staticmethod
+    def get_format_all(user_id) -> list | None:
+        items = ItemUserDB.get_all(user_id)
+        if items:
+            items_formatted = []
+            for item in items:
+                item_formatted = ItemUserDB(user_id, item.url).get_format()
+                items_formatted.append(item_formatted)
+            return items_formatted
+        return None
+
+    def record(self, item_name:str, item_price:str) -> bool:
+        """ Records the info about the item to the db  """
+        cp_inn = self.get_cp_inn()
+
+        item = ItemsRecords(item_name=item_name,
+                            company_inn=cp_inn,
+                            price=item_price,
+                            date=DateCur.cur_date(),
+                            link=self.url)
+        db.session.add(item)
+
+        connection_exists = self.get()
+        if not connection_exists:
+            connection = UsersItems(user_id=self.user_id, link=self.url)
+            db.session.add(connection)
         db.session.commit()
         return True
-    return False
 
-
-def db_delete_scr_path(user_id, comp_inn):
-    scraper = Scrapers.query.filter_by(company_inn=comp_inn).first()
-    if scraper:
-        db.session.delete(scraper)
-        db.session.commit()
-
-
-def db_add_item(user_id, company_inn, link):
-    date = get_cur_date()
-    # date randomizer
-    # date = get_cur_date().replace("13", str(random.choice(list(range(10, 30)))))
-    item_records = db_get_item_records(link)
-    if item_records:
-        last_date = item_records[0].date
-        if date == last_date:
-            print(last_date, "already checked today")
-        else:
-            item = async_search.run_search_link(user_id, company_inn, link)
-            if not item:
-                print("there is no such item")
+    def update(self) -> bool:
+        """ Updates the info about the item only when it's been ITEMS_UPDATE days since the last update"""
+        item_records = self.get_records()
+        if not item_records:
+            item_records_web = self.get_web_info()
+            if not item_records_web:
                 return False
-            if not item["price"]:
-                item["price"] = 0
-            print("Not checked today. Last time is", last_date)
-            item = ItemsRecords(item_name=item["name"],
-                                company_inn=company_inn,
-                                price=item["price"],
-                                date=date,
-                                link=link)
-            db.session.add(item)
-    else:
-        item = async_search.run_search_link(user_id, company_inn, link)
-        if not item:
-            print("there is no such item")
+            return self.record(item_records["name"], item_records["price"])  # True or False depending on if the recording went well
+
+        last_record = item_records[0].date
+        days_passed = DateCur.days_passed(last_record.date)
+        if days_passed < ITEMS_UPDATE:
+            logging.warning(f"ITEM {last_record.item_name} HAS ALREADY BEEN CHECKED {last_record.date}")
             return False
-        if not item["price"]:
-            item["price"] = 0
-        print("Has never been added. Adding...")
-        item = ItemsRecords(item_name=item["name"],
-                            company_inn=company_inn,
-                            price=item["price"],
-                            date=date,
-                            link=link)
-        db.session.add(item)
-    connection_exists = UsersItems.query.filter_by(user_id=user_id, link=link).first()
-    if not connection_exists:
-        connection = UsersItems(user_id=user_id, link=link)
-        db.session.add(connection)
-    db.session.commit()
-    return True
+
+        item_records_web = self.get_web_info()
+        if not item_records_web:
+            return False
+        return self.record(item_records_web["name"], item_records_web["price"])
 
 
 def db_add_item_mnl(user_id, company_inn, item_name, price, link):
@@ -325,65 +413,6 @@ def db_add_refreshed_item(item_name, company_inn, price, link, date):
     db.session.commit()
 
 
-def db_get_items(user_id):
-    items_connections = UsersItems.query.filter_by(user_id=user_id).all()
-    if items_connections:
-        items_refined = []
-        for item in items_connections:
-            item_refined = dict()
-            item_records = db_get_item_records(item.link)
-            last_check = item_records[0]
-            if len(item_records) > 1:
-                prev_check = item_records[1]
-            else:
-                prev_check = last_check
-            item_refined["item_id"] = item.connection_id
-            item_refined["name"] = last_check.item_name
-            item_refined["competitor_inn"] = int(last_check.company_inn)
-            item_refined["competitor"] = Companies.query.filter_by(_inn=last_check.company_inn).first().organization
-            item_refined["last_price"] = last_check.price
-            item_refined["last_date"] = last_check.date
-            item_refined["price_change"] = last_check.price - prev_check.price
-            item_refined["prev_price"] = prev_check.price
-            item_refined["prev_date"] = prev_check.date
-            item_refined["link"] = item.link
-            items_refined.append(item_refined)
-        return items_refined
-    return []
-
-
-def db_get_item(user_id, item_link):
-    item = UsersItems.query.filter_by(user_id=user_id, link=item_link).first()
-    item_refined = dict()
-    if not item:
-        return item_refined
-    item_records = db_get_item_records(item_link)
-    last_check = item_records[0]
-    if len(item_records) > 1:
-        prev_check = item_records[1]
-    else:
-        prev_check = last_check
-    item_refined["item_id"] = item.connection_id
-    item_refined["name"] = last_check.item_name
-    item_refined["competitor_inn"] = int(last_check.company_inn)
-    item_refined["competitor"] = Companies.query.filter_by(_inn=last_check.company_inn).first().organization
-    item_refined["last_price"] = last_check.price
-    item_refined["last_date"] = last_check.date
-    item_refined["price_change"] = last_check.price - prev_check.price
-    item_refined["prev_price"] = prev_check.price
-    item_refined["prev_date"] = prev_check.date
-    item_refined["link"] = item.link
-    return item_refined
-
-
-def db_get_item_records(link):
-    item_records = ItemsRecords.query.filter_by(link=link).all()
-    if item_records:
-        item_records = sorted(item_records, key=(lambda x: (x.date[-4:], x.date[-7:-5], x.date[:-8])), reverse=True)
-        return item_records
-    return None
-
-
 def db_refresh_all_items(user_id):
     items_connections = UsersItems.query.filter_by(user_id=user_id).all()
     pass
@@ -401,35 +430,6 @@ def db_delete_item_connection(user_id, connection_id):
         db.session.commit()
         return True
     return False
-
-
-def db_get_user_website(user_id, inn):
-    """When the user hasn't requested connection yet, he sees companies website from
-    the companies table as a default. Returns the object from the db that will show the needed website"""
-    requested = Competitors.query.filter_by(user_id=user_id, competitor_inn=inn).first()
-    if requested:
-        return requested.competitor_website
-    return Companies.query.filter_by(_inn=inn).first().website
-
-
-def db_change_website(user_id, inn, new_website):
-    # the changed info about the user is stored in the competitors table where the user his own
-    # competitor. If the user wants to change his email for the first time, we add him to the table.
-
-    requested = Competitors.query.filter_by(user_id=user_id, competitor_inn=inn).first()
-    new_web = get_link(new_website)
-    if requested and new_web:
-        print("in1")
-        requested.competitor_website = new_web
-        db.session.commit()
-        return True
-    elif new_web:
-        print("in2")
-        db_add_competitor(user_id, inn, website=new_web)
-        return True
-    else:
-        logging.warning(f"The website for {inn} hasn't been changed")
-        return False
 
 
 def db_get_item_link_new(user_id, company_inn, item_name):
@@ -451,10 +451,6 @@ def db_get_item_connection(user_id, user_link, comp_inn):
         if str(db_get_inn(user_id, item.connected_item_link)) == str(comp_inn):
             return item
     return None
-
-
-def db_get_users_connections(user_id):
-    return ItemsConnections.query.filter_by(user_id=user_id).all()
 
 
 def db_add_item_connection(user_id, item_link, connected_item_link, comp_inn):
@@ -481,18 +477,50 @@ def db_get_item_link(user_id, item_id):
     return None
 
 
-def db_get_inn(user_id, link: str):
-    """gets competitor's inn from a given link from the competitors table"""
-    cps = db_get_competitors(user_id, connection_status="connected")
-    for cp in cps:
-        if cp.competitor_website in link:
-            return cp.competitor_inn
-    return None
-
-
 def db_delete_connection(user_id, item_link, linked_item_link):
     exists = ItemsConnections.query.filter_by(user_id=user_id, item_link=item_link,
                                               connected_item_link=linked_item_link)
     if exists.first():
         exists.delete()
         db.session.commit()
+
+
+class UserDB:
+    def __init__(self, user_id):
+        self.user_id = user_id
+
+    def get(self):
+        user = User.query.filter_by(id=self.user_id).first()
+        if user:
+            return user
+        return None
+
+    def db_change_website(user_id, inn, new_website):
+        # the changed info about the user is stored in the competitors table where the user his own
+        # competitor. If the user wants to change his email for the first time, we add him to the table.
+
+        requested = Competitors.query.filter_by(user_id=user_id, competitor_inn=inn).first()
+        new_web = get_link(new_website)
+        if requested and new_web:
+            print("in1")
+            requested.competitor_website = new_web
+            db.session.commit()
+            return True
+        elif new_web:
+            print("in2")
+            db_add_competitor(user_id, inn, website=new_web)
+            return True
+        else:
+            logging.warning(f"The website for {inn} hasn't been changed")
+            return False
+
+        def db_get_user_website(user_id, inn):
+            """When the user hasn't requested connection yet, he sees companies website from
+            the companies table as a default. Returns the object from the db that will show the needed website"""
+            requested = Competitors.query.filter_by(user_id=user_id, competitor_inn=inn).first()
+            if requested:
+                return requested.competitor_website
+            return Companies.query.filter_by(_inn=inn).first().website
+
+        def db_get_users_connections(user_id):
+            return ItemsConnections.query.filter_by(user_id=user_id).all()
