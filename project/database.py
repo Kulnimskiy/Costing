@@ -453,7 +453,7 @@ class RelationsDB:
 
     @staticmethod
     def get_all(user_id) -> list | None:
-        items_related = ItemsConnections.query.filter_by(user_id).all()
+        items_related = ItemsConnections.query.filter_by(user_id=user_id).all()
         if items_related:
             return items_related
         return None

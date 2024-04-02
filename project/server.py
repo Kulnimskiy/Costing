@@ -4,7 +4,7 @@ from random import randint
 from flask import Blueprint, render_template, redirect, request, url_for
 from flask_login import login_required, current_user
 from project.helpers import inn_checker, format_search_all_result, check_price, compare_names, get_item_model
-from project.database import CompanyDB, CompetitorDB, ItemDB
+from project.database import CompanyDB, CompetitorDB, ItemDB, RelationsDB
 from project.emails import EmailTemplates
 from project.async_search import run_search_all_items, run_search_all_links, run_search_item
 from project.db_manager import *
@@ -51,7 +51,7 @@ def get_profile():
     load_cp = [CompanyDB(competitor.competitor_inn).load() for competitor in competitors]
     all_items = ItemDB.get_format_all(user_id)
     own_items = list(filter(lambda x: inn_checker(x["competitor_inn"]) == user_inn, all_items))
-    all_linked_items = db_get_users_connections(user_id)
+    all_linked_items = RelationsDB.get_all(user_id)
 
     # get the info into the right structure {"item_link": {"comp_inn": "linked_item", ...}, ...}
 
