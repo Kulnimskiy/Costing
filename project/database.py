@@ -386,8 +386,10 @@ class ItemDB:
     def generate_url(user_id, company_inn, item_name) -> str:
         """ Generate a unique web url to identify a manually added item in the db
             if it hasn't been given or not valid """
-
-        item_link = get_link(UserDB.db_get_user_website(user_id, company_inn))
+        user = UserDB(user_id)
+        if not user:
+            raise ValueError("The user doesn't exist")
+        item_link = UrlManager(user.get_web()).check()
         item_name = item_name.strip()
 
         exist = ItemsRecords.query.filter_by(item_name=item_name, company_inn=company_inn).first()
