@@ -290,7 +290,7 @@ class ItemDB:
         return None
 
     @staticmethod
-    def get_all(user_id):
+    def get_all(user_id) -> list[UsersItems]:
         """ Gets all the user items from the db """
         items = UsersItems.query.filter_by(user_id=user_id).all()
         return items
@@ -328,7 +328,7 @@ class ItemDB:
 
     def get_cp_inn(self) -> str | None:
         """ Gets competitor's inn from a given link from the competitors table"""
-        cps = CompetitorDB.get_all(self.user_id, connection_status="connected")
+        cps = CompetitorDB.get_all(self.user_id)
         for cp in cps:
             if cp.competitor_website in self.url:
                 return cp.competitor_inn
@@ -359,12 +359,12 @@ class ItemDB:
         return item_refined
 
     @staticmethod
-    def get_format_all(user_id) -> list | None:
+    def get_format_all(user_id) -> list[dict] | None:
         items = ItemDB.get_all(user_id)
         if items:
             items_formatted = []
             for item in items:
-                item_formatted = ItemDB(user_id, item.url).get_format()
+                item_formatted = ItemDB(user_id, item.link).get_format()
                 items_formatted.append(item_formatted)
             return items_formatted
         return None

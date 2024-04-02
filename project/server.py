@@ -4,7 +4,7 @@ from random import randint
 from flask import Blueprint, render_template, redirect, request, url_for
 from flask_login import login_required, current_user
 from project.helpers import inn_checker, format_search_all_result, check_price, compare_names, get_item_model
-from project.database import CompanyDB, CompetitorDB
+from project.database import CompanyDB, CompetitorDB, ItemDB
 from project.emails import EmailTemplates
 from project.async_search import run_search_all_items, run_search_all_links, run_search_item
 from project.db_manager import *
@@ -36,9 +36,53 @@ def index():
 
 
 
-@main.route("/profile", methods=["GET", "POST"])
+@main.route("/profile", methods=["GET"])
 @login_required
-def profile():
+def get_profile():
+    user_id = current_user.get_id()
+    user_inn = current_user.company_inn
+    user_as_cp = CompetitorDB(user_id, user_inn).get()
+    # this happens when you just want to get the page with all the existing items
+    company_info = CompanyDB(user_inn).load()
+
+    competitors = CompetitorDB.get_all(user_id, connection_status=CompetitorDB.CONNECTION_STATUS[1])
+    competitors = [competitor for competitor in competitors if
+                   competitor.competitor_inn != current_user.company_inn]
+    load_cp = [CompanyDB(competitor.competitor_inn).load() for competitor in competitors]
+    all_items = ItemDB.get_format_all(user_id)
+    own_items = list(filter(lambda x: inn_checker(x["competitor_inn"]) == user_inn, all_items))
+    all_linked_items = db_get_users_connections(user_id)
+
+    # get the info into the right structure {"item_link": {"comp_inn": "linked_item", ...}, ...}
+
+    items_info = dict()
+    for item in own_items:
+        related = dict()
+        for linked_item in all_linked_items:
+            if item['link'] == linked_item.item_link:
+                con_item = db_get_item(user_id, linked_item.connected_item_link)
+                comp_inn = con_item["competitor_inn"]
+                related[comp_inn] = {"url": linked_item.connected_item_link, "name": con_item["name"]}
+        items_info[f"{item['link']}"] = related
+    if company_info:
+        requested_connection = db_get_competitor(user_id=user_id, com_inn=user_inn)
+        # The user can change the website if he hasn't requested the connection yet
+        if requested_connection:
+            website = {"link": get_link(requested_connection.competitor_website),
+                       "status": requested_connection.connection_status}
+            return render_template("profile.html", user=current_user, company_info=company_info, website=website,
+                                   competitor=requested_connection, competitors=competitors, items=own_items,
+                                   info=items_info, user_con=user_as_cp)
+        website = {"link": get_link(company_info.website), "status": "disconnected"}
+        return render_template("profile.html", user=current_user, company_info=company_info, website=website,
+                               competitor=None, competitors=competitors, items=own_items, info=items_info,
+                               user_con=user_as_cp)
+    return render_template("profile.html", competitors=competitors, items=own_items, info=items_info, user_con=user_as_cp)
+
+
+@main.route("/profile", methods=["POST"])
+@login_required
+def post_profile():
     _inn = current_user.company_inn
     user_id = current_user.get_id()
     user_con = db_get_competitor(user_id, _inn)
@@ -59,40 +103,6 @@ def profile():
                         price=item_price,
                         link=item_link)
 
-    # this happens when you just want to get the page with all the existing items
-    company_info = load_company_data(_inn)
-    competitors = db_get_competitors(current_user.get_id())
-    competitors = [competitor for competitor in competitors if
-                   competitor.competitor_inn != current_user.company_inn]
-    all_items = db_get_items(user_id)
-    own_items = list(filter(lambda x: inn_checker(x["competitor_inn"]) == _inn, all_items))
-    all_linked_items = db_get_users_connections(user_id)
-
-    # get the info into the right structure {"item_link": {"comp_inn": "linked_item", ...}, ...}
-
-    items_info = dict()
-    for item in own_items:
-        related = dict()
-        for linked_item in all_linked_items:
-            if item['link'] == linked_item.item_link:
-                con_item = db_get_item(user_id, linked_item.connected_item_link)
-                comp_inn = con_item["competitor_inn"]
-                related[comp_inn] = {"url": linked_item.connected_item_link, "name": con_item["name"]}
-        items_info[f"{item['link']}"] = related
-    if company_info:
-        requested_connection = db_get_competitor(user_id=user_id, com_inn=_inn)
-        # The user can change the website if he hasn't requested the connection yet
-        if requested_connection:
-            website = {"link": get_link(requested_connection.competitor_website),
-                       "status": requested_connection.connection_status}
-            return render_template("profile.html", user=current_user, company_info=company_info, website=website,
-                                   competitor=requested_connection, competitors=competitors, items=own_items,
-                                   info=items_info, user_con=user_con)
-        website = {"link": get_link(company_info.website), "status": "disconnected"}
-        return render_template("profile.html", user=current_user, company_info=company_info, website=website,
-                               competitor=None, competitors=competitors, items=own_items, info=items_info,
-                               user_con=user_con)
-    return render_template("profile.html", competitors=competitors, items=own_items, info=items_info, user_con=user_con)
 
 
 @main.route("/profile/load_item", methods=["POST"])
