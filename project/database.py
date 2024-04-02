@@ -1,13 +1,11 @@
 import logging
-from typing import Union
 from sqlalchemy import func
 from project import db
 from project.models import Companies, Competitors, Scrapers, ItemsRecords, UsersItems, ItemsConnections, User
 from project.corpotate_scrapers.search_company import Company
 from project.systems import ScraperSystem
-from project.helpers import get_link
 from project.managers import UrlManager
-from helpers_v2 import DateCur
+from project.helpers_v2 import DateCur
 from project import async_search
 
 DAYS_BEFORE_RELOAD = 3  # Number of days to update the info about a company
@@ -20,12 +18,30 @@ class CompanyDB:
     def __init__(self, inn):
         self.inn = inn
 
-    def get(self) -> Union[Companies, None]:
+    def get(self) -> Companies | None:
         """ Get the company info from the db """
         company = self.model.query.filter_by(_inn=self.inn).first()
         if company:
             return company
         return None
+
+    def get_web(self):
+        company = self.get()
+        if company:
+            return company.website
+        return None
+
+    def change_web(self, new_web):
+        company = self.get()
+        if not company:
+            return False
+        new_web = UrlManager(new_web).check()
+        if not new_web:
+            logging.warning(f"COMPANY '{self.get().organization}' WEBSITE HASN'T BEEN CHANGED")
+            return False
+        company.website = new_web
+        db.session.commit()
+        return True
 
     def create(self) -> bool:
         """ Creates a company from its inn and adds it to the db """
@@ -47,7 +63,7 @@ class CompanyDB:
                                 address=company_info["address"],
                                 workers_number=company_info["workers_number"],
                                 ceo=company_info["ceo"],
-                                info_loading_date=DateCur.cur_date())
+                                info_loading_date=DateCur.cur_datetime())
         db.session.add(new_company)
         db.session.commit()
         return True
@@ -76,7 +92,7 @@ class CompanyDB:
         db.session.commit()
         return True
 
-    def load(self):
+    def load(self) -> Companies | None:
         """ Gets data using from db or from the web if it's been more than DAYS_BEFORE_RELOAD days"""
         company = self.get()
         if company:
@@ -98,12 +114,33 @@ class CompetitorDB:
     """ Manages competitors in th db. cp - competitor """
     CONNECTION_STATUS = ["disconnected", "connected", "requested"]
 
-    def __init__(self, user_id, cp_inn):
+    def __init__(self, user_id: int, cp_inn: str):
         self.user_id = user_id
         self.cp_inn = cp_inn
 
-    def get(self):
-        return Competitors.query.filter_by(user_id=self.user_id, competitor_inn=self.cp_inn).first()
+    def get(self) -> Competitors | None:
+        competitor = Competitors.query.filter_by(user_id=self.user_id, competitor_inn=self.cp_inn).first()
+        if not competitor:
+            return None
+        return competitor
+
+    def get_web(self) -> str | None:
+        cp = self.get()
+        if not cp:
+            return None
+        return cp.competitor_website
+
+    def change_web(self, new_web: str) -> bool:
+        cp = self.get()
+        if not cp:
+            return False
+        new_web = UrlManager(new_web).check()
+        if not new_web:
+            logging.warning(f"COMPATITOR '{self.get().organization}' WEBSITE HASN'T BEEN CHANGED")
+            return False
+        cp.competitor_website = new_web
+        db.session.commit()
+        return True
 
     @staticmethod
     def get_all(user_id, connection_status=""):
@@ -152,6 +189,10 @@ class CompetitorDB:
 
     def delete(self):
         cp = self.get()
+        user = UserDB(self.user_id).get()
+        if not user:
+
+            return False
         if not cp:
             logging.warning(f"THE COMPANY {self.cp_inn} IS NOT A COMPETITOR FOR USER: {self.user_id}")
             return False
@@ -164,7 +205,7 @@ class CompetitorDB:
 
         scr_times_used = len(Competitors.query.filter_by(competitor_inn=self.cp_inn).all())
         if scr_times_used == 0:
-            ScraperSystem(self.user_id, self.cp_inn).delete(scr_path)
+            ScraperSystem(user.company_inn, self.cp_inn).delete(scr_path)
             logging.warning(f"SCRAPER FOR {self.cp_inn} IS NO LONGER NEEDED!")
         return True
 
@@ -241,7 +282,7 @@ class ItemDB:
         self.user_id = user_id
         self.url = url
 
-    def get(self) -> Union[UsersItems, None]:
+    def get(self) -> UsersItems | None:
         """ Gets the item by the link from the db """
         item = UsersItems.query.filter_by(user_id=self.user_id, link=self.url).first()
         if item:
@@ -261,7 +302,7 @@ class ItemDB:
             return item_record
         return None
 
-    def get_records(self) -> Union[list, None]:
+    def get_records(self) -> list | None:
         """ Gets all records about an item """
         item_records = ItemsRecords.query.filter_by(link=self.url).all()
         if item_records:
@@ -278,14 +319,14 @@ class ItemDB:
             return None
         return item_record
 
-    def get_cp(self) -> Union[Companies, None]:
+    def get_cp(self) -> Companies | None:
         """ Gets the competitor the items belong to """
         inn = self.get_cp_inn()
         if inn:
             return CompanyDB(inn).get()
         return None
 
-    def get_cp_inn(self) -> Union[str, None]:
+    def get_cp_inn(self) -> str | None:
         """ Gets competitor's inn from a given link from the competitors table"""
         cps = CompetitorDB.get_all(self.user_id, connection_status="connected")
         for cp in cps:
@@ -489,7 +530,7 @@ class UserDB:
     def __init__(self, user_id):
         self.user_id = user_id
 
-    def get(self):
+    def get(self) -> User | None:
         user = User.query.filter_by(id=self.user_id).first()
         if user:
             return user
@@ -515,22 +556,20 @@ class UserDB:
             return False
         user_inn = user.company_inn
 
-        # the user company gets into the Competitors table only when the connection request has been sent
-        requested = CompetitorDB(self.user_id, user_inn).get()
-        if not requested:
+        new_web = UrlManager(new_website).check()
+        if not new_web:
             return False
 
-        new_web = get_link(new_website)
-        if requested and new_web:
-            requested.competitor_website = new_web
-            db.session.commit()
+        # the user company gets into the Competitors table only when the connection request has been sent
+        competitor = CompetitorDB(self.user_id, user_inn)
+        company = CompanyDB(user_inn)
+
+        if competitor.get():
+            competitor.change_web(new_web)
             return True
-        elif new_web:
-            print("in2")
-            # db_add_competitor(user_id, inn, website=new_web)
+        elif company.get():
+            company.change_web(new_web)
             return True
         else:
             logging.warning(f"The website for {user_inn} hasn't been changed")
             return False
-
-
