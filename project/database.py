@@ -167,6 +167,8 @@ class CompetitorDB:
                                      competitor_inn=self.cp_inn,
                                      competitor_nickname=nickname,
                                      competitor_website=website)
+        ScraperDB(user_id=self.user_id, cp_inn=self.cp_inn).create()
+        ScraperSystem(user_inn=cp._inn, cp_inn=self.cp_inn).create()
         db.session.add(new_competitor)
         db.session.commit()
 
@@ -290,7 +292,7 @@ class ItemDB:
         return None
 
     @staticmethod
-    def get_by_id(user_id, item_id):
+    def get_by_id(user_id, item_id) -> UsersItems | None:
         item = UsersItems.query.filter_by(user_id=user_id, connection_id=item_id).first()
         if item:
             return item
@@ -612,8 +614,8 @@ class UserDB:
         return CompanyDB(user_inn).get().website
 
     def change_web(self, new_website):
-        # the changed info about the user is stored in the competitors table where the user his own
-        # competitor. If the user wants to change his email for the first time, we add him to the table.
+        """ The changed info about the user is stored in the competitors table where the user his own
+            competitor. If the user wants to change his website for the first time, we add him to the table."""
         user = self.get()
         if not user:
             return False
