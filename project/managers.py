@@ -1,5 +1,4 @@
 import logging
-import time
 import requests
 import validators
 from typing import Union
@@ -68,7 +67,7 @@ class InnManager(Manager, Hasher):
     def inn(self, value: str):
         self._inn = value.strip()
 
-    def check(self) -> Union[str, bool]:
+    def check(self) -> str | None:
         """for testing purposes the algorithm of checking if the inn exists is not implemented"""
         inn = self.inn
         if len(inn) not in [InnManager.INN_PEOPLE_LEN, InnManager.INN_ORG_LEN]:
@@ -151,5 +150,3 @@ class UrlManager(Manager):
             if validators.url(link):
                 return link
         return None
-
-

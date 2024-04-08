@@ -137,20 +137,19 @@
         </tr>
         </thead>
         <tbody>
-        {% if items %}
-        {% for item in items %}
-            {% set item_link = item["link"] %}
+        {% if items_info %}
+        {% for item in items_info %}
         <tr>
                 <td>{{loop.index}}</td>
-                <td><a class="result" href="{{item_link}}" target="_blank">{{item["name"]}}</a></td>
+                <td><a class="result" href="{{item[2]}}" target="_blank">{{item[1]}}</a></td>
                 {% if competitors %}
                     {% for competitor in competitors %}
                     {% set comp_inn = competitor.competitor_inn %}
                     <td>
                         <span>
-                            <input type="hidden" class="element_id" value="{{item.item_id}}_{{competitor.competitor_inn}}" id="{{item.item_id}}_{{competitor.competitor_inn}}">
-                            {% if info[item_link][comp_inn] %}
-                            <a class="result" href={{info[item_link][comp_inn]["url"]}} target="_blank">{{info[item_link][comp_inn]["name"]}}</a>
+                            <input type="hidden" class="element_id" value="{{items_info[item][0]}}_{{competitor.competitor_inn}}" id="{{items_info[item][0]}}_{{competitor.competitor_inn}}">
+                            {% if items_info[item][comp_inn] %}
+                            <a class="result" href={{items_info[item][comp_inn]["url"]}} target="_blank">{{items_info[item][comp_inn]["name"]}}</a>
                             {% else %}
                             <a class="result" href="" target="_blank">...</a>
                             {% endif %}

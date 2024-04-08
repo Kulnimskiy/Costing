@@ -13,7 +13,7 @@ from project.credentials import MIN_RELEVANCE, ITEMS_UPDATE_TIMEOUT_RANGE
 main = Blueprint("main", __name__)
 
 
-@main.route("/")
+@main.get("/")
 @login_required
 def index():
     # get the info about the user from the obj current_user like current_user._id

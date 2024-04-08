@@ -256,4 +256,4 @@ class ResultFormats:
 
 
 if __name__ == '__main__':
-    print(Browser("dasfsdfsdf.ru").get_page("L3eUgb"))
+    print(DateCur.cur_datetime())

@@ -34,6 +34,7 @@ class FileSystem:
         try:
             with open(self.path, "a") as file:
                 file.write(file_text)
+                logging.warning(f"FILE {self.path} HAS BEEN CREATED")
             return self.path
         except FileNotFoundError as error:
             logging.warning(f"ERROR: CANNOT CREATE FILE {self.path} \n{error}")
@@ -117,7 +118,7 @@ class ScraperSystem:
 
     def create(self) -> Union[str, None]:
         """ Returns the path where the scraper has been created"""
-        folder_name = self.user_inn
+        folder_name = str(self.user_inn)
         file_name = self.cp_inn
         class_name = hash_inn(self.cp_inn)
         path = os.path.join(FOLDERS_PATH, folder_name, file_name + ".py")

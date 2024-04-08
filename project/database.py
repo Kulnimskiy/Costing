@@ -4,7 +4,7 @@ from project import db
 from project.models import Companies, Competitors, Scrapers, ItemsRecords, UsersItems, ItemsConnections, User
 from project.corpotate_scrapers.search_company import Company
 from project.systems import ScraperSystem
-from project.managers import UrlManager
+from project.managers import UrlManager, InnManager
 from project.helpers_v2 import DateCur
 from project import async_search
 
@@ -83,7 +83,7 @@ class CompanyDB:
         company.address = company_info["address"]
         company.workers_number = company_info["workers_number"]
         company.ceo = company_info["ceo"]
-        company.info_loading_date = DateCur.cur_date()
+        company.info_loading_date = DateCur.cur_datetime()
 
         # if there is new info about a website, we change it
         web = company_info["website"]
@@ -191,15 +191,15 @@ class CompetitorDB:
         cp = self.get()
         user = UserDB(self.user_id).get()
         if not user:
-
             return False
         if not cp:
             logging.warning(f"THE COMPANY {self.cp_inn} IS NOT A COMPETITOR FOR USER: {self.user_id}")
             return False
 
         # save the scraper path to know if it's used anywhere
-        scr_path = ScraperDB(self.user_id, self.cp_inn).get_path()
-
+        scraper = ScraperDB(self.user_id, self.cp_inn)
+        scr_path = scraper.get_path()
+        scraper.delete()
         db.session.delete(cp)
         db.session.commit()
 
@@ -278,13 +278,20 @@ class ScraperDB:
 
 
 class ItemDB:
-    def __init__(self, user_id, url):
+    def __init__(self, user_id: int, url: str):
         self.user_id = user_id
         self.url = url
 
     def get(self) -> UsersItems | None:
         """ Gets the item by the link from the db """
         item = UsersItems.query.filter_by(user_id=self.user_id, link=self.url).first()
+        if item:
+            return item
+        return None
+
+    @staticmethod
+    def get_by_id(user_id, item_id):
+        item = UsersItems.query.filter_by(user_id=user_id, connection_id=item_id).first()
         if item:
             return item
         return None
@@ -326,9 +333,13 @@ class ItemDB:
             return CompanyDB(inn).get()
         return None
 
-    def get_cp_inn(self) -> str | None:
-        """ Gets competitor's inn from a given link from the competitors table"""
-        cps = CompetitorDB.get_all(self.user_id)
+    def get_cp_inn(self, scope="") -> str | None:
+        """ Gets competitor's inn from a given link from the competitors table
+        :param scope - limits the list of competitors to only 'connected' ones, 'requested' or 'disconnected'"""
+        scopes = ["connected", "requested", "disconnected", ""]
+        if scope not in scopes:
+            return None
+        cps = CompetitorDB.get_all(self.user_id, connection_status=scope)
         for cp in cps:
             if cp.competitor_website in self.url:
                 return cp.competitor_inn
@@ -374,12 +385,15 @@ class ItemDB:
         if not self.__permission():
             return False
 
-        cp_inn = self.get_cp_inn()
+        """You can create items only from connected competitors"""
+        cp_inn = self.get_cp_inn(scope="connected")
+        if not cp_inn:
+            return False
 
         item = ItemsRecords(item_name=item_name,
                             company_inn=cp_inn,
                             price=item_price,
-                            date=DateCur.cur_date(),
+                            date=DateCur.cur_datetime(),
                             link=self.url)
         db.session.add(item)
 
@@ -400,11 +414,10 @@ class ItemDB:
 
     def __permission(self) -> bool:
         """ Gives permission to create new records about an item if It's been >= ITEMS_UPDATE days"""
-        records = self.get_record()
-        if not records:
+        last_record = self.get_record()
+        if not last_record:
             logging.warning(f"ITEM {self.url} HAS NEVER BEEN ADDED. ADDING...")
             return True
-        last_record = records[0].date
         days_passed = DateCur.days_passed(last_record.date)
         if days_passed < ITEMS_UPDATE:
             logging.warning(f"ITEM {last_record.item_name} HAS ALREADY BEEN CHECKED {last_record.date}")
@@ -456,13 +469,6 @@ class RelationsDB:
         items_related = ItemsConnections.query.filter_by(user_id=user_id).all()
         if items_related:
             return items_related
-        return None
-
-    @staticmethod
-    def get_by_id(user_id, item_id):
-        item = UsersItems.query.filter_by(user_id=user_id, connection_id=item_id).first()
-        if item:
-            return item
         return None
 
     def get_by_inn(self, cp_inn: str) -> ItemsConnections | None:
@@ -525,13 +531,70 @@ class RelationsDB:
             return True
         return False
 
+    def get_format(self):
+        """ Formats 1 item the right way for the profile page"""
+
+    @staticmethod
+    def get_format_all(user_id, user_inn) -> dict[tuple, dict[int, dict]]:
+        """ Formatted for the front end data about user's item connections
+            The format is:
+            {(item["item_id"], item["name"], item['link']):
+            {"comp_inn_1": {"url": connected_item_link, "name": item_name"}, ...},
+             ...}
+        """
+
+        all_items = ItemDB.get_format_all(user_id)
+        own_items = list(filter(lambda x: x["competitor_inn"] == str(user_inn), all_items))
+        all_linked_items = RelationsDB.get_all(user_id)
+
+        formatted_relations = dict()
+        for item in own_items:
+            related = dict()
+            for linked_item in all_linked_items:
+                if item['link'] == linked_item.item_link:
+                    con_item = ItemDB(user_id, linked_item.connected_item_link).get_format()
+                    comp_inn = int(con_item["competitor_inn"])
+                    related[comp_inn] = {"url": linked_item.connected_item_link, "name": con_item["name"]}
+            formatted_relations[(item["item_id"], item["name"], item['link'])] = related
+        return formatted_relations
+
+    @staticmethod
+    def get_format_compare(user_id, user_inn):
+        user_inn = UserDB(user_id).get().company_inn
+        all_items = ItemDB.get_format_all(user_id)
+        own_items = list(filter(lambda x: x["competitor_inn"] == str(user_inn), all_items))
+        all_linked_items = RelationsDB.get_all(user_id)
+        items_info = dict()
+        for item in own_items:
+            item_url = item['link']
+            info = {"name": item['name'],
+                    "url": item['link'],
+                    "my_price": item['last_price'],
+                    "max_price": 0,
+                    "min_price": 0,
+                    "avg_price": 0.0,
+                    "cr_prices": dict()}
+            for linked_item in all_linked_items:
+                if linked_item.item_link == item_url:
+                    cr_item = ItemDB(user_id, linked_item.connected_item_link).get_format()
+                    cr_inn = int(cr_item["competitor_inn"])
+                    info["cr_prices"][cr_inn] = cr_item
+            cr_prices = [item["last_price"] for item in info["cr_prices"].values() if item["last_price"] > 0]
+            if cr_prices:
+                info["max_price"] = max(cr_prices)
+                info["min_price"] = min(cr_prices)
+                print("sum", sum(cr_prices), "len ", len(cr_prices))
+                info["avg_price"] = round(sum(cr_prices) / len(cr_prices), 4)
+            items_info[f"{item_url}"] = info
+        return items_info
+
 
 class UserDB:
     def __init__(self, user_id):
         self.user_id = user_id
 
     def get(self) -> User | None:
-        user = User.query.filter_by(id=self.user_id).first()
+        user = User.query.filter_by(_id=self.user_id).first()
         if user:
             return user
         return None
