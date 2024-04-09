@@ -1,263 +1,90 @@
-import re
-import sys
 import time
 import decimal
 import logging
-import inspect
-import requests
-import validators
-import importlib.util
-from bs4 import BeautifulSoup
+from typing import Union
 from datetime import datetime
+from bs4 import BeautifulSoup
 from difflib import SequenceMatcher
-from email_validator import validate_email, EmailNotValidError
+from project.managers import UrlManager
 from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.common import TimeoutException
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
 
-def email_checker(email):
-    try:
-        v = validate_email(str(email))
-        email = v.__dict__["normalized"]
-        return email
-    except EmailNotValidError as error:
-        print(error)
-        return False
+class OperationalTools:
+    @staticmethod
+    def operate(operation):
+        """function to process the result from parsing"""
 
+        def wrapper(*args, **kwargs):
+            try:
+                result = operation(*args, **kwargs)
+                return result
+            except (AttributeError, TypeError, ValueError) as error:
+                logging.warning(error)
+                return None
 
-def password_checker(password: str):
-    """The password of 6 char lengths has to have digits and alpha char of lower and upper case with no space"""
-    password = str(password).strip()
-    length_req = len(password) >= 6
-    number_req = any(symbol.isdigit() for symbol in password)
-    no_space_req = all(not symbol.isspace() for symbol in password)
-    upper_req = any(symbol.isupper() for symbol in password)
-    lower_req = any(symbol.islower() for symbol in password)
-    # alpha_req = any(symbol.isalpha() for symbol in password)  ## you don't need this as u have the upper and lower req
-    if all([no_space_req, length_req, number_req, upper_req, lower_req]):  # alpha_req is removed
-        return password
-    return False
+        return wrapper
 
-
-def inn_checker(inn_: str):
-    """for testing purposes the algorithm of checking if the inn exists is not implemented"""
-    inn_ = str(inn_).strip()
-    people_len = 10
-    company_len = 12
-    if len(inn_) != people_len and len(inn_) != company_len:
-        return False
-    if any(not digit.isdigit() for digit in inn_):
-        return False
-    return int(inn_)
-
-
-def login_checker(login):
-    login = str(login).strip()
-    no_space_req = all(not symbol.isspace() for symbol in login)
-    length_req = len(login) >= 3
-    if all([login, no_space_req, length_req]):
-        return login
-    return False
-
-
-def get_cur_date():
-    return datetime.today().strftime("%d.%m.%Y")
-
-
-def get_cls_from_module(module_name):
-    """get all the cls instances within a python file without the imported ones
-    use module_name=sys.modules[__name__] to get classes form your file"""
-
-    cls_members = inspect.getmembers(module_name, inspect.isclass)  # get ALL the classes (class_name, class_object)
-    # remove the imported classes
-    cls_objects = [obj for name, obj in cls_members if obj.__dict__.get("BASE_URL", None)]
-    return cls_objects
-
-
-def operate(operation, info=None):
-    """function to process the result from parsing"""
-    try:
-        if info:
-            result = operation(info)
-            return result
-        return operation()
-    except (AttributeError, TypeError, ValueError) as e:
-        print(e)
-        return None
-
-
-def convert_to_rub(amount: (int, float), currency: str):
-    """convert currencies into Russian Ruble """
-    currency = currency.strip().upper()
-    try:
-        data = requests.get('https://www.cbr-xml-daily.ru/latest.js').json()
-        currency_rate = float(data["rates"][f"{currency}"])
-        return int(amount / currency_rate)
-    except Exception as error:
-        print(error)
-        return None
-
-
-def calculate_relevance(search: str, result: str):
-    words = search.split()
-    counter = 0
-    for word in words:
-        if len(word) > 5:
-            word = word[1:-2]
-        if word.lower() in result.lower():
-            counter += 1
-    return counter / len(words)
-
-
-def hash_inn(comp_inn: str):
-    comp_inn = str(comp_inn)
-    value = ""
-    for digit in comp_inn:
-        value += chr(100 + int(digit))
-    return value.lower().capitalize()
-
-
-def unhash_inn(comp_hash: str):
-    value = ""
-    for letter in comp_hash:
-        value += str(ord(letter.lower()) - 100)
-    return value
-
-
-def get_cls_from_path(path):
-    """first you import the module, a list of classes and del the module from the file"""
-    try:
-        spec = importlib.util.spec_from_file_location("scraper", path)
-        module = importlib.util.module_from_spec(spec)
-        sys.modules["scraper"] = module
-        spec.loader.exec_module(module)
-        classes = get_cls_from_module(module)
-        sys.modules.pop('scraper')
-        return classes
-    except FileNotFoundError as e:
-        print(e)
-        print(f"There is no such scraper on the path: {path}")
-        return None
-
-
-def check_price(price: str) -> int:
-    """ Returns all the digits from a string as an int if possible
-        Used in a class pattern. Do not change the name of the function"""
-    try:
-        price = int("".join([digit for digit in price if digit.isdigit()]))
-        return price
-    except (TypeError, ValueError):
+    @staticmethod
+    def check_int(number: str) -> int:
+        if all([symbol.isdigit() for symbol in number]):
+            return int(number)
         return 0
 
 
-def check_int(number: str) -> int:
-    if all([symbol.isdigit() for symbol in number]):
-        return int(number)
-    return 0
+class ItemName:
+    """ Works wih item names and gets info out of it"""
 
+    def __init__(self, item_name: str):
+        self.item_name = item_name
 
-def format_search_all_result(item, result: dict, competitors, min_price=None, max_price=None, ):
-    for r in result:
-        if r["price"] is None:
-            r["price"] = 0
-        for competitor in competitors:
-            if competitor.competitor_website in r["url"]:
-                r["competitor"] = competitor.competitor_nickname
-                r["competitor_inn"] = competitor.competitor_inn
-    if min_price:
-        result = filter(lambda x: x["price"] >= min_price, result)
-    if max_price:
-        result = filter(lambda x: x["price"] <= max_price, result)
-    result = sorted(list(result), key=lambda r: (calculate_relevance(item, r["name"]), r["price"]), reverse=True)
-    for r in result:
-        if r["price"] == 0:
-            r["price"] = "Not selling || Not found"
-        else:
-            r["price"] = decimal.Decimal(str(r["price"]))
-            r["price"] = '{0:,}'.format(r["price"]).replace(',', ' ')
-    return result
-
-
-def get_link(link):
-    if not link:
-        return None
-    if "http" in link and validators.url(link):
-        return link
-    else:
-        link = "https://" + link
-        if validators.url(link):
-            return link
-    return None
-
-
-def get_web(link, class_waiting_tag, timeout=50):
-    """Get the page using your browser if nothing else is working
-    timeout - the time for the program to try to find the target element
-    class_waiting_tag - target element to validate that the page has loaded correctly"""
-    link = get_link(link)
-    if link:
-        try:
-            chrome_options = Options()
-
-            # Stomart sees when this regime is used and says that we are bots
-            chrome_options.add_argument("--headless")
-            chrome_options.page_load_strategy = 'none'
-            driver = webdriver.Chrome(options=chrome_options)
-            driver.get(link)  # This is a dummy website URL
-            for i in range(timeout * 2):
-                res = driver.page_source
-                doc = BeautifulSoup(res, "html.parser")
-                if doc.find(class_=class_waiting_tag):
-                    print("The page is ready")
-                    driver.quit()
-                    return res
-                time.sleep(0.5)
-
-            else:
-                driver.quit()
-                print("Error getting a link")
-                print("Loading took too much time!")
-        except Exception:
-            print("Server Error")
-    return None
-
-
-def compare_names(a, b):
-    """Used to see if two items relate to each other"""
-    item_1 = a.lower()
-    item_2 = b.lower()
-    models = [word for word in item_1.split() if check_word(word)]
-    counter = 0
-    for model in models:
-        if model in item_2:
-            counter += 1
-    param3 = counter / len(models) if models else 0
-    if param3:
-        return param3 * 0.5 + SequenceMatcher(None, a, b).ratio() * 0.3 + calculate_relevance(b, a) * 0.2
-    else:
-        return SequenceMatcher(None, a, b).ratio() * 0.6 + calculate_relevance(b, a) * 0.4
-
-
-def get_item_model(item_name):
-    """to get the model of an item and make it vague to increase the chances to get the result"""
-    if item_name:
-        models = [word for word in item_name.split() if check_word(word)]
+    def get_model(self) -> Union[str, None]:
+        """ Gets the model of an item and makes it vague to increase the chances to get the result"""
+        models = [word for word in self.item_name.split() if word.isascii()]
         if len(models) > 3:
             models = [models[i] for i in range(len(models) - int(len(models) * 0.3))]
         if models:
             return " ".join(models)
-    return None
+        return None
 
+    def relevance(self, another_item: str):
+        """ Give the possibility of 2 items being the same ones with slightly different names"""
+        words = self.same_words(another_item)
+        model = self.same_model(another_item)
+        sequence = self.same_sequence(another_item)
+        if model is None:
+            return sequence * 0.7 + words * 0.3  # weights of each param have been gotten from practice and stat results
+        return model * 0.5 + sequence * 0.3 + words * 0.2
 
-def check_word(word):
-    digits = any(map(str.isdigit, word))
-    latin = any(map(str.isascii, word))
-    return any([digits, latin])
+    def same_words(self, another_item: str) -> float:
+        """ Gets the percentage of the same words in the two items names """
+        item_words = self.item_name.split()
+        counter = 0
+        for word in item_words:
+            if len(word) > 5:
+                word = word[1:-2]
+            if word.lower() in another_item.lower():
+                counter += 1
+        return float(counter / len(item_words))
+
+    def same_model(self, another_item) -> Union[float, None]:
+        """ Gets the percentage of the same words in the two items models """
+        model = self.get_model()
+        if model is None:
+            return None
+        model_words = model.split()
+        counter = 0
+        for model in model_words:
+            if model.lower() in another_item.lower():
+                counter += 1
+        return counter / len(model_words)
+
+    def same_sequence(self, another_item: str) -> float:
+        """ Gets the percentage of the same sequence of words in the two items names """
+
+        item_a = self.item_name.lower()
+        item_b = another_item.lower()
+        return SequenceMatcher(None, item_a, item_b).ratio()
 
 
 class Date:
@@ -275,7 +102,7 @@ class Date:
     @property
     def day(self):
         _day = self.__split_date[0]
-        if not check_int(_day):
+        if not OperationalTools.check_int(_day):
             return None
         return _day
 
@@ -288,8 +115,9 @@ class Date:
 
     @property
     def year(self):
+        print(self.date)
         _year = self.__split_date[2]
-        if not check_int(_year):
+        if not OperationalTools.check_int(_year):
             return None
         return _year
 
@@ -350,5 +178,82 @@ class DateCur(Date):
         return minutes_passed
 
 
-if __name__ == "__main__":
-    pass
+class Browser(UrlManager):
+    """ Opens pages in Chrome and sets page loading strategies like 'none', 'eager' and 'normal'
+        Can open browser in the headless regime"""
+
+    def __init__(self, url: str, headless: bool = False, strategy: str = 'none'):
+        super().__init__(url=url)
+        self.driver = self.__set_up(headless, strategy)
+
+    @staticmethod
+    def __set_up(headless: bool, strategy: str):
+        """ Note that some websites don't give a valid page in a headless regime"""
+        options = Options()
+        if headless:
+            options.add_argument("--headless")
+        if strategy in ["none", "eager", "normal"]:
+            options.page_load_strategy = strategy
+        return webdriver.Chrome(options=options)
+
+    @staticmethod
+    def __get_tag(page, tag: str) -> bool:
+        doc = BeautifulSoup(page, "html.parser")
+        if doc.find(class_=tag):
+            logging.warning(f"INFO: THE PAGE IS VALID. TAG {tag} IS FOUND")
+            return True
+        return False
+
+    def get_page(self, cls_wait_tag: str = None, attempts: int = 30, delay: float = 0.5):
+        """ Get the page using your browser if nothing else is working. Args: cls_wait_tag - target element to validate
+        that the page has loaded correctly, attempts - number of tries between attempts to find a tag, delay - seconds
+        between attempts """
+
+        url = self.check()  # get the valid url
+        driver = self.driver
+        try:
+            driver.get(url)
+            if cls_wait_tag is None:
+                return driver.page_source
+            for i in range(attempts):
+                page = driver.page_source
+                if self.__get_tag(page, cls_wait_tag):
+                    driver.quit()
+                    return page
+                time.sleep(delay)
+            else:
+                driver.quit()
+                logging.warning(f"ERROR: TAG {cls_wait_tag} CANNOT BE FOUND OR LOADING TAKES TO MUCH TIME")
+        except Exception as error:
+            logging.warning(f"ERROR: CANNOT GET PAGE {url} \n{error}")
+        return None
+
+
+class ResultFormats:
+    """ NEED TO GET RID OF THIS MESS """
+
+    @staticmethod
+    def search_all_result(item, result: dict, competitors, min_price=None, max_price=None, ):
+        for r in result:
+            if r["price"] is None:
+                r["price"] = 0
+            for competitor in competitors:
+                if competitor.competitor_website in r["url"]:
+                    r["competitor"] = competitor.competitor_nickname
+                    r["competitor_inn"] = competitor.competitor_inn
+        if min_price:
+            result = filter(lambda x: x["price"] >= min_price, result)
+        if max_price:
+            result = filter(lambda x: x["price"] <= max_price, result)
+        result = sorted(list(result), key=lambda r: (ItemName(item).relevance(r["name"]), r["price"]), reverse=True)
+        for r in result:
+            if r["price"] == 0:
+                r["price"] = "Not selling || Not found"
+            else:
+                r["price"] = decimal.Decimal(str(r["price"]))
+                r["price"] = '{0:,}'.format(r["price"]).replace(',', ' ')
+        return result
+
+
+if __name__ == '__main__':
+    print(DateCur.cur_datetime())

@@ -4,7 +4,7 @@ import logging
 import inspect
 import importlib.util
 from typing import Union
-from project.helpers import hash_inn
+from project.wreckage.helpers import hash_inn
 
 FOLDERS_PATH = ".\project\clients_scrapers"
 SCRAPER_TEMPLATE_PATH = ".\project\class_template.txt"

@@ -1,16 +1,14 @@
-import logging
 import time
+import logging
 from random import randint
 from flask import Blueprint, render_template, redirect, request, url_for
 from flask_login import login_required, current_user
-from project.helpers import inn_checker, format_search_all_result, check_price, compare_names, get_item_model
 from project.database import CompanyDB, CompetitorDB, ItemDB, RelationsDB, ScraperDB, UserDB
 from project.emails import EmailTemplates
-from project.async_search import run_search_all_items, run_search_all_links, run_search_item
-from project.db_manager import *
+from project.search_files.async_search import run_search_all_items, run_search_all_links, run_search_item
 from project.credentials import MIN_RELEVANCE, ITEMS_UPDATE_TIMEOUT_RANGE
 from project.managers import UrlManager, InnManager, PriceManager
-from project.helpers_v2 import ResultFormats, OperationalTools, ItemName
+from project.helpers import ResultFormats, OperationalTools, ItemName
 
 main = Blueprint("main", __name__)
 
@@ -23,7 +21,7 @@ def index():
     user_inn = current_user.company_inn
     user_company = CompanyDB(user_inn).load()
     if user_company is None:
-        return render_template("homepage.html", user=current_user)
+        return render_template("homepage.html", user=current_user, company_info=dict(), website=None)
 
     # the user company is also a competitor if he has ever requested a connection
     user_as_cp = CompetitorDB(user_id, user_inn).get()
@@ -33,7 +31,7 @@ def index():
         website = {"link": user_as_cp.competitor_website, "status": user_as_cp.connection_status}
         return render_template("homepage.html", user=current_user, company_info=user_company, website=website)
 
-    website = {"link": get_link(user_company.website), "status": "disconnected"}
+    website = {"link": UrlManager(user_company.website).check(), "status": "disconnected"}
     return render_template("homepage.html", user=current_user, company_info=user_company, website=website)
 
 
@@ -73,26 +71,19 @@ def get_profile():
 @main.post("/profile")
 @login_required
 def post_profile():
-    _inn = current_user.company_inn
     user_id = current_user.get_id()
-    user_con = db_get_competitor(user_id, _inn)
-    if request.method == "POST":
-        # here u don't have to check if the user's web is connected
-        item_name = request.form.get("item_name")
-        if not item_name:
-            return redirect("/profile")
-        item_price = check_price(request.form.get("item_price"))
-        if not item_price:
-            return redirect("/profile")
-        item_link = get_link(request.form.get("item_link"))
-        if not item_link:
-            item_link = db_get_item_link_new(user_id=user_id, company_inn=_inn, item_name=item_name)
-        db_add_item_mnl(user_id=user_id,
-                        company_inn=_inn,
-                        item_name=item_name,
-                        price=item_price,
-                        link=item_link)
-        logging.warning("ITEM HAS BEEN ADDED MANUALLY")
+    user_inn = current_user.company_inn
+    item_name = request.form.get("item_name")
+    if not item_name:
+        return redirect("/profile")
+    item_price = PriceManager(request.form.get("item_price")).check()
+    if not item_price:
+        return redirect("/profile")
+    item_link = UrlManager(request.form.get("item_link")).check()
+    if not item_link:
+        item_link = ItemDB.generate_url(user_id=user_id, company_inn=user_inn, item_name=item_name)
+    ItemDB(user_id=user_id, url=item_link).create(item_name=item_name, item_price=item_price)
+    logging.warning("ITEM HAS BEEN ADDED MANUALLY")
 
 
 @main.post("/profile/load_item")
@@ -104,7 +95,7 @@ def load_user_item():
     user_con = CompetitorDB(user_id, user_inn).get()
     if not user_con or user_con.connection_status != "connected":
         return redirect(url_for("main.profile"))
-    item_link = get_link(request.form.get("main.get_profile"))
+    item_link = UrlManager(request.form.get("main.get_profile")).check()
     if not item_link:
         print("No link")
         return redirect(url_for("main.get_profile"))
@@ -213,8 +204,8 @@ def comparison():
 
     # get rid of the user from the competitors list
     crs = [cr for cr in all_crs if cr.competitor_inn != user_inn]
-    all_items = db_get_items(user_id)
-    own_items = list(filter(lambda x: inn_checker(x["competitor_inn"]) == user_inn, all_items))
+    all_items = ItemDB.get_format_all(user_id)
+    own_items = list(filter(lambda x: InnManager(x["competitor_inn"]).check() == str(user_inn), all_items))
 
     items_info = RelationsDB.get_format_compare(user_id, user_inn)
 
@@ -234,7 +225,7 @@ def price_looker_get():
                                user_inn=current_user.company_inn)
     chosen_comps = [str(cls.competitor_inn) for cls in available_competitors]
     result = run_search_all_items(current_user.get_id(), item=item_search_field, chosen_comps=chosen_comps)
-    result = format_search_all_result(item_search_field, result, available_competitors)
+    result = ResultFormats.search_all_result(item_search_field, result, available_competitors)
     return render_template("price-looker_layout.html", competitors=available_competitors, items=result)
 
 
@@ -291,12 +282,11 @@ def request_connection(cp_inn):
 
     competitor = CompetitorDB(user_id=user_id, cp_inn=cp_inn)
     if not competitor.get():  # that means that the user tries to connect his website
-        competitor.create()
+        competitor.create()  # create the competitor in the db and his scraper file
 
     if competitor.update_status(new_status="requested"):
         competitor = competitor.get()
         EmailTemplates.request_connect(current_user, competitor)
-        db_add_scraper(user_inn=current_user.company_inn, comp_inn=current_user.company_inn)
         if "profile" in request.referrer:
             return redirect(url_for("main.get_profile"))
         return redirect(url_for("main.get_competitor_monitoring"))
@@ -330,7 +320,7 @@ def change_web_get():
     """ Changes user's website if the user has not requested a connection ever """
     user_id = current_user.get_id()
     user_inn = current_user.company_inn
-    available_inns = [competitor.competitor_inn for competitor in db_get_competitors(user_id)]
+    available_inns = [competitor.competitor_inn for competitor in CompetitorDB.get_all(user_id)]
     available_inns.append(user_inn)
 
     cp_inn = InnManager(request.args.get("inn")).check()
@@ -384,7 +374,7 @@ def items_owned():
     user_id = current_user.get_id()
     user_inn = current_user.company_inn
     all_items = ItemDB.get_all(user_id)
-    own_items = list(filter(lambda x: inn_checker(x["competitor_inn"]) == user_inn, all_items))
+    own_items = list(filter(lambda x: InnManager(x["competitor_inn"]).check() == str(user_inn), all_items))
     # json_items = json.dumps(own_items)
     search = request.args.get('term')
     if not search:
@@ -398,7 +388,7 @@ def autoload_associations():
     user_id = current_user.get_id()
     user_inn = current_user.company_inn
     all_items = ItemDB.get_format_all(user_id)
-    own_items = list(filter(lambda x: inn_checker(x["competitor_inn"]) == user_inn, all_items))
+    own_items = list(filter(lambda x: InnManager(x["competitor_inn"]).check() == str(user_inn), all_items))
 
     # the approximate result relevance minimum is 0.37. If there are more than 1, get the highest
     competitors = CompetitorDB.get_all(current_user.get_id())

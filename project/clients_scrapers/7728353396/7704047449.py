@@ -3,7 +3,7 @@ import logging
 import aiohttp
 from typing import Union
 from bs4 import BeautifulSoup
-from project.helpers import operate, convert_to_rub, get_web, check_price
+from project.wreckage.helpers import operate, get_web, check_price
 from project.credentials import TIMEOUT
 
 

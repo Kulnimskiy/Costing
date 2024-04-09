@@ -1,10 +1,10 @@
 from flask import Blueprint, render_template, request, redirect, session, flash, url_for
 from flask_login import login_user, logout_user
 from werkzeug.security import generate_password_hash, check_password_hash
-from . import db
-from .models import User
-from .helpers import password_checker, email_checker, inn_checker, login_checker
+from project import db
+from project.models import User
 from project.systems import FolderSystem
+from project.managers import InnManager, UrlManager, LoginManager, PasswordManager
 auth = Blueprint("auth", __name__)
 
 
@@ -14,7 +14,7 @@ def signup():
         company_name_ = request.form.get("company_name")
 
         # check if the company is already in the db
-        company_inn_ = inn_checker(request.form.get("company_inn"))
+        company_inn_ = InnManager(request.form.get("company_inn")).check()
         if not company_inn_:
             flash("Your inn isn' valid")
             return redirect("/signup")
@@ -30,13 +30,13 @@ def signup():
             return render_template("signup.html", error="login already exists")
 
         # validate the email
-        email_ = email_checker(request.form.get("email"))
+        email_ = request.form.get("email")
         if not email_:
             return render_template("signup.html", error="Your email isn't valid")
 
         # check if the password satisfies the requirements
-        password_ = password_checker(request.form.get("password"))
-        password_confirm_ = password_checker(request.form.get("password_confirm"))
+        password_ = PasswordManager(request.form.get("password")).check()
+        password_confirm_ = PasswordManager(request.form.get("password_confirm")).check()
         if password_confirm_ != password_:
             return render_template("signup.html", error="Passwords are different")
 
@@ -65,7 +65,7 @@ def signup():
 def login():
     session.clear()
     if request.method == "POST":
-        login_ = login_checker(request.form.get("login"))
+        login_ = LoginManager(request.form.get("login")).check()
         password_ = request.form.get("password")
         remember = True if request.form.get("remember") else False
         user = User.query.filter_by(login=login_).first()
@@ -87,7 +87,7 @@ def logout():
 
 @auth.route("/checklogin/<cur_login>")
 def check_login(cur_login):
-    cur_login = login_checker(cur_login)
+    cur_login = LoginManager(cur_login).check()
     if not cur_login:
         return "1"  # the login doesn't satisfy the requirements
     if User.query.filter_by(login=cur_login).first():
@@ -97,7 +97,7 @@ def check_login(cur_login):
 
 @auth.route("/checkinn/<cur_inn>")
 def check_inn(cur_inn):
-    cur_inn = inn_checker(cur_inn)
+    cur_inn = InnManager(cur_inn).check()
     if not cur_inn:
         return "1"  # the inn doesn't satisfy the requirements
     if User.query.filter_by(company_inn=cur_inn).first():

@@ -1,9 +1,8 @@
-import asyncio
 import logging
 import aiohttp
 from typing import Union
 from bs4 import BeautifulSoup
-from project.helpers import operate, convert_to_rub, get_web, check_price, get_link
+from project.wreckage.helpers import operate, get_web, check_price, get_link
 from project.credentials import TIMEOUT
 
 

@@ -146,3 +146,14 @@ th.competitor {
 .btn-btn_link_items:focus {
     background: "grey";
 }
+.welcome-title {
+    font-size: 70px;
+}
+.welcome-title:hover {
+    font-size: 71px;
+    color: gray;
+}
+
+.company_name {
+    font-size: 40px;
+}

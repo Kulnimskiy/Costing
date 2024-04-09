@@ -2,11 +2,11 @@ import logging
 from sqlalchemy import func
 from project import db
 from project.models import Companies, Competitors, Scrapers, ItemsRecords, UsersItems, ItemsConnections, User
-from project.corpotate_scrapers.search_company import Company
+from project.search_files.search_company import Company
 from project.systems import ScraperSystem
-from project.managers import UrlManager, InnManager
-from project.helpers_v2 import DateCur
-from project import async_search
+from project.managers import UrlManager
+from project.helpers import DateCur
+from project.search_files import async_search
 
 DAYS_BEFORE_RELOAD = 3  # Number of days to update the info about a company
 ITEMS_UPDATE = 1  # Number of days to add new records of the item
@@ -382,7 +382,7 @@ class ItemDB:
             return items_formatted
         return None
 
-    def create(self, item_name: str, item_price: str) -> bool:
+    def create(self, item_name: str, item_price: int | float) -> bool:
         """ Records the info about the item to the db if the permission is given """
         if not self.__permission():
             return False
