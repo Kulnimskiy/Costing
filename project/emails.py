@@ -61,7 +61,7 @@ class EmailTemplates:
     @staticmethod
     def request_connect(current_user, competitor) -> bool:
         """ Send a message to the responsible admin to start working on the given scraper """
-        template_path = "./project/request_connect_template.txt"
+        template_path = "./project/text_templates/request_connect_template.txt"
         subject = f"Connection Request from {current_user.company_name}"
 
         # replace the placeholders in the email

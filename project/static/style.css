@@ -81,6 +81,7 @@ button[name="interact_btn"]:hover {
     padding-top: 2px;
     height: 17px;
     margin-top: -5px;
+    color: white;
 }
 
 .req_status {
@@ -144,16 +145,34 @@ th.competitor {
 }
 
 .btn-btn_link_items:focus {
-    background: "grey";
+    background: #6b747c;
 }
 .welcome-title {
-    font-size: 70px;
+    font-size: 4vw;
 }
 .welcome-title:hover {
-    font-size: 71px;
-    color: gray;
+    color: #f7c883;
 }
 
 .company_name {
-    font-size: 40px;
+    font-size: 4vw;
+}
+
+.company_name:hover {
+    color: #f7c883;
+}
+.text-hover:hover {
+   color: #f7c883;
+}
+
+.welcome-card {
+    width: 50%;
+}
+
+.link {
+    text-decoration: none;
+    color: white;
+}
+.header-card {
+    color: #ed9553;
 }
