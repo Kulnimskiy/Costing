@@ -4,41 +4,42 @@
 
 {% block body %}
 <div class="container-md mt-4">
-    <div class="row mb-3">
-        <div class="company-description">
-            <div class="card border-light mb-3">
-                <div class="card-header text-white bg-success">
-                    <h5>
-                        {{company_info.organization}}<span id="user_inn" hidden="hidden">{{company_info._inn}}</span>
+    <div class="row ">
+        <div class="col col-6 d-flex flex-column flex-md ">
+            <div class="card text-white bg-dark flex-fill m-1 justify-content-center ps-3">
+                <div class="display-6 header-card">
+                    <h5 class="display-6">
+                        {{company_info.organization}}
+                        <span id="user_inn" hidden="hidden">{{company_info._inn}}</span>
                     </h5>
                 </div>
-                <div class="card-body bg-light">
-                    <div class="card-text"><b>Items: </b> {{items|length}} </div>
-                    <div class="card-text"><b>Competitors: </b> {{competitors|length}} </div>
+            </div>
+
+            <div class="card text-white bg-dark flex-fill align-self-stretch justify-content-center m-1">
+                <div class="card-header header-card">
                     <div class="card-text">
                         <b>Website: </b>
                         <span id="website">
                             <a class="link" href={{website.link}} target="_blank">{{website.link}}</a>
                             {% if website.status == "disconnected" %}
                             <button type="button" id="interact_btn" name="interact_btn"><img class="button-pic"
-                                                                         src="/static/images/black_pensil.png"
-                                                                         alt="Change"/></button>
+                                                                                             src="/static/images/black_pensil.png"
+                                                                                             alt="Change"/></button>
                             {% endif %}
                         </span>
                     </div>
                     <div class="card-text mt-3">
-
                         <div>
                             <b>Status: </b>
                             {% if competitor %}
                             {% if competitor.connection_status == "requested" %}
                             <form action="/profile/delete_competitor/{{company_info._inn}}" method="POST">
-                                <button class="btn btn-warning" type="submit" id="btn_req_user_site"
+                                <button class="btn btn-warning btn-sm" type="submit" id="btn_req_user_site"
                                         title="Click to cancel!">Requested
                                 </button>
                             </form>
                             {% elif competitor.connection_status == "connected" %}
-                            <button class="btn btn-primary" type="submit">Connected</button>
+                            <button class="btn btn-primary btn-sm" type="submit">Connected</button>
                             {% else %}
                             <form action="/request_connection/{{company_info._inn}}" method="POST">
                                 <button class="btn btn-success" type="submit" id="btn_req_user_site"
@@ -49,130 +50,204 @@
                             {% endif %}
                             {% else %}
                             <form action="/request_connection/{{company_info._inn}}" method="POST">
-                                <button class="btn btn-success" type="submit" id="btn_req_user_site"
+                                <button class="btn btn-success btn-sm" type="submit" id="btn_req_user_site"
                                         title="Connect your website to upload your items automatically">Request
                                     connection
                                 </button>
                             </form>
                             {% endif %}
                         </div>
-
                     </div>
                 </div>
             </div>
         </div>
+        <div class="col col-6">
+            <div class="company-description  d-flex flex-wrap align-items-stretch justify-content-between">
+                <div class="card text-white bg-dark d-inline-block flex-fill m-1 text-center">
+                    <div class="card-header display-6 header-card text-hover" style="color: #ed9553;">
+                        <h5 class="display-6 profile-card-title">Items</h5>
+                    </div>
+                    <div class="card-text" style="font-size: 50px;">{{items|length}}</div>
+                </div>
+                <div class="card text-white bg-dark  d-inline-block flex-fill m-1 text-center">
+                    <div class="card-header display-6 header-card text-hover" style="color: #ed9553;">
+                        <h5 class="display-6 profile-card-title">Competitors</h5>
+                    </div>
+                    <div class="card-text " style="font-size: 50px;">{{competitors|length}}</div>
+                </div>
+                <div class="card text-white bg-dark  d-inline-block flex-fill m-1 text-center">
+                    <div class="card-header display-6 header-card text-hover" style="color: #ed9553;">
+                        <h5 class="display-6 profile-card-title">Connections</h5>
+                    </div>
+                    <div class="card-text " style="font-size: 50px;">{{items|length}}</div>
+                </div>
+                <div class="card text-white bg-dark d-inline-block flex-fill m-1 text-center">
+                    <div class="card-header display-6 header-card text-hover " style="color: #ed9553;">
+                        <h5 class="display-6 profile-card-title">Not Connected:</h5>
+                    </div>
+                    <div class="card-text" style="font-size: 50px;">{{items|length}}</div>
+                </div>
+            </div>
+            <div class="d-flex justify-content-between">
+                {% if user_con and user_con.connection_status == "connected" %}
+                <form class="d-inline-block m-1" action="/autoload_associations" method="post">
+                    <div>
+                        <button class="btn btn-dark" type="submit" name="autoload">Autoload Associations
+                        </button>
+                    </div>
+                </form>
+                <form class=" d-inline-block m-1" action="/profile" method="post">
+                    <div>
+                        <button class="btn btn-dark flex-fill " type="submit" name="load_link" disabled>Load Items
+                        </button>
+                    </div>
+                </form>
+                {% else %}
+                <form class="d-inline-block flex-fill m-1" action="/profile" method="post">
+                    <div>
+                        <button class="btn btn-dark" type="submit" name="autoload" disabled>Autoload Associations
+                        </button>
+                    </div>
+                </form>
+                <form class="d-inline-block flex-fill m-1" action="/profile" method="post">
+                    <div>
+                        <button class="btn btn-dark flex-fill" type="submit" name="load_link" disabled>Load Items
+                        </button>
+                    </div>
+                </form>
+                {% endif %}
+            </div>
+        </div>
     </div>
     <div class="row">
-        <div class="col col-5">
-            {% if user_con and user_con.connection_status == "connected" %}
-            <form class="mb-1" action="/autoload_associations" method="post">
-                <div>
-                    <button class="btn btn-success w-100" type="submit" name="autoload">Autoload Associations
-                    </button>
-                </div>
-            </form>
-            <form class="mb-1" action="/profile" method="post">
-                <div>
-                    <button class="btn btn-success w-100" type="submit" name="load_link" disabled>Load Items</button>
-                </div>
-            </form>
-            <form class="mb-1" action="/profile/load_item" method="post">
-                <div>
-                    <div>
-                        <input type="text" class="form-control" name="item_link" placeholder="Item link from your web"
-                               required>
-                        <button class="btn btn-success" type="submit">Load Item</button>
+        <div class="col col-6 d-flex flex-column flex-md">
+            <div class="company-description  d-flex flex-wrap align-items-stretch justify-content-between">
+                <div class="card text-white bg-dark d-inline-block flex-fill m-1 text-center">
+                    <div class="card text-white bg-dark m-1 text-center flex-fill ps-2 pe-2">
+                        <div class="card-header display-6 header-card text-hover " style="color: #ed9553;">
+                            <h5 class="display-6 profile-card-title">Manual</h5>
+                        </div>
+                        <form action="/profile" method="post">
+                            <div>
+                                <div>
+                                    <input type="text" class="form-control mb-1" name="item_name" placeholder="Item"
+                                           required>
+                                    <input type="text" class="form-control mb-1" name="item_price"
+                                           placeholder="Price"
+                                           required>
+                                    <input type="text" class="form-control mb-1" name="item_link"
+                                           placeholder="Link(optional)">
+                                    <button class="btn btn-light" type="submit" name="add_item_manual">Add Item
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
                     </div>
                 </div>
-            </form>
-            {% else %}
-            <form class="mb-1" action="/profile" method="post">
-                <div>
-                    <button class="btn btn-success w-100" type="submit" name="autoload" disabled>Autoload Associations
-                    </button>
-                </div>
-            </form>
-            <form class="mb-1" action="/profile" method="post">
-                <div>
-                    <button class="btn btn-success w-100" type="submit" name="load_link" disabled>Load Items</button>
-                </div>
-            </form>
-            <form class="mb-1" action="/profile/load_item" method="post">
-                <div>
-                    <div>
-                        <input type="text" class="form-control" name="item_link" placeholder="Item link from your web"
-                               required>
-                        <button class="btn btn-success" type="submit" disabled>Load Item</button>
-                    </div>
-                </div>
-            </form>
-            {% endif %}
-            <br>
+            </div>
         </div>
-        <div class="col col-7">
-            <form action="/profile" method="post">
-                <div>
-                    <div>
-                        <input type="text" class="form-control mb-1" name="item_name" placeholder="Item" required>
-                        <input type="text" class="form-control mb-1" name="item_price" placeholder="Price" required>
-                        <input type="text" class="form-control mb-1" name="item_link" placeholder="Link(optional)">
-                        <button class="btn btn-success" type="submit" name="add_item_manual">Add Item</button>
-                    </div>
+        <div class="col col-6 d-flex flex-column flex-md ">
+            <div class="card text-white bg-dark flex-fill align-self-stretch justify-content-center text-center m-1 ps-2 pe-2">
+                <div class="card-header display-6 header-card text-hover " style="color: #ed9553;">
+                    <h5 class="display-6 profile-card-title">Web Loading</h5>
                 </div>
-            </form>
+                {% if user_con and user_con.connection_status == "connected" %}
+                <form class="mb-1 " action="/profile/load_item" method="post">
+                    <div>
+                        <div>
+                            <input type="text" class="form-control pb-2" name="item_link"
+                                   placeholder="Item link from your web"
+                                   required>
+                            <button class="btn btn-light mt-2" type="submit">Load Item</button>
+                        </div>
+                    </div>
+                </form>
+                {% else %}
+                <form class="mb-1" action="/profile/load_item" method="post">
+                    <div>
+                        <div>
+                            <input type="text" class="form-control" name="item_link"
+                                   placeholder="Item link from your web"
+                                   required>
+                            <button class="btn btn-light" type="submit" disabled>Load Item</button>
+                        </div>
+                    </div>
+                </form>
+                {% endif %}
+            </div>
         </div>
     </div>
-    <input class="form-control w-25 mb-2" type="text" id="filterInput" onkeyup="filterFunction()" placeholder="Goods search..">
-    <table class="table table-hover" id="goodsTable">
-        <thead>
-        <tr class="table-active">
-            <th scope="col">№</th>
-            <th scope="col">My Item</th>
-            {% if competitors %}
-            {% for competitor in competitors %}
-            <th scope="col">{{competitor.competitor_nickname}}</th>
-            {% endfor %}
-            {% endif %}
-            <th scope="col"></th>
-        </tr>
-        </thead>
-        <tbody>
-        {% if items_info %}
-        {% for item in items_info %}
-        <tr>
-                <td>{{loop.index}}</td>
-                <td><a class="result" href="{{item[2]}}" target="_blank">{{item[1]}}</a></td>
-                {% if competitors %}
+    <div class="row mt-3">
+        <div class="col">
+            <div class="card text-white bg-light mb-2">
+                <div class="card-header display-6 header-card" style="color: Black;">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col col-4"><span
+                                    class="display-6 d-flex justify-content-start"> Relations: </span>
+                            </div>
+                            <div class="col col-8 d-flex justify-content-end">
+                                <input class="form-control w-50 d-flex mt-2 mb-2" type="text" id="filterInput"
+                                       onkeyup="filterFunction()"
+                                       placeholder="search...">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <table class="table table-hover table-bordered" id="goodsTable">
+                <thead class="table-light">
+                <tr class="table-active">
+                    <th scope="col">№</th>
+                    <th scope="col">My Item</th>
+                    {% if competitors %}
+                    {% for competitor in competitors %}
+                    <th scope="col">{{competitor.competitor_nickname}}</th>
+                    {% endfor %}
+                    {% endif %}
+                    <th scope="col"></th>
+                </tr>
+                </thead>
+                <tbody>
+                {% if items_info %}
+                {% for item in items_info %}
+                <tr>
+                    <td>{{loop.index}}</td>
+                    <td><a class="result" href="{{item[2]}}" target="_blank">{{item[1]}}</a></td>
+                    {% if competitors %}
                     {% for competitor in competitors %}
                     {% set comp_inn = competitor.competitor_inn %}
                     <td>
                         <span>
-                            <input type="hidden" class="element_id" value="{{items_info[item][0]}}_{{competitor.competitor_inn}}" id="{{items_info[item][0]}}_{{competitor.competitor_inn}}">
+                            <input type="hidden" class="element_id"
+                                   value="{{items_info[item][0]}}_{{competitor.competitor_inn}}"
+                                   id="{{items_info[item][0]}}_{{competitor.competitor_inn}}">
                             {% if items_info[item][comp_inn] %}
                             <a class="result" href={{items_info[item][comp_inn]["url"]}} target="_blank">{{items_info[item][comp_inn]["name"]}}</a>
                             {% else %}
                             <a class="result" href="" target="_blank">...</a>
                             {% endif %}
                             <button type="button" name="interact_btn" class="item_link"><img class="button-pic"
-                                                                         src="/static/images/black_pensil.png"
-                                                                         alt="Change"/></button>
+                                                                                             src="/static/images/black_pensil.png"
+                                                                                             alt="Change"/></button>
                         </span>
-                    {% endfor %}
-                <td>
-                    <form action="/company-goods/delete-item" method="post">
-                        <button type="submit" id="delete_item" name="interact_btn"><img class="button-pic"
-                                                                    src="static/images/delete-button.svg"
-                                                                    alt="Delete"/></button>
-                        <input title="item_id" hidden="hidden" value="{{item.item_id}}" name="item_id">
-                    </form>
-                </td>
+                        {% endfor %}
+                    <td>
+                        <form action="/company-goods/delete-item" method="post">
+                            <button type="submit" id="delete_item" name="interact_btn"><img class="button-pic"
+                                                                                            src="static/images/delete-button.svg"
+                                                                                            alt="Delete"/></button>
+                            <input title="item_id" hidden="hidden" value="{{item.item_id}}" name="item_id">
+                        </form>
+                    </td>
+                    {% endif %}
+                </tr>
+                {% endfor %}
                 {% endif %}
-        </tr>
-        {% endfor %}
-        {% endif %}
-        </tbody>
-    </table>
-</div>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-<script src="/static/profile.js" crossorigin="anonymous"></script>
-{% endblock %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="/static/profile.js" crossorigin="anonymous"></script>
+    {% endblock %}

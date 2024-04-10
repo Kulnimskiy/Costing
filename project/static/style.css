@@ -148,14 +148,15 @@ th.competitor {
     background: #6b747c;
 }
 .welcome-title {
-    font-size: 4vw;
+    font-size: min(4vw, 70px);
+
 }
 .welcome-title:hover {
     color: #f7c883;
 }
 
 .company_name {
-    font-size: 4vw;
+    font-size: font-size: min(4vw, 70px);
 }
 
 .company_name:hover {
@@ -173,6 +174,9 @@ th.competitor {
     text-decoration: none;
     color: white;
 }
-.header-card {
+div.header-card {
     color: #ed9553;
+}
+h5.profile-card-title {
+    font-size: 20px;
 }
