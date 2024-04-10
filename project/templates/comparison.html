@@ -5,48 +5,67 @@
 {% block body %}
 <div class="container-md mt-4">
     <div class="row mb-3">
-        <div class="refresh">
-            <form action="/company-goods/refresh_all">
-                <button type="submit" class="btn btn-success">Refresh now</button>
-            </form>
-        </div>
-        <input class="form-control mb-2 w-25" type="text" id="filterInput" onkeyup="filterFunction()"
-               placeholder="Goods search..">
-        <div class="d-flex">
-            <table class="table table-hover" id="compTable">
-                <thead>
-                <tr class="table-active">
-                    <th scope="col">№</th>
-                    <th scope="col">My Item</th>
-                    <th scope="col" class="price">My Price</th>
-                    <th scope="col" class="price">Min</th>
-                    <th scope="col" class="price">Avg</th>
-                    <th scope="col" class="price">Max</th>
-                    {% if competitors %}
-                    {% for competitor in competitors %}
-                    <th scope="col">{{competitor.competitor_nickname}}</th>
-                    {% endfor %}
-                    {% endif %}
-                    <th scope="col"></th>
-                </tr>
-                </thead>
-                <tbody>
-                {% if items %}
-                {% for item in items %}
-                {% set item_link = item["link"] %}
-                <tr>
-                    <td>{{loop.index}}</td>
-                    <td><a class="result" href="{{item_link}}" target="_blank">{{item["name"]}}</a></td>
-                    <td class="my_price price">{{items_info[item_link]["my_price"]}}</td>
-                    <td class="min_price price">{{items_info[item_link]["min_price"]}}</td>
-                    <td class="avg_price price">{{items_info[item_link]["avg_price"]}}</td>
-                    <td class="max_price price">{{items_info[item_link]["max_price"]}}</td>
-                    {% if competitors %}
-                    {% set cr_prices = items_info[item_link]["cr_prices"] %}
-                    {% for competitor in competitors %}
-                    {% set comp_inn = competitor.competitor_inn %}
+        <div class="col">
+            <div class="card bg-light mb-2 text-black">
+                <div class="card-header display-6">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col col-md-6"><span
+                                    class="display-6 d-flex justify-content-start"> Price Comparison </span>
+                            </div>
+                            <div class="col col-md-6 d-flex justify-content-end">
+                                <input class="form-control w-50 d-flex mt-2 mb-2" type="text" id="filterInput"
+                                       onkeyup="filterFunction()"
+                                       placeholder="Search...">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="refresh">
+                <form action="/company-goods/refresh_all">
+                    <button type="submit" id="refresh_all" class="btn btn-sm btn-dark mt-1 mb-1">
+                        Refresh now
+                    </button><span id="loading_icon"></span>
+                </form>
+            </div>
+            <div id="table-wrapper">
+                <div id="table-scroll">
+                    <div class="d-flex">
+                        <table class="table table-hover table-bordered table-text" id="compTable">
+                            <thead>
+                            <tr class="table-active">
+                                <th scope="col">№</th>
+                                <th scope="col" style="min-width: 200px;">My Item</th>
+                                <th scope="col" class="price text-center">My Price</th>
+                                <th scope="col" class="price text-center">Min</th>
+                                <th scope="col" class="price text-center">Avg</th>
+                                <th scope="col" class="price text-center">Max</th>
+                                {% if competitors %}
+                                {% for competitor in competitors %}
+                                <th scope="col" class="text-center">{{competitor.competitor_nickname}}</th>
+                                {% endfor %}
+                                {% endif %}
+                                <th scope="col"></th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% if items %}
+                            {% for item in items %}
+                            {% set item_link = item["link"] %}
+                            <tr>
+                                <td>{{loop.index}}</td>
+                                <td><a class="result" href="{{item_link}}" target="_blank">{{item["name"]}}</a></td>
+                                <td class="my_price price data">{{items_info[item_link]["my_price"]}}</td>
+                                <td class="min_price price data">{{items_info[item_link]["min_price"]}}</td>
+                                <td class="avg_price price data">{{items_info[item_link]["avg_price"]}}</td>
+                                <td class="max_price price data">{{items_info[item_link]["max_price"]}}</td>
+                                {% if competitors %}
+                                {% set cr_prices = items_info[item_link]["cr_prices"] %}
+                                {% for competitor in competitors %}
+                                {% set comp_inn = competitor.competitor_inn %}
 
-                    <td>
+                                <td class="data">
                         <span>
                             <input type="hidden" class="element_id"
                                    value="{{item.item_id}}_{{competitor.competitor_inn}}"
@@ -57,39 +76,41 @@
                             <a class="result price" href="" target="_blank"></a>
                             {% endif %}
                         </span>
-                        {% endfor %}
-                        {% endif %}
-                </tr>
-                {% endfor %}
-                {% endif %}
-                </tbody>
-            </table>
+                                    {% endfor %}
+                                    {% endif %}
+                            </tr>
+                            {% endfor %}
+                            {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-</div>
-<script src="/static/compare.js" crossorigin="anonymous"></script>
-<script>
-    function filterFunction() {
-        // Объявить переменные
-        let input, filter, table, tr, td, i, txtValue;
-        input = document.getElementById("filterInput");
-        filter = input.value.toUpperCase();
-        table = document.getElementById("compTable");
-        tr = table.getElementsByTagName("tr");
+    <script src="/static/compare.js" crossorigin="anonymous"></script>
+    <script>
+        function filterFunction() {
+            // Объявить переменные
+            let input, filter, table, tr, td, i, txtValue;
+            input = document.getElementById("filterInput");
+            filter = input.value.toUpperCase();
+            table = document.getElementById("compTable");
+            tr = table.getElementsByTagName("tr");
 
-        // Перебирайте все строки таблицы и скрывайте тех, кто не соответствует поисковому запросу
-        // Поиск по столбцу с индексом ("td")[1]
-        for (i = 0; i < tr.length; i++) {
-            td = tr[i].getElementsByTagName("td")[1];
-            if (td) {
-                txtValue = td.textContent || td.innerText;
-                if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                    tr[i].style.display = "";
-                } else {
-                    tr[i].style.display = "none";
+            // Перебирайте все строки таблицы и скрывайте тех, кто не соответствует поисковому запросу
+            // Поиск по столбцу с индексом ("td")[1]
+            for (i = 0; i < tr.length; i++) {
+                td = tr[i].getElementsByTagName("td")[1];
+                if (td) {
+                    txtValue = td.textContent || td.innerText;
+                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                        tr[i].style.display = "";
+                    } else {
+                        tr[i].style.display = "none";
+                    }
                 }
             }
         }
-    }
-</script>
-{% endblock %}
+    </script>
+    {% endblock %}

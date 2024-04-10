@@ -1,3 +1,15 @@
+let website_btn = document.getElementById("refresh_all")
+if (website_btn) {
+    website_btn.addEventListener("click", showLoader);
+}
+
+function showLoader() {
+    let image_html = "<img class='text-center' style='width: 50px; display: block; margin-left: auto; margin-right: auto;' src='/static/images/loading.gif'>"
+    $("#loading_icon").html(image_html);
+    website_btn.innerHTML = "Please wait..."
+    console.log("in")
+}
+
 function formatPrice() {
     let operations = document.getElementsByClassName("price")
     for (let operation of operations) {

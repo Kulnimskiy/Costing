@@ -5,7 +5,7 @@
 {% block body %}
 <div class="container-md mt-4">
     <div class="row ">
-        <div class="col col-6 d-flex flex-column flex-md ">
+        <div class="col col-md-6 d-flex flex-column flex-md ">
             <div class="card text-white bg-dark flex-fill m-1 justify-content-center ps-3">
                 <div class="display-6 header-card">
                     <h5 class="display-6">
@@ -14,7 +14,6 @@
                     </h5>
                 </div>
             </div>
-
             <div class="card text-white bg-dark flex-fill align-self-stretch justify-content-center m-1">
                 <div class="card-header header-card">
                     <div class="card-text">
@@ -39,10 +38,13 @@
                                 </button>
                             </form>
                             {% elif competitor.connection_status == "connected" %}
-                            <button class="btn btn-primary btn-sm" type="submit">Connected</button>
+                            <button class="btn btn-dark border-light btn-sm" type="submit"
+                                    title="Not Auto loading associations and loading items from the list is available">
+                                Connected
+                            </button>
                             {% else %}
                             <form action="/request_connection/{{company_info._inn}}" method="POST">
-                                <button class="btn btn-success" type="submit" id="btn_req_user_site"
+                                <button class="btn btn-danger btn-sm" type="submit" id="btn_req_user_site"
                                         title="Connect your website to upload your items automatically">Request
                                     connection
                                 </button>
@@ -61,57 +63,59 @@
                 </div>
             </div>
         </div>
-        <div class="col col-6">
+        <div class="col col-md-6">
             <div class="company-description  d-flex flex-wrap align-items-stretch justify-content-between">
                 <div class="card text-white bg-dark d-inline-block flex-fill m-1 text-center">
-                    <div class="card-header display-6 header-card text-hover" style="color: #ed9553;">
+                    <div class="card-header display-6 header-card text-hover">
                         <h5 class="display-6 profile-card-title">Items</h5>
                     </div>
-                    <div class="card-text" style="font-size: 50px;">{{items|length}}</div>
+                    <div class="card-text card-font">{{items|length}}</div>
                 </div>
                 <div class="card text-white bg-dark  d-inline-block flex-fill m-1 text-center">
-                    <div class="card-header display-6 header-card text-hover" style="color: #ed9553;">
+                    <div class="card-header display-6 header-card text-hover">
                         <h5 class="display-6 profile-card-title">Competitors</h5>
                     </div>
-                    <div class="card-text " style="font-size: 50px;">{{competitors|length}}</div>
+                    <div class="card-text card-font">{{competitors|length}}</div>
                 </div>
                 <div class="card text-white bg-dark  d-inline-block flex-fill m-1 text-center">
-                    <div class="card-header display-6 header-card text-hover" style="color: #ed9553;">
+                    <div class="card-header display-6 header-card text-hover">
                         <h5 class="display-6 profile-card-title">Connections</h5>
                     </div>
-                    <div class="card-text " style="font-size: 50px;">{{items|length}}</div>
+                    <div class="card-text card-font">52</div>
                 </div>
                 <div class="card text-white bg-dark d-inline-block flex-fill m-1 text-center">
-                    <div class="card-header display-6 header-card text-hover " style="color: #ed9553;">
+                    <div class="card-header display-6 header-card text-hover ">
                         <h5 class="display-6 profile-card-title">Not Connected:</h5>
                     </div>
-                    <div class="card-text" style="font-size: 50px;">{{items|length}}</div>
+                    <div class="card-text card-font">36</div>
                 </div>
             </div>
             <div class="d-flex justify-content-between">
                 {% if user_con and user_con.connection_status == "connected" %}
                 <form class="d-inline-block m-1" action="/autoload_associations" method="post">
                     <div>
-                        <button class="btn btn-dark" type="submit" name="autoload">Autoload Associations
+                        <button class="btn btn-dark border-light" type="submit" name="autoload">Autoload Associations
                         </button>
                     </div>
                 </form>
                 <form class=" d-inline-block m-1" action="/profile" method="post">
                     <div>
-                        <button class="btn btn-dark flex-fill " type="submit" name="load_link" disabled>Load Items
+                        <button class="btn btn-dark border-light" type="submit" name="load_link" disabled>Load Items
                         </button>
                     </div>
                 </form>
                 {% else %}
                 <form class="d-inline-block flex-fill m-1" action="/profile" method="post">
                     <div>
-                        <button class="btn btn-dark" type="submit" name="autoload" disabled>Autoload Associations
+                        <button class="btn btn-dark border-light btn-sm" type="submit" name="autoload" disabled>Autoload
+                            Associations
                         </button>
                     </div>
                 </form>
                 <form class="d-inline-block flex-fill m-1" action="/profile" method="post">
                     <div>
-                        <button class="btn btn-dark flex-fill" type="submit" name="load_link" disabled>Load Items
+                        <button class="btn btn-dark border-light btn-sm" type="submit" name="load_link" disabled>Load
+                            Items
                         </button>
                     </div>
                 </form>
@@ -120,24 +124,26 @@
         </div>
     </div>
     <div class="row">
-        <div class="col col-6 d-flex flex-column flex-md">
+        <div class="col col-md-6 d-flex flex-column flex-md">
             <div class="company-description  d-flex flex-wrap align-items-stretch justify-content-between">
                 <div class="card text-white bg-dark d-inline-block flex-fill m-1 text-center">
-                    <div class="card text-white bg-dark m-1 text-center flex-fill ps-2 pe-2">
+                    <div class="card text-white bg-dark m-1 text-center flex-fill ps-3 pe-3">
                         <div class="card-header display-6 header-card text-hover " style="color: #ed9553;">
                             <h5 class="display-6 profile-card-title">Manual</h5>
                         </div>
                         <form action="/profile" method="post">
                             <div>
                                 <div>
-                                    <input type="text" class="form-control mb-1" name="item_name" placeholder="Item"
+                                    <input type="text" class="form-control form-control-sm mb-1" name="item_name"
+                                           placeholder="Item"
                                            required>
-                                    <input type="text" class="form-control mb-1" name="item_price"
+                                    <input type="text" class="form-control form-control-sm mb-1" name="item_price"
                                            placeholder="Price"
                                            required>
-                                    <input type="text" class="form-control mb-1" name="item_link"
+                                    <input type="text" class="form-control form-control-sm mb-1" name="item_link"
                                            placeholder="Link(optional)">
-                                    <button class="btn btn-light" type="submit" name="add_item_manual">Add Item
+                                    <button class="btn btn-dark border-light mt-2 btn-sm" type="submit"
+                                            name="add_item_manual">Add Item
                                     </button>
                                 </div>
                             </div>
@@ -146,19 +152,19 @@
                 </div>
             </div>
         </div>
-        <div class="col col-6 d-flex flex-column flex-md ">
-            <div class="card text-white bg-dark flex-fill align-self-stretch justify-content-center text-center m-1 ps-2 pe-2">
-                <div class="card-header display-6 header-card text-hover " style="color: #ed9553;">
+        <div class="col col-md-6 d-flex flex-column flex-md ">
+            <div class="card text-white bg-dark flex-fill align-self-stretch justify-content-center text-center m-1 ps-3 pe-3">
+                <div class="card-header display-6 header-card text-hover">
                     <h5 class="display-6 profile-card-title">Web Loading</h5>
                 </div>
                 {% if user_con and user_con.connection_status == "connected" %}
                 <form class="mb-1 " action="/profile/load_item" method="post">
                     <div>
                         <div>
-                            <input type="text" class="form-control pb-2" name="item_link"
+                            <input type="text" class="form-control form-control-sm pb-2" name="item_link"
                                    placeholder="Item link from your web"
                                    required>
-                            <button class="btn btn-light mt-2" type="submit">Load Item</button>
+                            <button class="btn btn-dark border-light mt-2 btn-sm" type="submit">Load Item</button>
                         </div>
                     </div>
                 </form>
@@ -169,7 +175,7 @@
                             <input type="text" class="form-control" name="item_link"
                                    placeholder="Item link from your web"
                                    required>
-                            <button class="btn btn-light" type="submit" disabled>Load Item</button>
+                            <button class="btn btn-dark border-light" type="submit" disabled>Load Item</button>
                         </div>
                     </div>
                 </form>
@@ -179,8 +185,8 @@
     </div>
     <div class="row mt-3">
         <div class="col">
-            <div class="card text-white bg-light mb-2">
-                <div class="card-header display-6 header-card" style="color: Black;">
+            <div class="card bg-light mb-2 text-black">
+                <div class="card-header display-6">
                     <div class="container">
                         <div class="row">
                             <div class="col col-4"><span
@@ -195,29 +201,31 @@
                     </div>
                 </div>
             </div>
-            <table class="table table-hover table-bordered" id="goodsTable">
-                <thead class="table-light">
-                <tr class="table-active">
-                    <th scope="col">№</th>
-                    <th scope="col">My Item</th>
-                    {% if competitors %}
-                    {% for competitor in competitors %}
-                    <th scope="col">{{competitor.competitor_nickname}}</th>
-                    {% endfor %}
-                    {% endif %}
-                    <th scope="col"></th>
-                </tr>
-                </thead>
-                <tbody>
-                {% if items_info %}
-                {% for item in items_info %}
-                <tr>
-                    <td>{{loop.index}}</td>
-                    <td><a class="result" href="{{item[2]}}" target="_blank">{{item[1]}}</a></td>
-                    {% if competitors %}
-                    {% for competitor in competitors %}
-                    {% set comp_inn = competitor.competitor_inn %}
-                    <td>
+            <div id="table-wrapper">
+                <div id="table-scroll">
+                    <table class="table table-hover table-bordered" id="goodsTable">
+                        <thead class="table-light fixed-head">
+                        <tr class="table-active">
+                            <th scope="col">№</th>
+                            <th scope="col" >My Item</th>
+                            {% if competitors %}
+                            {% for competitor in competitors %}
+                            <th scope="col">{{competitor.competitor_nickname}}</th>
+                            {% endfor %}
+                            {% endif %}
+                            <th scope="col"></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% if items_info %}
+                        {% for item in items_info %}
+                        <tr class="table-text">
+                            <td>{{loop.index}}</td>
+                            <td><a class="result" href="{{item[2]}}" target="_blank">{{item[1]}}</a></td>
+                            {% if competitors %}
+                            {% for competitor in competitors %}
+                            {% set comp_inn = competitor.competitor_inn %}
+                            <td>
                         <span>
                             <input type="hidden" class="element_id"
                                    value="{{items_info[item][0]}}_{{competitor.competitor_inn}}"
@@ -231,21 +239,24 @@
                                                                                              src="/static/images/black_pensil.png"
                                                                                              alt="Change"/></button>
                         </span>
+                                {% endfor %}
+                            <td>
+                                <form action="/company-goods/delete-item" method="post">
+                                    <button type="submit" id="delete_item" name="interact_btn"><img class="button-pic"
+                                                                                                    src="static/images/delete-button.svg"
+                                                                                                    alt="Delete"/>
+                                    </button>
+                                    <input title="item_id" hidden="hidden" value="{{item.item_id}}" name="item_id">
+                                </form>
+                            </td>
+                            {% endif %}
+                        </tr>
                         {% endfor %}
-                    <td>
-                        <form action="/company-goods/delete-item" method="post">
-                            <button type="submit" id="delete_item" name="interact_btn"><img class="button-pic"
-                                                                                            src="static/images/delete-button.svg"
-                                                                                            alt="Delete"/></button>
-                            <input title="item_id" hidden="hidden" value="{{item.item_id}}" name="item_id">
-                        </form>
-                    </td>
-                    {% endif %}
-                </tr>
-                {% endfor %}
-                {% endif %}
-                </tbody>
-            </table>
+                        {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>

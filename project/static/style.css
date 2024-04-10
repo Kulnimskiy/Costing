@@ -1,3 +1,14 @@
+#table-wrapper {
+  position:relative;
+}
+#table-scroll {
+  height:600px;
+  overflow:auto;
+}
+#table-wrapper table {
+  width:100%;
+}
+
 #error, #company_inn_status, #login_status {
     position: relative;
     font-size: small;
@@ -128,13 +139,16 @@ a.result :active {
 }
 
 th.price {
-    min-width: 100px;
+    min-width: 75px;
 }
 
 th.competitor {
     min-width: 180px;
 }
-
+td.data{
+    text-align: center;
+    align-content: center;
+}
 .btn_link_items {
     border: 2px black;
     border-radius: 5px;
@@ -156,7 +170,7 @@ th.competitor {
 }
 
 .company_name {
-    font-size: font-size: min(4vw, 70px);
+    font-size: min(4vw, 70px);
 }
 
 .company_name:hover {
@@ -179,4 +193,10 @@ div.header-card {
 }
 h5.profile-card-title {
     font-size: 20px;
+}
+div.card-font {
+    font-size: 50px;
+}
+.table-text {
+    font-size: 12px;
 }
