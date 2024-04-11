@@ -229,7 +229,7 @@ def price_looker_get():
     return render_template("price-looker_layout.html", competitors=available_competitors, items=result)
 
 
-@main.post("/price_looker")
+@main.post("/price-looker")
 @login_required
 def price_looker_post():
     """ Returns a html table with search results for ajax request from the frontend """

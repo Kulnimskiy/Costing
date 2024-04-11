@@ -17,6 +17,9 @@
     text-align: center;
     margin-bottom: 3px;
 }
+button.unified-yellow, div.unified-yellow {
+    color: #ed9553
+}
 
 .navbar-nav {
     font-size: small;
@@ -137,6 +140,9 @@ a.result :active {
     color: blue;
     text-decoration: none;
 }
+th.date {
+    min-width: 100px;
+}
 
 th.price {
     min-width: 75px;
@@ -198,5 +204,5 @@ div.card-font {
     font-size: 50px;
 }
 .table-text {
-    font-size: 12px;
+    font-size: 13px;
 }

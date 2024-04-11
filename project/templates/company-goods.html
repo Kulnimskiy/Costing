@@ -4,68 +4,105 @@
 
 {% block body %}
 <div class="container-md mt-4">
-    <div class="row mb-3">
-        <strong>{{error}}</strong>
-        <form action="/company-goods" method="post">
-            <div>
-                <div class="input-group mb-1">
-                    <input type="text" class="form-control" name="item_link" placeholder="Items's link">
-                    <div class="input-group-append">
-                        <button class="btn btn-success" type="submit" id="follow">Follow item</button>
+    <div class="row mb-1">
+        <div class="col">
+            <form action="/company-goods" method="post">
+                <div>
+                    <div class="input-group input-group-sm mb-1">
+                        <input type="text" class="form-control form-control-sm border-dark " name="item_link"
+                               placeholder="Add a new item link">
+                        <div class="input-group-append">
+                            <button class="btn btn-dark unified-yellow" type="submit" id="follow">Follow
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            <div class="card bg-dark mb-1 text-white">
+                <div class="card-header display-6">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col col-md-6 unified-yellow"><span
+                                    class="display-6 d-flex justify-content-start"> Goods List </span>
+                            </div>
+                            <div class="col col-md-6 d-flex justify-content-end">
+                                <input class="form-control form-control-sm w-50 d-flex mt-2 mb-1" type="text" id="filterInput"
+                                       onkeyup="filterFunction()"
+                                       placeholder="Search here...">
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </form>
+        </div>
     </div>
     <div class="refresh">
         <form action="/company-goods/refresh_all">
-            <button type="submit" class="btn btn-success">Refresh now</button>
+            <button type="submit" id="refresh_all" class="btn btn-sm btn-dark mb-1 unified-yellow">
+                Refresh now
+            </button>
+            <span id="loading_icon"></span>
         </form>
     </div>
     <div class="row">
         <div class="col">
-            <input class="form-control w-25 mb-2" type="text" id="filterInput" onkeyup="filterFunction()" placeholder="Goods search..">
-            <table class="table table-hover" id="goodsTable">
-                <thead>
-                <tr class="table-active">
-                    <th scope="col">#</th>
-                    <th scope="col">Item</th>
-                    <th scope="col" class="competitor">Competitor</th>
-                    <th scope="col" class="price">Last price</th>
-                    <th scope="col">Last date</th>
-                    <th scope="col" class="price">Price change</th>
-                    <th scope="col" class="price">Prev price</th>
-                    <th scope="col">Prev date</th>
-                </tr>
-                </thead>
-                <tbody>
-                {% if items %}
-                {% for item in items %}
-                <tr>
-                    <td>
-                        <form action="/company-goods/delete-item" method="post">
-                            <button type="submit" id="delete_item"><img class="button-pic"
-                                                                       src="static/images/delete-button.svg"
-                                                                       alt="Delete"/></button>
-                            <input title="item_id" hidden="hidden" value="{{item.item_id}}" name="item_id">
-                        </form>
-                    </td>
-                    <td><a href={{item.link}} target="_blank" class="result">{{item.name}}</a></td>
-                    <td>{{item.competitor[0:15]}}</td>
-                    <td class="price">{{item.last_price}}</td>
-                    <td>{{item.last_date}}</td>
-                    <td class="price" name="price_change">{{item.price_change}}</td>
-                    <td class="price">{{item.prev_price}}</td>
-                    <td>{{item.prev_date}}</td>
-                </tr>
-                {% endfor %}
-                {% endif %}
-                </tbody>
-            </table>
+            <div id="table-wrapper">
+                <div id="table-scroll">
+                    <table class="table table-hover table-text" id="goodsTable">
+                        <thead>
+                        <tr class="table-active text-center">
+                            <th scope="col">#</th>
+                            <th scope="col">Item</th>
+                            <th scope="col" class="competitor">Competitor</th>
+                            <th scope="col" class="price">Last price</th>
+                            <th scope="col" class="price">Prev price</th>
+                            <th scope="col" class="price">Price change</th>
+                            <th scope="col" class="date">Last date</th>
+                            <th scope="col" class="date">Prev date</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% if items %}
+                        {% for item in items %}
+                        <tr>
+                            <td>
+                                <form action="/company-goods/delete-item" method="post">
+                                    <button type="submit" id="delete_item"><img class="button-pic"
+                                                                                src="static/images/delete-button.svg"
+                                                                                alt="Delete"/></button>
+                                    <input title="item_id" hidden="hidden" value="{{item.item_id}}" name="item_id">
+                                </form>
+                            </td>
+                            <td><a href={{item.link}} target="_blank" class="result">{{item.name}}</a></td>
+                            <td class="data">{{item.competitor[0:15]}}</td>
+                            <td class="price data" title="{{item.last_date}}">{{item.last_price}}</td>
+                            <td class="price data">{{item.prev_price}}</td>
+                            <td class="price data" name="price_change">{{item.price_change}}</td>
+                            <td class="data" title="{{item.last_date}}">{{item.last_date[0:10]}}</td>
+                            <td class="data" title="{{item.prev_date}}">{{item.prev_date[0:10]}}</td>
+                        </tr>
+                        {% endfor %}
+                        {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 <script>
+    let website_btn = document.getElementById("refresh_all")
+    if (website_btn) {
+        website_btn.addEventListener("click", showLoader);
+    }
+
+    function showLoader() {
+        let image_html = "<img class='text-center' style='width: 50px; display: block; margin-left: auto; margin-right: auto;' src='/static/images/loading.gif'>"
+        $("#loading_icon").html(image_html);
+        website_btn.innerHTML = "Please wait..."
+        console.log("in")
+    }
+
     function changeColor() {
         let operations = document.getElementsByName("price_change")
         for (let operation of operations) {

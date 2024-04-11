@@ -11,8 +11,8 @@
                 <div class="card-img-overlay d-flex justify-content-center">
                     <div class="card bg-dark text-white p-2 mt-5 bg-opacity-75"
                          style="width: fit-content; height: fit-content;">
-                        <h1 class="card-title text-center welcome-title" style="font-size: min(4vw, 70px)">Welcome</h1>
-                        <h2 class="card-title text-center company_name">
+                        <h1 class="card-title text-center welcome-title" style="font-size: min(4vw, 50px);">Welcome</h1>
+                        <h2 class="card-title text-center company_name" style="font-size: min(4vw, 50px);">
                             {% if company_info.organization %}
                             {{company_info.organization}}
                             {% else %}
@@ -42,17 +42,17 @@
         </div>
     </div>
     <div class="row mt-1">
-        <div class="col col-4-md">
+        <div class="col col-4-md mb-1">
             <div class="card text-white bg-dark mb-3 h-100" >
-                <div class="card-header text-hover display-6 header-card" style="color: #ed9553;">Sphere:</div>
+                <div class="card-header text-hover display-6 header-card">Sphere:</div>
                 <div class="card-body text-hover">
                     <p class="card-text">{{ company_info.sphere }}</p>
                 </div>
             </div>
         </div>
-        <div class="col col-4-md">
+        <div class="col col-4-md mb-1">
             <div class="card text-white bg-dark mb-3 h-100" >
-                <div class="card-header text-hover display-6" style="color: #ed9553;">Info:</div>
+                <div class="card-header text-hover display-6 header-card" >Info:</div>
                 <div class="card-body">
                     <b>Email:</b>
                     <div class="card-text text-hover">{{ user.email }}</div>
@@ -67,7 +67,7 @@
         </div>
         <div class="col col-4-md">
             <div class="card text-white bg-dark mb-3 h-100">
-                <div class="card-header text-hover display-6" style="color: #ed9553;">Registration:</div>
+                <div class="card-header text-hover display-6 header-card">Registration:</div>
                 <div class="card-body">
                     <b>CEO:</b>
                     <div class="card-text text-hover">{{ company_info.ceo }}</div>
