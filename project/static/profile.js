@@ -33,6 +33,7 @@ function changeWebsite() {
                     // Обработка успешной отправки данных
                     website_div.innerHTML = old_html;
                     website_div.querySelector("a").innerText = response;
+                    website_div.querySelector("a").setAttribute("href", response)
                     document.getElementById("interact_btn").addEventListener("click", changeWebsite);
                     console.log("there has been a responce " + response);
                 },

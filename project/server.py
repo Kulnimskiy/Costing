@@ -296,12 +296,14 @@ def request_connection(cp_inn):
 @main.post("/profile/change_web")
 def change_web_post():
     user_id = current_user.get_id()
-    _inn = current_user.company_inn
+    user_inn = current_user.company_inn
     available_inns = [competitor.competitor_inn for competitor in CompetitorDB.get_all(user_id)]
-    available_inns.append(_inn)
+    available_inns.append(user_inn)
+    print(available_inns)
     new_web = UrlManager(request.form.get("new_web")).check()
 
     cp_inn = InnManager(request.form.get("inn")).check()
+    print(cp_inn)
     if cp_inn not in available_inns:
         return "Not allowed"
     if not new_web:

@@ -206,3 +206,11 @@ div.card-font {
 .table-text {
     font-size: 13px;
 }
+button.change_value {
+    background-color: transparent;
+    background-repeat: no-repeat;
+    border: none;
+    cursor: pointer;
+    overflow: hidden;
+    outline: none;
+}

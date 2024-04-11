@@ -27,23 +27,25 @@
     <div class="row mt-2">
         <div class="d-flex justify-content-center">
             <div class="card text-white bg-dark mb-2 w-100 align-middle">
-                <div class="card-header" id="website">
+                <div class="card-header">
                     <span class="text-hover" style="color: #ed9553;">Website:</span>
+                    <span id="website">
                         <a class=" link text-hover" href={{website.link}} target="_blank"> {{website.link}}</a>
+                    </span>
 
-                        {% if website.status == "disconnected" %}
+                    {% if website.status == "disconnected" %}
 
-                        <button type="button" id="interact_btn"><img class="button-pic"
-                                                                     src="/static/images/black_pensil.png"
-                                                                     alt="Change"/></button>
-                        {% endif %}
+                    <button type="button" id="change_web_btn" class="change_value"><img class="button-pic "
+                                                                                        src="/static/images/black_pensil.png"
+                                                                                        alt="Change"/></button>
+                    {% endif %}
                 </div>
             </div>
         </div>
     </div>
     <div class="row mt-1">
         <div class="col col-4-md mb-1">
-            <div class="card text-white bg-dark mb-3 h-100" >
+            <div class="card text-white bg-dark mb-3 h-100">
                 <div class="card-header text-hover display-6 header-card">Sphere:</div>
                 <div class="card-body text-hover">
                     <p class="card-text">{{ company_info.sphere }}</p>
@@ -51,13 +53,20 @@
             </div>
         </div>
         <div class="col col-4-md mb-1">
-            <div class="card text-white bg-dark mb-3 h-100" >
-                <div class="card-header text-hover display-6 header-card" >Info:</div>
+            <div class="card text-white bg-dark mb-3 h-100">
+                <div class="card-header text-hover display-6 header-card">Info:</div>
                 <div class="card-body">
                     <b>Email:</b>
-                    <div class="card-text text-hover">{{ user.email }}</div>
+                    <div class="card-text text-hover" id="email"><span>{{ user.email }}</span>
+                        {% if website.status == "disconnected" %}
+
+                        <button type="button" id="change_email_btn" class="change_value"><img class="button-pic "
+                                                                                              src="/static/images/black_pensil.png"
+                                                                                              alt="Change"/></button>
+                        {% endif %}
+                    </div>
                     <b>INN: </b>
-                    <div class="card-text text-hover">{{ user.company_inn }}</div>
+                    <div class="card-text text-hover" id="company_inn">{{ user.company_inn }}</div>
                     <b>OGRN: </b>
                     <div class="card-text text-hover">{{ company_info.ogrn }}</div>
                     <b>Workers number:</b>

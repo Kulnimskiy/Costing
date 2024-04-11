@@ -3,20 +3,28 @@ from project import db
 
 
 class User(UserMixin, db.Model):
-    _id = db.Column("id", db.Integer, primary_key=True)  # primary keys are required by the lib
+    """ Used to store basic user information"""
+
+    __tablename__ = "users"
+
+    id = db.Column("id", db.Integer, primary_key=True)  # primary keys are required by the lib
     company_name = db.Column(db.String(100), nullable=False)
-    company_inn = db.Column(db.Integer(), unique=True, nullable=False)
+    company_inn = db.Column(db.String(20), unique=True, nullable=False)
     login = db.Column(db.String(100), unique=True, nullable=False)
     email = db.Column(db.String(100), nullable=False)
     password = db.Column(db.String(100), nullable=False)
 
     # UserMixin looks for and id column using get_id(). We got _id attr instead
     def get_id(self):
-        return self._id
+        return self.id
 
 
 class Companies(db.Model):
-    _inn = db.Column("inn", db.Integer, primary_key=True)
+    """ Used to store information about companies often used to give a faster response when profile gets loaded"""
+
+    __tablename__ = "companies_info"
+
+    inn = db.Column(db.String(20), primary_key=True)
     website = db.Column(db.String(200))
     organization = db.Column(db.String(200))
     ogrn = db.Column(db.Integer())
@@ -33,7 +41,7 @@ class Competitors(db.Model):
     The required connection statuses are disconnected, connected, requested """
     connection_id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, nullable=False)
-    competitor_inn = db.Column(db.Integer, nullable=False)
+    competitor_inn = db.Column(db.String(20), nullable=False)
     competitor_nickname = db.Column(db.String(100))
     competitor_website = db.Column(db.String(200))
     connection_status = db.Column(db.String(200), default="disconnected", nullable=False)
@@ -44,7 +52,7 @@ class Scrapers(db.Model):
     For each company there can be only 1 scraper file to save storage space and not
     write the same web scraper twice"""
     scraper_id = db.Column(db.Integer, primary_key=True)
-    company_inn = db.Column(db.Integer, nullable=False)
+    company_inn = db.Column(db.String(20), nullable=False)
     scraper_path = db.Column(db.String(200), nullable=False)
 
 
@@ -61,7 +69,7 @@ class ItemsRecords(db.Model):
     Nothing ever gets deleted from this table."""
     item_id = db.Column(db.Integer, primary_key=True)
     item_name = db.Column(db.String(300), nullable=False)
-    company_inn = db.Column(db.String(200), nullable=False)
+    company_inn = db.Column(db.String(20), nullable=False)
     price = db.Column(db.Float, nullable=False)
     date = db.Column(db.String(200), nullable=False)
     link = db.Column(db.String(200), nullable=False)

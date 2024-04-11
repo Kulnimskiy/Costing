@@ -20,7 +20,7 @@ class CompanyDB:
 
     def get(self) -> Companies | None:
         """ Get the company info from the db """
-        company = self.model.query.filter_by(_inn=self.inn).first()
+        company = self.model.query.filter_by(inn=self.inn).first()
         if company:
             return company
         return None
@@ -54,7 +54,7 @@ class CompanyDB:
             logging.warning(f"THE COMPANY {self.inn} WASN'T CREATED")
             return False
 
-        new_company = Companies(_inn=company_info["inn"],
+        new_company = Companies(inn=company_info["inn"],
                                 website=company_info["website"],
                                 organization=company_info["organization"],
                                 ogrn=company_info["ogrn"],
@@ -537,7 +537,7 @@ class RelationsDB:
         """ Formats 1 item the right way for the profile page"""
 
     @staticmethod
-    def get_format_all(user_id, user_inn) -> dict[tuple, dict[int, dict]]:
+    def get_format_all(user_id, user_inn) -> dict[tuple, dict[int, dict]] | None:
         """ Formatted for the front end data about user's item connections
             The format is:
             {(item["item_id"], item["name"], item['link']):
@@ -546,6 +546,8 @@ class RelationsDB:
         """
 
         all_items = ItemDB.get_format_all(user_id)
+        if not all_items:
+            return None
         own_items = list(filter(lambda x: x["competitor_inn"] == str(user_inn), all_items))
         all_linked_items = RelationsDB.get_all(user_id)
 
@@ -596,7 +598,7 @@ class UserDB:
         self.user_id = user_id
 
     def get(self) -> User | None:
-        user = User.query.filter_by(_id=self.user_id).first()
+        user = User.query.filter_by(id=self.user_id).first()
         if user:
             return user
         return None

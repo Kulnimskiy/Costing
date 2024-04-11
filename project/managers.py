@@ -70,7 +70,9 @@ class InnManager(Manager, Hasher):
     def check(self) -> str | None:
         """for testing purposes the algorithm of checking if the inn exists is not implemented"""
         inn = self.inn
+        print("the inn is ", inn)
         if len(inn) not in [InnManager.INN_PEOPLE_LEN, InnManager.INN_ORG_LEN]:
+            print("in")
             return None
         if any(not digit.isdigit() for digit in inn):
             return None
