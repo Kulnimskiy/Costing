@@ -5,6 +5,20 @@ from typing import Union
 from project.interfaces import Manager, Hasher
 
 
+class EmailManager(Manager):
+    def __init__(self, email):
+        self.email = email.strip()
+
+    def check(self) -> str | None:
+        """ Returns an email if it's valid """
+        email = validators.email(self.email)
+
+        # in the db the len constraint for the email field is 100 characters
+        if email and len(self.email) <= 100:
+            return self.email
+        return None
+
+
 class LoginManager(Manager):
     def __init__(self, login: str):
         self._login = login
@@ -18,7 +32,7 @@ class LoginManager(Manager):
         self._login = value.strip()
 
     def check(self) -> Union[str, None]:
-        """ Checks if the email is valid and returns None if It is not """
+        """ Checks if the login is valid and returns None if It is not """
         no_space_req = all(not symbol.isspace() for symbol in self.login)
         length_req = len(self.login) >= 3
         if all([self.login, no_space_req, length_req]):
@@ -70,9 +84,7 @@ class InnManager(Manager, Hasher):
     def check(self) -> str | None:
         """for testing purposes the algorithm of checking if the inn exists is not implemented"""
         inn = self.inn
-        print("the inn is ", inn)
         if len(inn) not in [InnManager.INN_PEOPLE_LEN, InnManager.INN_ORG_LEN]:
-            print("in")
             return None
         if any(not digit.isdigit() for digit in inn):
             return None

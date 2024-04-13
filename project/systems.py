@@ -122,8 +122,6 @@ class ScraperSystem:
         file_name = self.cp_inn
         class_name = hash_inn(self.cp_inn)
         path = os.path.join(FOLDERS_PATH, folder_name, file_name + ".py")
-
-        # path = ScraperSystem.SCRAPER_PATH.format(folder=folder_name, file=file_name)
         scraper_template = self.get_template(class_name)
         return FileSystem(path).create(scraper_template)
 

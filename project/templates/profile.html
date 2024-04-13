@@ -9,8 +9,8 @@
             <div class="card text-white bg-dark flex-fill m-1 justify-content-center ps-3">
                 <div class="display-6 header-card">
                     <h5 class="display-6">
-                        {{company_info.organization}}
-                        <span id="user_inn" hidden="hidden">{{company_info.inn}}</span>
+                            {{company_info.organization}}
+                        <span id="user_inn" hidden="hidden">{{current_user.inn}}</span>
                     </h5>
                 </div>
             </div>
@@ -32,7 +32,7 @@
                             <b>Status: </b>
                             {% if competitor %}
                             {% if competitor.connection_status == "requested" %}
-                            <form action="/profile/delete_competitor/{{company_info._inn}}" method="POST">
+                            <form action="/profile/delete_competitor/{{company_info.inn}}" method="POST">
                                 <button class="btn btn-warning btn-sm" type="submit" id="btn_req_user_site"
                                         title="Click to cancel!">Requested
                                 </button>
@@ -43,7 +43,7 @@
                                 Connected
                             </button>
                             {% else %}
-                            <form action="/request_connection/{{company_info._inn}}" method="POST">
+                            <form action="/request_connection/{{company_info.inn}}" method="POST">
                                 <button class="btn btn-danger btn-sm" type="submit" id="btn_req_user_site"
                                         title="Connect your website to upload your items automatically">Request
                                     connection
@@ -51,7 +51,7 @@
                             </form>
                             {% endif %}
                             {% else %}
-                            <form action="/request_connection/{{company_info._inn}}" method="POST">
+                            <form action="/request_connection/{{company_info.inn}}" method="POST">
                                 <button class="btn btn-success btn-sm" type="submit" id="btn_req_user_site"
                                         title="Connect your website to upload your items automatically">Request
                                     connection

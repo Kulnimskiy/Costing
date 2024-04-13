@@ -43,6 +43,27 @@ class CompanyDB:
         db.session.commit()
         return True
 
+    @staticmethod
+    def create_from_user(user_inn):
+        user: User = UserDB.get_from_inn(user_inn)
+        if not user:
+            logging.warning(f"COMPANY WASN'T CREATED FROM THE USER {user_inn}")
+            return False
+        new_company = Companies(inn=user.company_inn,
+                                website=None,
+                                organization=user.company_name,
+                                ogrn=None,
+                                registration_date=None,
+                                sphere=None,
+                                address=None,
+                                workers_number=None,
+                                ceo=None,
+                                info_loading_date=DateCur.cur_datetime())
+        db.session.add(new_company)
+        db.session.commit()
+        logging.warning(f"THE COMPANY HAS BEEN CREATED {user_inn} FROM THE USER")
+        return True
+
     def create(self) -> bool:
         """ Creates a company from its inn and adds it to the db """
 
@@ -168,7 +189,6 @@ class CompetitorDB:
                                      competitor_nickname=nickname,
                                      competitor_website=website)
         ScraperDB(user_id=self.user_id, cp_inn=self.cp_inn).create()
-        ScraperSystem(user_inn=cp._inn, cp_inn=self.cp_inn).create()
         db.session.add(new_competitor)
         db.session.commit()
 
@@ -201,13 +221,14 @@ class CompetitorDB:
         # save the scraper path to know if it's used anywhere
         scraper = ScraperDB(self.user_id, self.cp_inn)
         scr_path = scraper.get_path()
-        scraper.delete()
         db.session.delete(cp)
         db.session.commit()
 
         scr_times_used = len(Competitors.query.filter_by(competitor_inn=self.cp_inn).all())
         if scr_times_used == 0:
-            ScraperSystem(user.company_inn, self.cp_inn).delete(scr_path)
+            if ScraperSystem(user.company_inn, self.cp_inn).delete(scr_path):
+                logging.warning(f"SCRAPER PATH {self.cp_inn} WILL BE DELETED")
+                scraper.delete()  # deletes the path only when the scraper is deleted
             logging.warning(f"SCRAPER FOR {self.cp_inn} IS NO LONGER NEEDED!")
         return True
 
@@ -260,6 +281,7 @@ class ScraperDB:
         """ Creates and adds the scraper path to the db """
         scr = self.get()
         if scr:
+            logging.warning(f"THE SCRAPER FOR {scr.company_inn} ALREADY EXISTS")
             return False
         user = UserDB(self.user_id).get()
         path = ScraperSystem(user.company_inn, self.cp_inn).create()
@@ -602,6 +624,22 @@ class UserDB:
         if user:
             return user
         return None
+
+    @staticmethod
+    def get_from_inn(inn):
+        user = User.query.filter_by(company_inn=inn).first()
+        if not user:
+            return None
+        return user
+
+    def change_email(self, new_email):
+        """ Changes user's email to a new one"""
+        user = self.get()
+        if not user:
+            return False
+        user.email = new_email
+        db.session.commit()
+        return True
 
     def get_web(self):
         """When the user hasn't requested connection yet, he sees companies website from

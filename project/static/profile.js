@@ -6,10 +6,7 @@ let link_buttons = document.getElementsByName("interact_btn")
 document.querySelectorAll('.item_link').forEach((el) => {
     el.addEventListener('click', changeConnection)
 })
-//    btn.addEventListener("click", changeConnection);
-// window.addEventListener('load', loadConnections () {
-//   alert("It's loaded!")
-// })
+
 
 function changeWebsite() {
     let website_div = document.getElementById("website")
@@ -78,9 +75,8 @@ function changeConnection(e) {
                         document.querySelectorAll('.item_link').forEach((el) => {
                             el.addEventListener('click', changeConnection)
                         })
-                    }
-                    else {
-                        link_span_el.querySelector("a").innerText = response.toString().slice(0,25) + "...";
+                    } else {
+                        link_span_el.querySelector("a").innerText = response.toString().slice(0, 25) + "...";
                         link_span_el.querySelector("a").style.color = "green";
                         document.querySelectorAll('.item_link').forEach((el) => {
                             el.addEventListener('click', changeConnection)
@@ -98,24 +94,24 @@ function changeConnection(e) {
 }
 
 function filterFunction() {
-        // Объявить переменные
-        let input, filter, table, tr, td, i, txtValue;
-        input = document.getElementById("filterInput");
-        filter = input.value.toUpperCase();
-        table = document.getElementById("goodsTable");
-        tr = table.getElementsByTagName("tr");
+    // Объявить переменные
+    let input, filter, table, tr, td, i, txtValue;
+    input = document.getElementById("filterInput");
+    filter = input.value.toUpperCase();
+    table = document.getElementById("goodsTable");
+    tr = table.getElementsByTagName("tr");
 
-        // Перебирайте все строки таблицы и скрывайте тех, кто не соответствует поисковому запросу
-        // Поиск по столбцу с индексом ("td")[1]
-        for (i = 0; i < tr.length; i++) {
-            td = tr[i].getElementsByTagName("td")[1];
-            if (td) {
-                txtValue = td.textContent || td.innerText;
-                if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                    tr[i].style.display = "";
-                } else {
-                    tr[i].style.display = "none";
-                }
+    // Перебирайте все строки таблицы и скрывайте тех, кто не соответствует поисковому запросу
+    // Поиск по столбцу с индексом ("td")[1]
+    for (i = 0; i < tr.length; i++) {
+        td = tr[i].getElementsByTagName("td")[1];
+        if (td) {
+            txtValue = td.textContent || td.innerText;
+            if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                tr[i].style.display = "";
+            } else {
+                tr[i].style.display = "none";
             }
         }
     }
+}

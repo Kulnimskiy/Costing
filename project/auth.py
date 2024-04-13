@@ -1,10 +1,11 @@
-from flask import Blueprint, render_template, request, redirect, session, flash, url_for
+from flask import Blueprint, render_template, request, redirect, session, flash
 from flask_login import login_user, logout_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from project import db
+from project.database import CompanyDB
 from project.models import User
 from project.systems import FolderSystem
-from project.managers import InnManager, UrlManager, LoginManager, PasswordManager
+from project.managers import InnManager, LoginManager, PasswordManager
 auth = Blueprint("auth", __name__)
 
 
@@ -53,6 +54,7 @@ def signup():
         # add the user to the db
         db.session.add(new_user)
         db.session.commit()
+        CompanyDB.create_from_user(company_inn_)  # create a company from a user
 
         dir_name = user_inn
 

@@ -7,7 +7,7 @@ from project.database import CompanyDB, CompetitorDB, ItemDB, RelationsDB, Scrap
 from project.emails import EmailTemplates
 from project.search_files.async_search import run_search_all_items, run_search_all_links, run_search_item
 from project.credentials import MIN_RELEVANCE, ITEMS_UPDATE_TIMEOUT_RANGE
-from project.managers import UrlManager, InnManager, PriceManager
+from project.managers import UrlManager, InnManager, PriceManager, EmailManager
 from project.helpers import ResultFormats, OperationalTools, ItemName
 
 main = Blueprint("main", __name__)
@@ -95,11 +95,12 @@ def load_user_item():
     user_con = CompetitorDB(user_id, user_inn).get()
     if not user_con or user_con.connection_status != "connected":
         return redirect(url_for("main.profile"))
-    item_link = UrlManager(request.form.get("main.get_profile")).check()
+    item_link = UrlManager(request.form.get("item_link")).check()
     if not item_link:
         print("No link")
         return redirect(url_for("main.get_profile"))
     if user_con.competitor_website not in item_link:
+        print(item_link, user_con.competitor_website)
         print("wrong link")
         return redirect(url_for("main.get_profile"))
     ItemDB(user_id, item_link).update()
@@ -190,7 +191,6 @@ def post_competitor_monitoring():
     company = request.form.get("company")
     website = UrlManager(request.form.get("website")).check()
     CompetitorDB(user_id, cp_inn).create(cp_nickname=company, website=website)
-    ScraperDB(user_id, cp_inn).create()  # create a scraper for the company
     return redirect("/competitor-monitoring")
 
 
@@ -270,7 +270,7 @@ def delete_competitor(com_inn):
     return redirect(url_for("main.get_competitor_monitoring"))
 
 
-@main.route("/request_connection/<com_inn>", methods=["POST"])
+@main.route("/request_connection/<cp_inn>", methods=["POST"])
 @login_required
 def request_connection(cp_inn):
     """ Used to send a request connection email to Admin to start working on a scraper """
@@ -299,11 +299,8 @@ def change_web_post():
     user_inn = current_user.company_inn
     available_inns = [competitor.competitor_inn for competitor in CompetitorDB.get_all(user_id)]
     available_inns.append(user_inn)
-    print(available_inns)
     new_web = UrlManager(request.form.get("new_web")).check()
-
     cp_inn = InnManager(request.form.get("inn")).check()
-    print(cp_inn)
     if cp_inn not in available_inns:
         return "Not allowed"
     if not new_web:
@@ -335,6 +332,17 @@ def change_web_get():
     if not requested_connection or requested_connection.connection_status == "disconnected":
         UserDB(user_id).change_web(new_website=new_web)
     return redirect("/competitor-monitoring")
+
+
+@main.post("/profile/change_email")
+def change_email_post():
+    user_id = current_user.get_id()
+    new_email = EmailManager(request.form.get("new_email")).check()
+    if not new_email:
+        return "Error"
+    if UserDB(user_id).change_email(new_email):
+        return new_email
+    return "Error"
 
 
 @main.route("/profile/link_items", methods=["POST"])

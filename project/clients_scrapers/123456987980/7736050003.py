@@ -1,9 +1,10 @@
+import asyncio
 import logging
 import aiohttp
 from typing import Union
 from bs4 import BeautifulSoup
-from project.wreckage.helpers import operate, get_web, check_price, get_link
-from project.credentials import TIMEOUT
+from project.helpers import OperationalTools, Browser
+from project.managers import UrlManager
 
 
 class Kkgjdidddg:
@@ -14,76 +15,89 @@ class Kkgjdidddg:
     @staticmethod
     async def search_relevant_items(item: str, session: aiohttp.ClientSession) -> Union[list, None]:
         try:
-            logging.warning("Sent to {Kkgjdidddg.BASE_URL}")
+            logging.warning(f"Sent to " + Kkgjdidddg.BASE_URL)
             req = await session.get(Kkgjdidddg.SEARCH_URL.format(item))
             res = await req.text()
             doc = BeautifulSoup(res, "html.parser")
-            logging.warning(f"Got from {Kkgjdidddg.BASE_URL}")
+            logging.warning(f"Got from " + Kkgjdidddg.BASE_URL)
 
             # check if the page is loaded correctly. If not, try getting it through the browser
-            check = operate(lambda: None)
+            check =  OperationalTools.operate(lambda: None)
             if not check:
-                logging.warning(f"BROWSER IS WORKING IN {Kkgjdidddg.BASE_URL}")
-                res = get_web(Kkgjdidddg.SEARCH_URL.format(item), "CHOOSE_YOUR_CHECK_CLASS", TIMEOUT)
+                logging.warning(f"BROWSER IS WORKING IN " + Kkgjdidddg.BASE_URL)
+                res = Browser(Kkgjdidddg.SEARCH_URL.format(item)).get_page("CHOOSE_YOUR_CHECK_CLASS")
                 doc = BeautifulSoup(res, "html.parser")
 
-            items_found = operate(lambda: None)
+            items_found = OperationalTools.operate(lambda: None)
             if not items_found:
-                logging.warning(f"There are no items in {Kkgjdidddg.BASE_URL}")
+                logging.warning(f"There are no items in " + Kkgjdidddg.BASE_URL)
                 return None
 
             items_lst = []
             for item in items_found:
                 # give it the path to the name
-                name = operate(lambda: None)
+                name = OperationalTools.operate(lambda: None)
                 if not name:
                     logging.warning(f"There is no name. Item has been skipped")
                     continue
 
                 # links are provided with no base url
-                link = get_link(operate(lambda: None))
+                link = UrlManager(OperationalTools.operate(lambda: None)).check()
                 if not link:
                     logging.warning(f"LINK FOR THE ITEM HASN'T BEEN FOUND. ITEM NAME: {name}")
                     continue
 
                 # there often are old and new price. Get the new one
-                price = operate(lambda: None)
+                price = OperationalTools.operate(lambda: None)
 
                 # change the type of the price to an int. None if there are no digits.
-                price = check_price(price)
+                price = OperationalTools.check_int(price)
 
                 items_lst.append({"name": name, "price": price, "url": link})
             return items_lst
         except Exception as error:
-            logging.warning("ERROR: {error} IN: {Kkgjdidddg.BASE_URL}")
+            logging.warning("ERROR: {error} IN: " + Kkgjdidddg.BASE_URL)
             return None
 
     @staticmethod
     async def get_item_info(link: str, session: aiohttp.ClientSession) -> Union[dict, None]:
         if  Kkgjdidddg.BASE_URL not in link:
-            logging.warning(f"WRONG LINK PROVIDED FOR {Kkgjdidddg.BASE_URL}")
+            logging.warning(f"WRONG LINK PROVIDED FOR " + Kkgjdidddg.BASE_URL)
             return None
         try:
-            logging.warning(f"Sent to {Kkgjdidddg.BASE_URL}")
+            logging.warning(f"Sent to " + Kkgjdidddg.BASE_URL)
             req = await session.get(link, ssl=False)
             res = await req.text()
-            logging.warning(f"Got from {Kkgjdidddg.BASE_URL}")
+            logging.warning(f"Got from " + Kkgjdidddg.BASE_URL)
             doc = BeautifulSoup(res, "html.parser")
 
             # check if the page is loaded correctly. If not, try getting it through the browser
-            check = operate(lambda: None)
+            check = OperationalTools.operate(lambda: None)
             if not check:
-                res = get_web(link, "CHOOSE_YOUR_CHECK_CLASS", TIMEOUT)
+                res = Browser(link).get_page("CHOOSE_YOUR_CHECK_CLASS")
                 doc = BeautifulSoup(res, "html.parser")
 
-            name = operate(lambda: None)
+            name = OperationalTools.operate(lambda: None)
             if not name:
                 logging.warning(f"There is no items in {link}")
                 return None
 
-            price = operate(lambda: doc.find(class_="dpp-price_data__price").find(class_="current-price").text)
-            price = check_price(price)
+            price = OperationalTools.operate(lambda: doc.find(class_="dpp-price_data__price").find(class_="current-price").text)
+            price = OperationalTools.check_int(price)
             return {"name": name, "price": price, "url": link}
         except Exception as error:
-            logging.warning("ERROR: {error} IN: {Kkgjdidddg.BASE_URL}")
+            logging.warning("ERROR: {error} IN: " + Kkgjdidddg.BASE_URL)
             return None
+
+
+async def test_search(item):
+    async with aiohttp.ClientSession() as session:
+        result = await Kkgjdidddg.search_relevant_items(item, session)
+        return result
+
+
+def run_test(item):
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+    results = asyncio.run(test_search(item))
+    print(results)
+

@@ -36,13 +36,11 @@ function changeWebsite() {
                 error: function (error) {
                     // Обработка ошибок при отправке данных
                     console.error("Ошибка при отправке данных: ", error);
+                    website_div.innerHTML = old_html;
+                    website_div.querySelector("a").innerText = "Error sending";
+                    document.getElementById("change_web_btn").addEventListener("click", changeWebsite);
                 },
             });
-
-
-            website_div.innerHTML = old_html;
-            website_div.querySelector("a").innerText = new_website;
-            document.getElementById("change_web_btn").addEventListener("click", changeWebsite);
         }
     });
 }
@@ -59,27 +57,25 @@ function changeEmail() {
             console.log("new: " + new_email);
 
             // here u get the response from the server
-//             $.ajax({
-//                 url: "/profile/change_web", // Здесь указываем URL-адрес серверного обработчика
-//                 type: "post",
-//                 data: {"new_web": new_website, "inn": inn},
-//                 success: function (response) {
-//                     // Обработка успешной отправки данных
-//                     website_div.innerHTML = old_html;
-//                     website_div.querySelector("a").innerText = response;
-//                     document.getElementById("interact_btn").addEventListener("click", changeWebsite);
-//                     console.log("there has been a responce " + response);
-//                 },
-//                 error: function (error) {
-//                     // Обработка ошибок при отправке данных
-//                     console.error("Ошибка при отправке данных: ", error);
-//                 },
-//             });
-
-
-            email_div.innerHTML = old_html;
-            email_div.querySelector("span").innerText = new_email;
-            document.getElementById("change_email_btn").addEventListener("click", changeWebsite);
+            $.ajax({
+                url: "/profile/change_email", // Здесь указываем URL-адрес серверного обработчика
+                type: "post",
+                data: {"new_email": new_email},
+                success: function (response) {
+                    // Обработка успешной отправки данных
+                    email_div.innerHTML = old_html;
+                    email_div.querySelector("span").innerText = response;
+                    document.getElementById("change_email_btn").addEventListener("click", changeEmail);
+                    console.log("there has been a responce " + response);
+                },
+                error: function (error) {
+                    // Обработка ошибок при отправке данных
+                    console.error("Ошибка при отправке данных: ", error);
+                    email_div.innerHTML = old_html;
+                    email_div.querySelector("span").innerText = "Error sending";
+                    document.getElementById("change_email_btn").addEventListener("click", changeEmail);
+                },
+            });
         }
     });
 }
