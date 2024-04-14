@@ -574,6 +574,9 @@ class RelationsDB:
         all_linked_items = RelationsDB.get_all(user_id)
 
         formatted_relations = dict()
+        if not all_linked_items:
+            return formatted_relations
+
         for item in own_items:
             related = dict()
             for linked_item in all_linked_items:

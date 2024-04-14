@@ -1,5 +1,6 @@
 import asyncio
 import aiohttp
+from project.managers import InnManager
 from project.search_files.get_classes import get_scr_from_id
 
 
@@ -10,7 +11,7 @@ def get_tasks_items(user_id, item, session, comp_filter=None):
     tasks = []
     if comp_filter is not None:
         for cls in classes:
-            if unhash_inn(cls.__name__) in comp_filter:
+            if InnManager(cls.__name__).decode() in comp_filter:
                 tasks.append(asyncio.create_task(cls.search_relevant_items(item, session)))
     else:
         for cls in classes:

@@ -105,17 +105,15 @@
                     </div>
                 </form>
                 {% else %}
-                <form class="d-inline-block flex-fill m-1" action="/profile" method="post">
+                <form class="d-inline-block m-1" action="/autoload_associations" method="post">
                     <div>
-                        <button class="btn btn-dark border-light btn-sm" type="submit" name="autoload" disabled>Autoload
-                            Associations
+                        <button class="btn btn-dark border-light" type="submit" name="autoload" disabled>Autoload Associations
                         </button>
                     </div>
                 </form>
-                <form class="d-inline-block flex-fill m-1" action="/profile" method="post">
+                <form class=" d-inline-block m-1" action="/profile" method="post">
                     <div>
-                        <button class="btn btn-dark border-light btn-sm" type="submit" name="load_link" disabled>Load
-                            Items
+                        <button class="btn btn-dark border-light" type="submit" name="load_link" disabled>Load Items
                         </button>
                     </div>
                 </form>
@@ -164,7 +162,7 @@
                             <input type="text" class="form-control form-control-sm pb-2" name="item_link"
                                    placeholder="Item link from your web"
                                    required>
-                            <button class="btn btn-dark border-light mt-2 btn-sm" type="submit">Load Item</button>
+                            <button class="btn btn-dark border-light mt-3 btn-sm" type="submit">Load Item</button>
                         </div>
                     </div>
                 </form>
@@ -175,7 +173,7 @@
                             <input type="text" class="form-control" name="item_link"
                                    placeholder="Item link from your web"
                                    required>
-                            <button class="btn btn-dark border-light" type="submit" disabled>Load Item</button>
+                            <button class="btn btn-dark border-light mt-3 btn-sm" type="submit" disabled>Load Item</button>
                         </div>
                     </div>
                 </form>

@@ -110,7 +110,7 @@ def load_user_item():
 
 @main.get("/company-goods")
 @login_required
-def company_goods():
+def company_goods_get():
     user_id = current_user.get_id()
     available_competitors = CompetitorDB.get_all(user_id, "connected")
     items = ItemDB.get_format_all(user_id)
@@ -124,12 +124,13 @@ def company_goods_post():
     user_id = current_user.get_id()
     item_link = UrlManager(request.form.get("item_link")).check()
     if not item_link:
-        return redirect("/company_goods")
+        return redirect(url_for("main.company_goods_get"))
 
     item = ItemDB(user_id, item_link).update()
     if not item:
         logging.warning("THERE IS NO SUCH ITEM TO ADD TO YOUR ITEM LIST")
-        return redirect("/company_goods")
+        return redirect(url_for("main.company_goods_get"))
+    return redirect(url_for("main.company_goods_get"))
 
 
 @main.get("/company-goods/refresh_all")
@@ -383,8 +384,8 @@ def items_owned():
     """ Returns a list of items owned by user"""
     user_id = current_user.get_id()
     user_inn = current_user.company_inn
-    all_items = ItemDB.get_all(user_id)
-    own_items = list(filter(lambda x: InnManager(x["competitor_inn"]).check() == str(user_inn), all_items))
+    all_items = ItemDB.get_format_all(user_id)
+    own_items = list(filter(lambda x: InnManager(x["competitor_inn"]).check() == user_inn, all_items))
     # json_items = json.dumps(own_items)
     search = request.args.get('term')
     if not search:
