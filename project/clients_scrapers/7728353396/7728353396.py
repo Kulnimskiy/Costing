@@ -33,13 +33,13 @@ class Kkflgiggmj:
         @OperationalTools.operate
         def get_price(item_in_catalog):
             # there often are old and new price. Get the new one
-            price_raw = item.find(class_="price").text
+            price_raw = item_in_catalog.find(class_="price").text
             # change the type of the price to an int. None if there are no digits.
             return PriceManager(price_raw).check()
 
         @OperationalTools.operate
         def get_link(item_in_catalog: BeautifulSoup):
-            link_raw = Kkflgiggmj.BASE_URL + str(item.find(class_="name")["href"])
+            link_raw = Kkflgiggmj.BASE_URL + str(item_in_catalog.find(class_="name")["href"])
             return UrlManager(link_raw).check()
 
         # The algorithm of the search is implemented here
@@ -156,4 +156,5 @@ def run_test(item, link):
 
 
 if __name__ == '__main__':
-    run_test("стул", "https://www.stomart.ru/catalog/ustanovki_i_aksessuary/siger_u200_stomatologicheskaya_ustanovka_1.html")
+    run_test("стул",
+             "https://www.stomart.ru/catalog/ustanovki_i_aksessuary/siger_u200_stomatologicheskaya_ustanovka_1.html")

@@ -3,8 +3,8 @@ import logging
 import aiohttp
 from typing import Union
 from bs4 import BeautifulSoup
-from project.wreckage.helpers import operate, get_web, check_price
-from project.credentials import TIMEOUT
+from project.helpers import OperationalTools, Browser
+from project.managers import UrlManager, PriceManager
 
 
 class Kkdhdhkhhm:
@@ -31,48 +31,70 @@ class Kkdhdhkhhm:
             return None
 
     @staticmethod
-    async def get_item_info(link: str, session: aiohttp.ClientSession) -> Union[dict, None]:
+    async def get_item_info(link: str, session: aiohttp.ClientSession) -> dict | None:
         """ Get the name, price and link of a competitor's product via the provided web page """
+
+        check_cls_tag = "tabs-list"
+
+        @OperationalTools.operate
+        def get_check(document: BeautifulSoup):
+            """ checks if the page loads correctly and that is the right page to get the info from """
+            return document.find(class_=check_cls_tag)
+
+        @OperationalTools.operate
+        def get_name(document):
+            return document.find(class_="row").find("h1").get_text()
+
+        @OperationalTools.operate
+        def get_price(document: BeautifulSoup):
+            price_raw = document.find(class_="element-stickyinfo-prices__curprice").get_text()
+            return PriceManager(price_raw).check()
+
+        # The main algorithm is implemented here
         if Kkdhdhkhhm.BASE_URL not in link:
             logging.warning(f"WRONG LINK PROVIDED FOR {Kkdhdhkhhm.BASE_URL}")
             return None
         try:
             logging.warning(f"Sent to {Kkdhdhkhhm.BASE_URL}")
-            req = await session.get(link)
-            doc = await req.text()
+            req = await session.get(link, ssl=False)
+            res = await req.text()
             logging.warning(f"Got from {Kkdhdhkhhm.BASE_URL}")
-            doc = BeautifulSoup(doc, "html.parser")
+            doc = BeautifulSoup(res, "html.parser")
 
             # check if the page is loaded correctly. If not, try getting it through the browser
-            check = operate(lambda: doc.find(class_="tabs-list"))
+            check = get_check(doc)
             if not check:
-                res = get_web(link, "tabs-list", TIMEOUT)
+                res = Browser(link).get_page(cls_wait_tag=check_cls_tag)
                 doc = BeautifulSoup(res, "html.parser")
 
-            name = operate(lambda: doc.find(class_="row").find("h1").get_text())
+            name = get_name(doc)
+
             if not name:
-                logging.warning(f"There is no items in {link}")
+                logging.warning(f"THERE ARE NO ITEMS IN {link}")
                 return None
 
-            price = operate(lambda: doc.find(class_="element-stickyinfo-prices__curprice").get_text())
-            price = check_price(price)
+            price = get_price(doc)
+            if not price:
+                logging.warning(f"THERE IS NO PRICE IN {link}")
+
             return {"name": name, "price": price, "url": link}
         except Exception as error:
             logging.warning(f"ERROR: {error} IN: {Kkdhdhkhhm.BASE_URL}")
             return None
 
 
-async def test_search(item):
+async def test_search(item, link=None):
     async with aiohttp.ClientSession() as session:
         result = await Kkdhdhkhhm.search_relevant_items(item, session)  # link[1] is the url of the item
-        return result
+        result_link = await Kkdhdhkhhm.get_item_info(link, session) if link else None
+        return result, result_link
 
 
-def run_test(item):
+def run_test(item, link):
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
-    results = asyncio.run(test_search(item))
+    results = asyncio.run(test_search(item, link))
     print(results)
 
 
 if __name__ == '__main__':
-    run_test("стул")
+    run_test("стул", "https://stomatorg.ru/product/stul_vracha_planmeca_lumo_tsvet_na_vybor/213995/")
