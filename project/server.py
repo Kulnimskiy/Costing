@@ -153,6 +153,8 @@ def refresh_item_prices():
         else:
             logging.warning(f"ITEM {result['url']} WASN'T UPDATED")
     logging.warning("THE ITEMS HAVE BEEN UPDATED")
+    if "comparison" in request.referrer:
+        return redirect(url_for("main.get_profile"))
     return redirect("/company-goods")
 
 
@@ -160,12 +162,14 @@ def refresh_item_prices():
 @login_required
 def delete_item():
     item_id = request.form.get("item_id")
+    if not item_id:
+        logging.warning("ITEM ID ISN'T FOUND")
     user_id = current_user.get_id()
     item = ItemDB.get_by_id(user_id, item_id)
     if not item:
         logging.warning("THERE IS NO SUCH ITEM")
         return redirect("/company-goods")
-    if ItemDB(user_id, item.link).delete():
+    if RelationsDB(user_id, item.link).delete_all_relations() and ItemDB(user_id, item.link).delete():
         if "profile" in request.referrer:
             return redirect(url_for("main.get_profile"))
         return redirect("/company-goods")
@@ -206,7 +210,7 @@ def comparison():
     # get rid of the user from the competitors list
     crs = [cr for cr in all_crs if cr.competitor_inn != user_inn]
     all_items = ItemDB.get_format_all(user_id)
-    own_items = list(filter(lambda x: InnManager(x["competitor_inn"]).check() == str(user_inn), all_items))
+    own_items = list(filter(lambda x: InnManager(x["competitor_inn"]).check() == user_inn, all_items))
 
     items_info = RelationsDB.get_format_compare(user_id, user_inn)
 
@@ -224,7 +228,7 @@ def price_looker_get():
         return render_template("price-looker.html",
                                competitors=available_competitors,
                                user_inn=current_user.company_inn)
-    chosen_comps = [str(cls.competitor_inn) for cls in available_competitors]
+    chosen_comps = [cls.competitor_inn for cls in available_competitors]
     result = run_search_all_items(current_user.get_id(), item=item_search_field, chosen_comps=chosen_comps)
     result = ResultFormats.search_all_result(item_search_field, result, available_competitors)
     return render_template("price-looker_layout.html", competitors=available_competitors, items=result)
@@ -352,31 +356,40 @@ def link_items():
     user_id = current_user.get_id()
     item_id = OperationalTools.check_int(request.form.get("item_id"))
     if not item_id:
-        return "No item"
+        return "NO ITEM_ID HAS BEEN GIVEN"
     item = ItemDB.get_by_id(user_id=user_id, item_id=item_id)
     if not item:
-        return "You don't have this item"
+        return "YOU DON'T OWN THIS ITEM"
     item_link = item.link
     cp_inn = InnManager(request.form.get("comp_inn")).check()
     if not cp_inn:
-        return "This comp isn't added"
+        logging.warning("THIS COMPETITOR DOESN'T EXIST: " + cp_inn)
+        return "THIS COMPETITOR DOESN'T EXIST"
     available_competitors = CompetitorDB.get_all(user_id, connection_status="connected")
     available_inns = [competitor.competitor_inn for competitor in available_competitors]
     if cp_inn not in available_inns:
-        return "This comp isn't connected"
-    new_link = UrlManager(request.form.get("new_link")).check()
+        logging.warning("THIS COMPETITOR ISN'T CONNECTED: " + cp_inn)
+        return "THIS COMPETITOR ISN'T CONNECTED"
+    new_link = request.form.get("new_link")
     item_connection = RelationsDB(user_id=user_id, item_url=item_link)
-    old_item_record = RelationsDB(user_id=user_id, item_url=item_link).get_by_inn(cp_inn=cp_inn)
+    old_item_connection = RelationsDB(user_id=user_id, item_url=item_link).get_by_inn(cp_inn=cp_inn)
     if not new_link:
-        if old_item_record:
-            item_connection.delete_relation(related_item_url=old_item_record.connected_item_link)
-        return "deleted"
-    if not ItemDB(user_id=user_id, url=new_link).update():
-        return "Cannot get item info!"
+        if old_item_connection:
+            item_connection.delete_relation(related_item_url=old_item_connection.connected_item_link)
+        return "DELETED"
+    new_link = UrlManager(new_link).check()
+    if not new_link:
+        if old_item_connection:
+            item_connection.delete_relation(related_item_url=old_item_connection.connected_item_link)
+        return "GIVEN URL ISN'T VALID"
+    linked_item = ItemDB(user_id=user_id, url=new_link)
+    if not linked_item.update() and not linked_item.get():
+        logging.warning("CANNOT GET THE ITEM'S INFO: " + new_link)
+        return "CANNOT GET THE ITEM'S INFO"
     if item_connection.create_relation(related_item_url=new_link, cp_inn=cp_inn):
         logging.warning(item_link + "connected to " + new_link)
         return new_link
-    return old_item_record.connected_item_link if old_item_record else "Wrong inn or same link"
+    return old_item_connection.connected_item_link if old_item_connection else "Wrong inn or same link"
 
 
 @main.route("/items_owned")
@@ -386,7 +399,6 @@ def items_owned():
     user_inn = current_user.company_inn
     all_items = ItemDB.get_format_all(user_id)
     own_items = list(filter(lambda x: InnManager(x["competitor_inn"]).check() == user_inn, all_items))
-    # json_items = json.dumps(own_items)
     search = request.args.get('term')
     if not search:
         return {"0": "Nothing will connect"}

@@ -7,9 +7,9 @@ function filterFunction() {
         tr = table.getElementsByTagName("tr");
 
         // Перебирайте все строки таблицы и скрывайте тех, кто не соответствует поисковому запросу
-        // Поиск по столбцу с индексом ("td")[1]
+        // Поиск по столбцу с индексом ("td")[0]
         for (i = 0; i < tr.length; i++) {
-            td = tr[i].getElementsByTagName("td")[1];
+            td = tr[i].getElementsByTagName("td")[0];
             if (td) {
                 txtValue = td.textContent || td.innerText;
                 if (txtValue.toUpperCase().indexOf(filter) > -1) {

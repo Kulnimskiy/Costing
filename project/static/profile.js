@@ -68,7 +68,7 @@ function changeConnection(e) {
                     // Обработка успешной отправки данных
                     link_span_el.innerHTML = link_span_html_old;
                     if (!response.toString().includes("http")) {
-                        link_span_el.querySelector("a").innerText = "Error";
+                        link_span_el.querySelector("a").innerText = response;
                         link_span_el.querySelector("a").style.color = "red";
                         console.log(response);
                         console.log("Error! link is not valid or sth went wrong or u deleted it");

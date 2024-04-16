@@ -160,7 +160,7 @@
                     <div>
                         <div>
                             <input type="text" class="form-control form-control-sm pb-2" name="item_link"
-                                   placeholder="Item link from your web"
+                                   placeholder="Item link from your website"
                                    required>
                             <button class="btn btn-dark border-light mt-3 btn-sm" type="submit">Load Item</button>
                         </div>
@@ -226,8 +226,8 @@
                             <td>
                         <span>
                             <input type="hidden" class="element_id"
-                                   value="{{items_info[item][0]}}_{{competitor.competitor_inn}}"
-                                   id="{{items_info[item][0]}}_{{competitor.competitor_inn}}">
+                                   value="{{item[0]}}_{{competitor.competitor_inn}}"
+                                   id="{{item[0]}}_{{competitor.competitor_inn}}">
                             {% if items_info[item][comp_inn] %}
                             <a class="result" href={{items_info[item][comp_inn]["url"]}} target="_blank">{{items_info[item][comp_inn]["name"]}}</a>
                             {% else %}
@@ -244,7 +244,7 @@
                                                                                                     src="static/images/delete-button.svg"
                                                                                                     alt="Delete"/>
                                     </button>
-                                    <input title="item_id" hidden="hidden" value="{{item.item_id}}" name="item_id">
+                                    <input title="item_id" hidden="hidden" value="{{item[0]}}" name="item_id">
                                 </form>
                             </td>
                             {% endif %}

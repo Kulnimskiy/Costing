@@ -14,7 +14,8 @@
                                     class="display-6 d-flex justify-content-start"> Price Comparison </span>
                             </div>
                             <div class="col col-md-6 d-flex justify-content-end">
-                                <input class="form-control form-control-sm  w-50 d-flex mt-2 mb-2" type="text" id="filterInput"
+                                <input class="form-control form-control-sm  w-50 d-flex mt-2 mb-2" type="text"
+                                       id="filterInput"
                                        onkeyup="filterFunction()"
                                        placeholder="Search...">
                             </div>
@@ -26,7 +27,8 @@
                 <form action="/company-goods/refresh_all">
                     <button type="submit" id="refresh_all" class="btn btn-sm btn-dark mt-1 mb-1 unified-yellow">
                         Refresh now
-                    </button><span id="loading_icon"></span>
+                    </button>
+                    <span id="loading_icon"></span>
                 </form>
             </div>
             <div id="table-wrapper">
@@ -65,6 +67,7 @@
                                 {% for competitor in competitors %}
                                 {% set comp_inn = competitor.competitor_inn %}
 
+
                                 <td class="data">
                         <span>
                             <input type="hidden" class="element_id"
@@ -76,8 +79,9 @@
                             <a class="result price" href="" target="_blank"></a>
                             {% endif %}
                         </span>
-                                    {% endfor %}
-                                    {% endif %}
+                                </td>
+                                {% endfor %}
+                                {% endif %}
                             </tr>
                             {% endfor %}
                             {% endif %}

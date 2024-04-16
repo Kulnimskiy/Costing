@@ -60,6 +60,8 @@ async def search_all_links(user_id, links: list):
 async def search_link(user_id, comp_inn, link):
     """get info from a link from a particular competitor by his inn"""
     scr = get_scr_from_id(user_id, comp_inn)
+    if isinstance(scr, list):  # the scraper hasn't been found and the entire list of scrapers has been given
+        return None
     if scr:
         async with aiohttp.ClientSession() as session:
             result = await scr.get_item_info(link, session)
@@ -94,23 +96,22 @@ def run_search_all_links(user_id, links):
     return results
 
 
-def run_search_item(user_id, comp_id, item):
+def run_search_item(user_id, cp_inn, item):
     """looks for relevant items in a specified competitor"""
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
-    results = asyncio.run(search_item(user_id, comp_id, item))
+    results = asyncio.run(search_item(user_id, cp_inn, item))
     return results
 
 
-def run_search_link(user_id, comp_id, link):
+def run_search_link(user_id, cp_inn, link):
     """gets info from a link items in a specified competitor"""
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
-    results = asyncio.run(search_link(user_id, comp_id, link))
+    results = asyncio.run(search_link(user_id, cp_inn, link))
     return results
 
 
 if __name__ == '__main__':
     from project.app import create_app
-    from project.wreckage.helpers import unhash_inn
 
     app = create_app()
     with app.app_context():

@@ -549,11 +549,22 @@ class RelationsDB:
 
     def delete_relation(self, related_item_url: str) -> bool:
         exists = self.get_by_url(related_item_url)
-        if exists.first():
+        if exists:
             db.session.delete(exists)
             db.session.commit()
             return True
         return False
+
+    def delete_all_relations(self) -> bool:
+        relates_to = ItemsConnections.query.filter_by(user_id=self.user_id,
+                                                      item_link=self.item_url).all()
+        related_to = ItemsConnections.query.filter_by(user_id=self.user_id,
+                                                      connected_item_link=self.item_url).all()
+        relates_to.extend(related_to)
+        for relation in relates_to:
+            db.session.delete(relation)
+        db.session.commit()
+        return True
 
     def get_format(self):
         """ Formats 1 item the right way for the profile page"""
@@ -572,18 +583,20 @@ class RelationsDB:
             return None
         own_items = list(filter(lambda x: x["competitor_inn"] == str(user_inn), all_items))
         all_linked_items = RelationsDB.get_all(user_id)
+        all_linked_items = all_linked_items if all_linked_items else []  # None type obj is not iterable
 
         formatted_relations = dict()
-        if not all_linked_items:
-            return formatted_relations
+        # if not all_linked_items:
+        #     return formatted_relations
 
         for item in own_items:
             related = dict()
             for linked_item in all_linked_items:
                 if item['link'] == linked_item.item_link:
                     con_item = ItemDB(user_id, linked_item.connected_item_link).get_format()
-                    comp_inn = int(con_item["competitor_inn"])
+                    comp_inn = con_item["competitor_inn"]
                     related[comp_inn] = {"url": linked_item.connected_item_link, "name": con_item["name"]}
+                    break
             formatted_relations[(item["item_id"], item["name"], item['link'])] = related
         return formatted_relations
 
@@ -593,6 +606,7 @@ class RelationsDB:
         all_items = ItemDB.get_format_all(user_id)
         own_items = list(filter(lambda x: x["competitor_inn"] == str(user_inn), all_items))
         all_linked_items = RelationsDB.get_all(user_id)
+        all_linked_items = all_linked_items if all_linked_items else []
         items_info = dict()
         for item in own_items:
             item_url = item['link']
@@ -606,7 +620,7 @@ class RelationsDB:
             for linked_item in all_linked_items:
                 if linked_item.item_link == item_url:
                     cr_item = ItemDB(user_id, linked_item.connected_item_link).get_format()
-                    cr_inn = int(cr_item["competitor_inn"])
+                    cr_inn = cr_item["competitor_inn"]
                     info["cr_prices"][cr_inn] = cr_item
             cr_prices = [item["last_price"] for item in info["cr_prices"].values() if item["last_price"] > 0]
             if cr_prices:

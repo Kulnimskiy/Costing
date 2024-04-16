@@ -7,8 +7,8 @@ from project.helpers import OperationalTools, Browser
 from project.managers import UrlManager, PriceManager
 
 
-class {CLASS_NAME}:
-    INN = {COMPANY_INN}
+class Gldldjjgee:
+    INN = 3808066311
     BASE_URL = ""
     SEARCH_URL = ""
 
@@ -48,23 +48,23 @@ class {CLASS_NAME}:
 
         # The algorithm of the search is implemented here. Usually it doesn't change
         try:
-            logging.warning(f"Sent to " + {CLASS_NAME}.BASE_URL)
-            req = await session.get({CLASS_NAME}.SEARCH_URL.format(item), ssl=False)
+            logging.warning(f"Sent to " + Gldldjjgee.BASE_URL)
+            req = await session.get(Gldldjjgee.SEARCH_URL.format(item), ssl=False)
             res = await req.text()
-            logging.warning(f"Got from " + {CLASS_NAME}.BASE_URL)
+            logging.warning(f"Got from " + Gldldjjgee.BASE_URL)
             doc = BeautifulSoup(res, "html.parser")
 
             # check if the page is loaded correctly. If not, try getting it through the browser
             check = get_check(doc)
             if not check:
-                logging.warning(f"BROWSER IS WORKING IN " + {CLASS_NAME}.BASE_URL)
-                res = Browser({CLASS_NAME}.SEARCH_URL.format(item)).get_page(cls_wait_tag=check_cls_tag)
+                logging.warning(f"BROWSER IS WORKING IN " + Gldldjjgee.BASE_URL)
+                res = Browser(Gldldjjgee.SEARCH_URL.format(item)).get_page(cls_wait_tag=check_cls_tag)
                 doc = BeautifulSoup(res, "html.parser")
 
             # get the list of items from the page
             items_found = get_catalog(doc)
             if not items_found:
-                logging.warning(f"There are no items in " + {CLASS_NAME}.BASE_URL)
+                logging.warning(f"There are no items in " + Gldldjjgee.BASE_URL)
                 return None
 
             items_lst = []
@@ -87,10 +87,10 @@ class {CLASS_NAME}:
                     logging.warning(f"PRICE FOR THE ITEM HASN'T BEEN FOUND. ITEM NAME: " + name)
                     continue
 
-                items_lst.append({{"name": name, "price": price, "url": link}})
+                items_lst.append({"name": name, "price": price, "url": link})
             return items_lst
         except Exception as error:
-            logging.warning("ERROR: {{error}} IN: " + {CLASS_NAME}.BASE_URL)
+            logging.warning("ERROR: {error} IN: " + Gldldjjgee.BASE_URL)
             return None
 
     @staticmethod
@@ -117,14 +117,14 @@ class {CLASS_NAME}:
 
 
         # The algorithm of the search is implemented here. USUALLY IT DOESN'T CHANGE
-        if {CLASS_NAME}.BASE_URL not in link:
-            logging.warning(f"WRONG LINK PROVIDED FOR " + {CLASS_NAME}.BASE_URL)
+        if Gldldjjgee.BASE_URL not in link:
+            logging.warning(f"WRONG LINK PROVIDED FOR " + Gldldjjgee.BASE_URL)
             return None
         try:
-            logging.warning(f"Sent to " + {CLASS_NAME}.BASE_URL)
+            logging.warning(f"Sent to " + Gldldjjgee.BASE_URL)
             req = await session.get(link, ssl=False)
             res = await req.text()
-            logging.warning(f"Got from " + {CLASS_NAME}.BASE_URL)
+            logging.warning(f"Got from " + Gldldjjgee.BASE_URL)
             doc = BeautifulSoup(res, "html.parser")
 
             # check if the page is loaded correctly. If not, try getting it through the browser
@@ -136,23 +136,23 @@ class {CLASS_NAME}:
             name = get_name(doc)
 
             if not name:
-                logging.warning(f"THERE ARE NO ITEMS IN {{link}}")
+                logging.warning(f"THERE ARE NO ITEMS IN {link}")
                 return None
 
             price = get_price(doc)
             if not price:
-                logging.warning(f"THERE IS NO PRICE IN {{link}}")
+                logging.warning(f"THERE IS NO PRICE IN {link}")
 
-            return {{"name": name, "price": price, "url": link}}
+            return {"name": name, "price": price, "url": link}
         except Exception as error:
-            logging.warning("ERROR: {{error}} IN: " + {CLASS_NAME}.BASE_URL)
+            logging.warning("ERROR: {error} IN: " + Gldldjjgee.BASE_URL)
             return None
 
 
 async def test_search(item, link=None):
     async with aiohttp.ClientSession() as session:
-        result = await {CLASS_NAME}.search_relevant_items(item, session)  # link[1] is the url of the item
-        result_link = await {CLASS_NAME}.get_item_info(link, session) if link else None
+        result = await Gldldjjgee.search_relevant_items(item, session)  # link[1] is the url of the item
+        result_link = await Gldldjjgee.get_item_info(link, session) if link else None
         return result, result_link
 
 
