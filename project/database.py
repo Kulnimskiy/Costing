@@ -164,7 +164,7 @@ class CompetitorDB:
         return True
 
     @staticmethod
-    def get_all(user_id, connection_status=""):
+    def get_all(user_id, connection_status="") -> list[Competitors]:
         """connection status can be 'disconnected', 'connected','requested'. Only those are in the db"""
         if connection_status in CompetitorDB.CONNECTION_STATUS:
             return Competitors.query.filter_by(user_id=user_id, connection_status=connection_status).all()
@@ -414,6 +414,9 @@ class ItemDB:
         if not cp_inn:
             return False
 
+        if not item_price:  # if there is no price for the item, set it to 0
+            item_price = 0
+
         item = ItemsRecords(item_name=item_name,
                             company_inn=cp_inn,
                             price=item_price,
@@ -531,6 +534,7 @@ class RelationsDB:
         if cp_rel_exists:
             cp_rel_exists.connection_item_link = related_item_url
             db.session.commit()
+            logging.warning("REPLACING OLD CONNECTED LINK WITH A NEW ONE")
             return True
         new_connection = ItemsConnections(user_id=self.user_id,
                                           item_link=self.item_url,
@@ -596,7 +600,6 @@ class RelationsDB:
                     con_item = ItemDB(user_id, linked_item.connected_item_link).get_format()
                     comp_inn = con_item["competitor_inn"]
                     related[comp_inn] = {"url": linked_item.connected_item_link, "name": con_item["name"]}
-                    break
             formatted_relations[(item["item_id"], item["name"], item['link'])] = related
         return formatted_relations
 

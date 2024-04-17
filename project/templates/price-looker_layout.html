@@ -19,7 +19,8 @@
                                         <label>Choose your item</label>
                                         <div class="input-group">
                                             <div class="col-md-8">
-                                                <select class="w-100" name="item_searched" id="add_connection_item"></select>
+                                                <select class="w-100" name="item_searched"
+                                                        id="add_connection_item"></select>
                                             </div>
                                             <button name="interact_btn" type="button" id="search_user_item"
                                                     onclick="SearchUserItem()">
@@ -78,7 +79,8 @@
             </aside>
             <div class="col-lg-8">
                 <div class="input-group mb-3 mx-auto" style="padding-top: 5%">
-                    <input type="text" class="form-control border-dark" placeholder="Goods name..." name="item" id="item_info"
+                    <input type="text" class="form-control border-dark" placeholder="Goods name..." name="item"
+                           id="item_info"
                            autofocus
                            style="border-color: #b8daff">
                     <button class="btn btn-outline-dark" type="submit" id="peek">Search</button>
@@ -93,17 +95,29 @@
                             <thead>
                             <tr class="table-secondary">
                                 <th>Name</th>
-                                <th>Price</th>
-                                <th>Link</th>
+                                <th class="price">Price</th>
+                                <th class="competitor">Competitor</th>
+                                <th class="mx-auto"></th>
                             </tr>
                             </thead>
                             <tbody>
                             {% for item in items %}
                             <tr>
-                                <td>{{item.name}}</td>
+                                <td><a class="result" href={{item.url}} target="_blank">{{item.name}}</a></td>
                                 <td>{{item.price}}</td>
-                                <td style="max-width: 100%"><a href={{item.url}}
-                                                               target="_blank">{{item.url[8:25]}}...</a></td>
+                                <td>{{item.competitor[0:15]}}</td>
+                                {% if item.added %}
+                                <td>
+                                    <button type="button" class="btn_link_items bg-success" style="color: white;">✔
+                                    </button>
+                                    <input name="competitor_inn" value="{{item.competitor_inn}}" type="hidden">
+                                    <input name="item_link" value="{{item.url}}" type="hidden"></td>
+                                {% else %}
+                                <td>
+                                    <button type="button" class="btn_link_items">+</button>
+                                    <input name="competitor_inn" value="{{item.competitor_inn}}" type="hidden">
+                                    <input name="item_link" value="{{item.url}}" type="hidden"></td>
+                                {% endif %}
                             </tr>
                             {% endfor %}
                             </tbody>
@@ -114,4 +128,5 @@
         </div>
     </div>
 </form>
+<script src="/static/price_looker.js" crossorigin="anonymous"></script>
 {% endblock %}

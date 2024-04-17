@@ -49,6 +49,9 @@ class Kldegghglf:
 
         @OperationalTools.operate
         def get_price(document: BeautifulSoup):
+            special = document.find(class_="autocalc-product-special")
+            if special:
+                return PriceManager(special.get_text()).check()
             price_raw = document.find(class_="autocalc-product-price").get_text()
             return PriceManager(price_raw).check()
 
@@ -99,4 +102,4 @@ def run_test(item, link):
 
 
 if __name__ == '__main__':
-    run_test("стул", "https://stomshop.pro/averon-stul-2-1-folk-new")
+    run_test("стул", "https://stomshop.pro/p1001601-nsk-ptl-cl-lediii")

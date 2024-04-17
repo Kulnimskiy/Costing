@@ -74,6 +74,11 @@ function SearchUserItem(){
     });
 }
 
+
+document.querySelectorAll('.btn_link_items').forEach((el) => {
+        el.addEventListener('click', AddConnectionTo)
+})
+
 function AddConnectionTo() {
         let btn_add_con = $(this);
         let item = document.getElementById("select2-add_connection_item-container");
@@ -87,7 +92,7 @@ function AddConnectionTo() {
                 }
             }
         if (item_id) {
-//            btn_add_con.html("<img class='text-center' style='width: 10px; display: block; margin-left: auto; margin-right: auto;' src='/static/images/loading.gif'>");
+            btn_add_con.html("<img class='text-center' style='width: 10px; display: block; margin-left: auto; margin-right: auto;' src='/static/images/loading.gif'>");
             let comp_inn = $(this).siblings()[0].value;
             let new_link = $(this).siblings()[1].value;
             let data = {"item_id": item_id, "comp_inn": comp_inn, "new_link": new_link}
@@ -97,8 +102,8 @@ function AddConnectionTo() {
                 data: data,
                 success: function (response) {
                     // Обработка успешной отправки данных
-                    btn_add_con.html("✔");
-                    btn_add_con.css("background-color","green");
+                    btn_add_con.html("<img src='/static/images/added.avif'  class='mb-1' style='width:20px; pointer-events: none;'>");
+                    btn_add_con.css("background-color","black");
                     document.querySelectorAll('.btn_link_items').forEach((el) => {
                             el.addEventListener('click', AddConnectionTo)
                     })
@@ -120,8 +125,8 @@ function AddConnectionTo() {
                 type: "post",
                 data: {"item_link" : new_link},
                 success: function (response) {
-                    btn_add_con.html("✔");
-                    btn_add_con.css("background-color","green");
+                    btn_add_con.html("<img src='/static/images/added.avif'  class='mb-1' style='width:20px; pointer-events: none;'>");
+                    btn_add_con.css("background-color","black");
                     console.log("there has been a responce");
                 },
                 error: function (error) {
@@ -133,37 +138,3 @@ function AddConnectionTo() {
             });
         }
 };
-//$.ajax({
-//    url: "/items_owned", // Здесь указываем URL-адрес серверного обработчика
-//    type: "get",
-//    success: function (response) {
-//        // Обработка успешной отправки данных
-//        json = JSON.parse(response);
-//        let vector = [];
-//        $.each(json, function (index, value) {
-//            let tem =
-//                {
-//                    id: index,
-//                    text: value.name
-//                };
-//            vector.push(tem);
-//        })
-//        content = {
-//            "result": vector
-//        };
-//        $(".prompt").select2({
-//            data: content,
-//            minimumInputLength: 1,
-//            width: '100%',
-//            placeholder: "Item name...",
-//            templateResult: formatState,
-//            templateSelection: formatRepoSelection
-//        });
-//        console.log(content)
-//
-//    },
-//    error: function (error) {
-//        // Обработка ошибок при отправке данных
-//        console.error("Ошибка при отправке данных: ", error);
-//    },
-//});

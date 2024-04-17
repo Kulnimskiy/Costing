@@ -84,6 +84,7 @@ def post_profile():
         item_link = ItemDB.generate_url(user_id=user_id, company_inn=user_inn, item_name=item_name)
     ItemDB(user_id=user_id, url=item_link).create(item_name=item_name, item_price=item_price)
     logging.warning("ITEM HAS BEEN ADDED MANUALLY")
+    return redirect("/profile")
 
 
 @main.post("/profile/load_item")
@@ -222,16 +223,18 @@ def comparison():
 def price_looker_get():
     """ The page you go to from the nav bar """
     user_id = current_user.get_id()
+    user_inn = current_user.company_inn
     available_competitors = CompetitorDB.get_all(user_id=user_id, connection_status="connected")
+    available_competitors = [cp for cp in available_competitors if cp.competitor_inn != user_inn]
     item_search_field = request.args.get("item-search-field")
     if not item_search_field:
         return render_template("price-looker.html",
                                competitors=available_competitors,
                                user_inn=current_user.company_inn)
     chosen_comps = [cls.competitor_inn for cls in available_competitors]
-    result = run_search_all_items(current_user.get_id(), item=item_search_field, chosen_comps=chosen_comps)
-    result = ResultFormats.search_all_result(item_search_field, result, available_competitors)
-    return render_template("price-looker_layout.html", competitors=available_competitors, items=result)
+    results = run_search_all_items(current_user.get_id(), item=item_search_field, chosen_comps=chosen_comps)
+    results_formatted = ResultFormats.search_all_result(item_search_field, results, available_competitors)
+    return render_template("price-looker_layout.html", competitors=available_competitors, items=results_formatted)
 
 
 @main.post("/price-looker")
@@ -379,8 +382,6 @@ def link_items():
         return "DELETED"
     new_link = UrlManager(new_link).check()
     if not new_link:
-        if old_item_connection:
-            item_connection.delete_relation(related_item_url=old_item_connection.connected_item_link)
         return "GIVEN URL ISN'T VALID"
     linked_item = ItemDB(user_id=user_id, url=new_link)
     if not linked_item.update() and not linked_item.get():

@@ -6,8 +6,8 @@
             <th>Name</th>
             <th class="price">Price</th>
             <th class="competitor">Competitor</th>
-            <th class="mx-auto"></th>
-        </tr>
+            <th class="mx-auto text-center"></th>
+        </tr>s
         </thead>
         <tbody>
         {% for item in items %}
@@ -16,7 +16,10 @@
             <td>{{item.price}}</td>
             <td>{{item.competitor[0:15]}}</td>
             {% if item.added %}
-            <td><button type="button" class="btn_link_items bg-success" style="color: white;">✔</button>
+            <td>
+            <button type="button" class="btn_link_items" style="background-color: rgb(0,0,0);">
+                <img src="/static/images/added.avif"  class="mb-1" style="width:20px; pointer-events: none;">
+            </button>
             <input name="competitor_inn" value="{{item.competitor_inn}}" type="hidden">
             <input name="item_link" value="{{item.url}}" type="hidden"></td>
             {% else %}
