@@ -9,7 +9,7 @@
             <div class="card text-white bg-dark flex-fill m-1 justify-content-center ps-3">
                 <div class="display-6 header-card">
                     <h5 class="display-6">
-                            {{company_info.organization}}
+                        {{company_info.organization}}
                         <span id="user_inn" hidden="hidden">{{current_user.inn}}</span>
                     </h5>
                 </div>
@@ -107,7 +107,8 @@
                 {% else %}
                 <form class="d-inline-block m-1" action="/autoload_associations" method="post">
                     <div>
-                        <button class="btn btn-dark border-light" type="submit" name="autoload" disabled>Autoload Associations
+                        <button class="btn btn-dark border-light" type="submit" name="autoload" disabled>Autoload
+                            Associations
                         </button>
                     </div>
                 </form>
@@ -173,7 +174,8 @@
                             <input type="text" class="form-control" name="item_link"
                                    placeholder="Item link from your web"
                                    required>
-                            <button class="btn btn-dark border-light mt-3 btn-sm" type="submit" disabled>Load Item</button>
+                            <button class="btn btn-dark border-light mt-3 btn-sm" type="submit" disabled>Load Item
+                            </button>
                         </div>
                     </div>
                 </form>

@@ -8,9 +8,11 @@ from project.emails import EmailTemplates
 from project.search_files.async_search import run_search_all_items, run_search_all_links, run_search_item
 from project.credentials import MIN_RELEVANCE, ITEMS_UPDATE_TIMEOUT_RANGE
 from project.managers import UrlManager, InnManager, PriceManager, EmailManager
-from project.helpers import ResultFormats, OperationalTools, ItemName
+from project.helpers import ResultFormats, OperationalTools, ItemName, DateCur
 
 main = Blueprint("main", __name__)
+
+DAYS_TO_REFRESH = 1
 
 
 @main.get("/")
@@ -142,9 +144,14 @@ def refresh_item_prices():
     items = ItemDB.get_format_all(user_id)
     links = []
     for item in items:
+        days_since = DateCur.days_passed(item["last_date"])
+        if days_since < DAYS_TO_REFRESH:  # let the user refresh prices once a day
+            logging.warning(f"IT'S BEEN {days_since} SINCE YOU UPDATED {item['link']}")
+            continue
         for competitor in available_competitors:
             if competitor.competitor_website in item["link"]:
                 links.append((competitor.competitor_inn, item["link"]))
+
     results = run_search_all_links(user_id, links)
     for result in results:
         if result:
@@ -416,7 +423,7 @@ def autoload_associations():
 
     # the approximate result relevance minimum is 0.37. If there are more than 1, get the highest
     competitors = CompetitorDB.get_all(current_user.get_id())
-    competitors_inn = [str(competitor.competitor_inn) for competitor in competitors if
+    competitors_inn = [competitor.competitor_inn for competitor in competitors if
                        competitor.competitor_inn != current_user.company_inn]
     lst_relevant = dict()
     for item in own_items:

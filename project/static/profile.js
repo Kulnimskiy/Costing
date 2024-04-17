@@ -57,6 +57,7 @@ function changeConnection(e) {
             item_id = connection_info[0];
             comp_inn = connection_info[1];
             console.log("new: " + new_link, "item id: " + item_id, "comp_inn: " + comp_inn);
+            link_span_el.innerHTML ="<img class='text-center' style='width: 40px; display: block; margin-left: auto; margin-right: auto;' src='/static/images/loading.gif'>"
 
 //             here u get the response from the server
 
@@ -70,13 +71,12 @@ function changeConnection(e) {
                     if (!response.toString().includes("http")) {
                         link_span_el.querySelector("a").innerText = response;
                         link_span_el.querySelector("a").style.color = "red";
-                        console.log(response);
                         console.log("Error! link is not valid or sth went wrong or u deleted it");
                         document.querySelectorAll('.item_link').forEach((el) => {
                             el.addEventListener('click', changeConnection)
                         })
                     } else {
-                        link_span_el.querySelector("a").innerText = response.toString().slice(0, 25) + "...";
+                        link_span_el.querySelector("a").innerText = response.toString().slice(0, 20) + "...";
                         link_span_el.querySelector("a").style.color = "green";
                         document.querySelectorAll('.item_link').forEach((el) => {
                             el.addEventListener('click', changeConnection)

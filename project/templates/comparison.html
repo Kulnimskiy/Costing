@@ -31,6 +31,13 @@
                     <span id="loading_icon"></span>
                 </form>
             </div>
+            <div class="form-check">
+                <input class="form-check-input border-dark" type="checkbox" value="" id="flexCheckDefault"
+                       onclick="filterByColor('red')">
+                <label class="form-check-label h6 text-danger" for="flexCheckDefault" id="flexCheckDefaultColor">
+                    RED
+                </label>
+            </div>
             <div id="table-wrapper">
                 <div id="table-scroll">
                     <div class="d-flex">
@@ -48,7 +55,6 @@
                                 <th scope="col" class="text-center">{{competitor.competitor_nickname}}</th>
                                 {% endfor %}
                                 {% endif %}
-                                <th scope="col"></th>
                             </tr>
                             </thead>
                             <tbody>
@@ -69,16 +75,16 @@
 
 
                                 <td class="data">
-                        <span>
-                            <input type="hidden" class="element_id"
-                                   value="{{item.item_id}}_{{competitor.competitor_inn}}"
-                                   id="{{item.item_id}}_{{competitor.competitor_inn}}">
-                            {% if cr_prices[comp_inn] %}
-                            <a class="result price" href={{cr_prices[comp_inn]["link"]}} target="_blank">{{cr_prices[comp_inn]["last_price"]}}</a>
-                            {% else %}
-                            <a class="result price" href="" target="_blank"></a>
-                            {% endif %}
-                        </span>
+                                    <span>
+                                        <input type="hidden" class="element_id"
+                                               value="{{item.item_id}}_{{competitor.competitor_inn}}"
+                                               id="{{item.item_id}}_{{competitor.competitor_inn}}">
+                                        {% if cr_prices[comp_inn] %}
+                                        <a class="result price" href={{cr_prices[comp_inn]["link"]}} target="_blank">{{cr_prices[comp_inn]["last_price"]}}</a>
+                                        {% else %}
+                                        <a class="result price" href="" target="_blank"></a>
+                                        {% endif %}
+                                    </span>
                                 </td>
                                 {% endfor %}
                                 {% endif %}
@@ -92,29 +98,6 @@
             </div>
         </div>
     </div>
-    <script src="/static/compare.js" crossorigin="anonymous"></script>
-    <script>
-        function filterFunction() {
-            // Объявить переменные
-            let input, filter, table, tr, td, i, txtValue;
-            input = document.getElementById("filterInput");
-            filter = input.value.toUpperCase();
-            table = document.getElementById("compTable");
-            tr = table.getElementsByTagName("tr");
-
-            // Перебирайте все строки таблицы и скрывайте тех, кто не соответствует поисковому запросу
-            // Поиск по столбцу с индексом ("td")[1]
-            for (i = 0; i < tr.length; i++) {
-                td = tr[i].getElementsByTagName("td")[1];
-                if (td) {
-                    txtValue = td.textContent || td.innerText;
-                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                        tr[i].style.display = "";
-                    } else {
-                        tr[i].style.display = "none";
-                    }
-                }
-            }
-        }
-    </script>
-    {% endblock %}
+</div>
+<script src="/static/compare.js" crossorigin="anonymous"></script>
+{% endblock %}

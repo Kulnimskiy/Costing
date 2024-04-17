@@ -26,7 +26,8 @@
                                     class="display-6 d-flex justify-content-start"> Goods List </span>
                             </div>
                             <div class="col col-md-6 d-flex justify-content-end">
-                                <input class="form-control form-control-sm w-50 d-flex mt-2 mb-1" type="text" id="filterInput"
+                                <input class="form-control form-control-sm w-50 d-flex mt-2 mb-1" type="text"
+                                       id="filterInput"
                                        onkeyup="filterFunction()"
                                        placeholder="Search here...">
                             </div>
@@ -44,6 +45,18 @@
             <span id="loading_icon"></span>
         </form>
     </div>
+    <div class="form-check" style="padding-left: 5px;">
+        <div class="form-check form-check-inline">
+            <input class="form-check-input border-dark" type="checkbox" id="inlineCheckbox1" value="option1"
+                   onclick="filterByColor('red', 'inlineCheckbox1')">
+            <label class="form-check-label text-danger" for="inlineCheckbox1" id="inlineCheckbox1Color" >RED</label>
+        </div>
+        <div class="form-check form-check-inline">
+            <input class="form-check-input border-dark" type="checkbox" id="inlineCheckbox2" value="option2"
+                   onclick="filterByColor('green', 'inlineCheckbox2')">
+            <label class="form-check-label text-success" for="inlineCheckbox2" id="inlineCheckbox2Color">GREEN</label>
+        </div>
+    </div>
     <div class="row">
         <div class="col">
             <div id="table-wrapper">
@@ -52,7 +65,7 @@
                         <thead>
                         <tr class="table-active text-center">
                             <th scope="col">#</th>
-                            <th scope="col">Item</th>
+                            <th scope="col" style="min-width: 140px;">Item</th>
                             <th scope="col" class="competitor">Competitor</th>
                             <th scope="col" class="price">Last price</th>
                             <th scope="col" class="price">Prev price</th>
@@ -75,9 +88,11 @@
                             </td>
                             <td><a href={{item.link}} target="_blank" class="result">{{item.name}}</a></td>
                             <td class="data">{{item.competitor[0:15]}}</td>
-                            <td class="price data" title="{{item.last_date}}">{{item.last_price}}</td>
+                            <td class="price data last_price" title="The price for {{item.last_date}}">
+                                {{item.last_price}}
+                            </td>
                             <td class="price data">{{item.prev_price}}</td>
-                            <td class="price data" name="price_change">{{item.price_change}}</td>
+                            <td class="price data price_change">{{item.price_change}}</td>
                             <td class="data" title="{{item.last_date}}">{{item.last_date[0:10]}}</td>
                             <td class="data" title="{{item.prev_date}}">{{item.prev_date[0:10]}}</td>
                         </tr>
@@ -90,67 +105,5 @@
         </div>
     </div>
 </div>
-<script>
-    let website_btn = document.getElementById("refresh_all")
-    if (website_btn) {
-        website_btn.addEventListener("click", showLoader);
-    }
-
-    function showLoader() {
-        let image_html = "<img class='text-center' style='width: 50px; display: block; margin-left: auto; margin-right: auto;' src='/static/images/loading.gif'>"
-        $("#loading_icon").html(image_html);
-        website_btn.innerHTML = "Please wait..."
-        console.log("in")
-    }
-
-    function changeColor() {
-        let operations = document.getElementsByName("price_change")
-        for (let operation of operations) {
-            let operation_value = operation.innerText.toString().toLowerCase()
-            if (operation_value.includes("-") ) {
-                operation.style.color = "#cd1e1e"
-                operation.style.fontWeight = "700"
-            }
-            else if (operation_value.localeCompare("0.0")) {
-                operation.style.color = "#198654";
-                operation.style.fontWeight = "700";
-            }
-        }
-    }
-    function formatPrice() {
-        let operations = document.getElementsByClassName("price")
-        for (let operation of operations) {
-            let operation_value = operation.innerText.toString();
-            operation_value = operation_value.slice(0, -2);
-            if (!isNaN(operation_value)){
-                let [_, num, suffix] = operation_value.match(/^(.*?)((?:[,.]\d+)?|)$/);
-                operation.innerText = `${num.replace(/\B(?=(?:\d{3})*$)/g, ' ')}${suffix}`
-            }
-        }
-    }
-    changeColor()
-    formatPrice()
-    function filterFunction() {
-        // Объявить переменные
-        let input, filter, table, tr, td, i, txtValue;
-        input = document.getElementById("filterInput");
-        filter = input.value.toUpperCase();
-        table = document.getElementById("goodsTable");
-        tr = table.getElementsByTagName("tr");
-
-        // Перебирайте все строки таблицы и скрывайте тех, кто не соответствует поисковому запросу
-        // Поиск по столбцу с индексом ("td")[1]
-        for (i = 0; i < tr.length; i++) {
-            td = tr[i].getElementsByTagName("td")[1];
-            if (td) {
-                txtValue = td.textContent || td.innerText;
-                if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                    tr[i].style.display = "";
-                } else {
-                    tr[i].style.display = "none";
-                }
-            }
-        }
-    }
-</script>
+<script src="/static/goods.js" crossorigin="anonymous"></script>
 {% endblock %}

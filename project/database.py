@@ -1,5 +1,6 @@
 import logging
 from sqlalchemy import func
+from sqlalchemy.sql import text
 from project import db
 from project.models import Companies, Competitors, Scrapers, ItemsRecords, UsersItems, ItemsConnections, User
 from project.search_files.search_company import Company
@@ -328,16 +329,15 @@ class ItemDB:
 
     def get_record(self):
         """ Gets the last record about an item """
-        item_record = ItemsRecords.query.filter_by(link=self.url).first()
+        item_record = ItemsRecords.query.filter_by(link=self.url).order_by(text("date desc")).first()
         if item_record:
             return item_record
         return None
 
     def get_records(self) -> list | None:
         """ Gets all records about an item """
-        item_records = ItemsRecords.query.filter_by(link=self.url).all()
+        item_records = ItemsRecords.query.filter_by(link=self.url).order_by(text("date desc")).all()
         if item_records:
-            item_records = sorted(item_records, key=(lambda x: (x.date[-4:], x.date[-7:-5], x.date[:-8])), reverse=True)
             return item_records
         return None
 
@@ -376,6 +376,8 @@ class ItemDB:
         if not item:
             return item_refined
         item_records = self.get_records()
+        if not item_records:
+            ItemDB(user_id=self.user_id, url=self.url).update()
         last_check = item_records[0]
         prev_check = item_records[1] if len(item_records) > 1 else last_check
         competitor_name = self.get_cp().organization
@@ -433,6 +435,9 @@ class ItemDB:
 
     def update(self) -> bool:
         """ Updates the info about from the web """
+        if not self.__permission():
+            return False
+
         item_records_web = self.get_web_info()
         if not item_records_web:
             return False
@@ -446,7 +451,9 @@ class ItemDB:
             logging.warning(f"ITEM {self.url} HAS NEVER BEEN ADDED. ADDING...")
             return True
         days_passed = DateCur.days_passed(last_record.date)
+        print(days_passed)
         if days_passed < ITEMS_UPDATE:
+
             logging.warning(f"ITEM {last_record.item_name} HAS ALREADY BEEN CHECKED {last_record.date}")
             return False
         return True
@@ -630,7 +637,7 @@ class RelationsDB:
                 info["max_price"] = max(cr_prices)
                 info["min_price"] = min(cr_prices)
                 print("sum", sum(cr_prices), "len ", len(cr_prices))
-                info["avg_price"] = round(sum(cr_prices) / len(cr_prices), 4)
+                info["avg_price"] = round(sum(cr_prices) / len(cr_prices), 1)
             items_info[f"{item_url}"] = info
         return items_info
 

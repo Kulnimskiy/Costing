@@ -154,6 +154,7 @@ th.competitor {
 td.data{
     text-align: center;
     align-content: center;
+    min-width: 85px;
 }
 .btn_link_items {
     border: 2px black;
