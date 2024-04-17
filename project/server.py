@@ -9,6 +9,7 @@ from project.search_files.async_search import run_search_all_items, run_search_a
 from project.credentials import MIN_RELEVANCE, ITEMS_UPDATE_TIMEOUT_RANGE
 from project.managers import UrlManager, InnManager, PriceManager, EmailManager
 from project.helpers import ResultFormats, OperationalTools, ItemName, DateCur
+import pprint
 
 main = Blueprint("main", __name__)
 
@@ -52,12 +53,13 @@ def get_profile():
     # get related items in the right format
     formatted_relations = RelationsDB.get_format_all(user_id, user_inn)
     user_as_cp = CompetitorDB(user_id, user_inn).get()
+    num_connections = len([value for values in formatted_relations.values() for value in values])
     if not company_info:
         logging.warning(f"THERE WAS NO COMPANY INFO ON {user_inn}")
         return render_template("profile.html",
                                competitors=competitors,
                                items_info=formatted_relations,
-                               user_con=user_as_cp)
+                               user_con=user_as_cp, num_connections=num_connections)
 
     # The user can change the website if he hasn't requested the connection yet
     if user_as_cp:
@@ -67,7 +69,7 @@ def get_profile():
         website = {"link": UrlManager(company_info.website).check(), "status": "disconnected"}
     return render_template("profile.html", user=current_user, company_info=company_info,
                            website=website, competitor=user_as_cp, competitors=competitors,
-                           items_info=formatted_relations, user_con=user_as_cp)
+                           items_info=formatted_relations, user_con=user_as_cp, num_connections=num_connections)
 
 
 @main.post("/profile")
