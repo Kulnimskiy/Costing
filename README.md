@@ -1,3 +1,102 @@
+# COSTING
+#### Video Demo:  <URL HERE>
+#### Description:
+COSTING is a platform to spy on your competitors and keep track of their prices on the same commodities that you sell.
+First the user goes through the authentication process. The routes responsible for the authentication are located in 
+the auth.py file. There you are able to sign up, log in, and log out.
+
+
+## Project Design
+
+Pic of a project design 
+
+## Project Structure 
+
+Here will be a project schema
+
+
+### flask_session/
+
+Contains users' sessions.
+
+### instance/
+
+Contains the database
+
+To create all the tables in the database provided by the **project/module.py**, run the following command in your terminal:
+
+```
+python
+
+from project import create_app, db 
+                               
+app = create_app()
+with app.app_context():
+   db.create_all()
+```
+
+The database file **db.sqlite3** contains 7 necessary tables:
+1. users: 
+   - *This model is used to store basic user information such as 
+   company name, company INN, login, email, and password. It has been decided to identify users
+   by their company inn as it's a unique identification number and cannot be repeated twice in the db.*
+ 
+2. companies_info:
+   - *This model stores information about companies, including their INN, website, organization, OGRN, 
+   registration date, sphere, address, number of workers, CEO, and information loading date.*
+
+   - *However, this info is gotten from another web source <https://checko.ru/>. 
+   Costing uses a scraper to get the info by the company inn
+   provided by the user. The code for the scraper in written in **project/search_files/search_company.py**.*
+
+   - *The information is used to display on the main user page as he logs in and gets updated every 3 days*
+
+3. competitors: 
+   - *This model stores information about a user's competitors, including their connection statuses 
+   (disconnected, connected, requested), competitor INN as a unique identifier, nickname, and website.*
+
+4. scrapers: 
+   - *This model stores paths to the companies' website scrapers to 
+   avoid writing the same web scraper multiple times for each company. It also helps
+   **project/search_files/async_search.py** find the needed scraper faster with less overload for the server
+   when the db gets moved to a different one.*
+ 
+5. usersitems: 
+   - *This model stores unique connections between users and their items they want to keep track of.
+   It could be their own items, or items from their competitors website (of course the competitors website needs
+   to be connected aka the scraper has to be written and the competitor status needs to be changed to "connected"* 
+   - *A user gets connected to an item via the item's link on the competitors website and the user's id*
+   
+ 
+6. itemsrecords: 
+   - *This model stores all the records of items' prices, including the item name, company INN the item belongs to,
+   price, date of the record, and link from the company's website.* 
+ 
+7. itemsconnections: 
+   - This model stores connections between items even when an item is deleted
+   to support future features or item restoration by the user. When the connection has been added, one item's link
+   gets associated with the other and the user can compare their prices
+
+ 
+
+### project/
+
+The main module that contains the working part of the app. There are 2 stages: authentication and main functionality
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 source to get the select with filter https://www.youtube.com/watch?v=qNO37iMzmFY
 
 
@@ -109,9 +208,3 @@ I did not start writing this from the very beginning!
 
 useful links
 https://www.digitalocean.com/community/tutorials/how-to-add-authentication-to-your-app-with-flask-login
-to create the tables in db
-from project import create_app, db                                
->>> app = create_app()
->>> with app.app_context():
-...     db.create_all()
-
