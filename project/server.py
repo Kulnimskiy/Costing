@@ -141,6 +141,7 @@ def company_goods_post():
 @main.get("/company-goods/refresh_all")
 @login_required
 def refresh_item_prices():
+    """ Helps the user to update the prices he has all at once """
     user_id = current_user.get_id()
     available_competitors = CompetitorDB.get_all(user_id, "connected")
     items = ItemDB.get_format_all(user_id)

@@ -5,6 +5,10 @@ COSTING is a platform to spy on your competitors and keep track of their prices 
 First the user goes through the authentication process. The routes responsible for the authentication are located in 
 the auth.py file. There you are able to sign up, log in, and log out.
 
+## Story of oпшеrigin
+
+I thought it'd be useful for some guys who sell dental equipment
+
 
 ## Project Design
 
@@ -57,8 +61,8 @@ The database file **db.sqlite3** contains 7 necessary tables:
 
 4. scrapers: 
    - *This model stores paths to the companies' website scrapers to 
-   avoid writing the same web scraper multiple times for each company. It also helps
-   **project/search_files/async_search.py** find the needed scraper faster with less overload for the server
+   avoid writing the same web scraper multiple times for each company and helping follow the DRY principle. 
+   It also helps **project/search_files/async_search.py** find the needed scraper faster with less overload for the server
    when the db gets moved to a different one.*
  
 5. usersitems: 
@@ -84,23 +88,105 @@ The database file **db.sqlite3** contains 7 necessary tables:
 The main module that contains the working part of the app. There are 2 stages: authentication and main functionality
 
 
+#### ./clients_scrapers/
+
+This folder contains scrapers for competitors' websites. When a user registers, a folder is created with their inn as 
+the name to avoid repetitions. The purpose of the folder is to store new scrapers for the user's competitors' 
+websites if it hasn't been created yet. Additionally, if a user wants to connect their own website to the 
+platform, a scraper template is created for their inn.  
+ 
+When a user requests a competitor's connection, an email with all the necessary information is sent to the responsible admin (in this case, always me). The files responsible for writing a scraper template are as follows: 
+1. text_templates/class_template.txt - a text version of a class to write a new scraper 
+2. systems.py - stores classes containing the logic of creating, writing, and deleting scrapers 
+3. server.py - main file with all the routes and manages server responses to user actions 
+4. text_templates/request_connect_template.txt - a template of a request email 
+5. emails.py - fills in the gaps in the request email text and sends it to the responsible admin 
+6. credentials.py - stores credentials to the corporate email address (an env file was not created as the data needed to be accessed and changed across multiple devices over time. This data is not highly sensitive). 
+ 
+If a user wants to delete a scraper, it will only be deleted if it has never been changed, as other users may also 
+be using it. A competitor will only be connected to a user when the admin finishes implementing the scraper and 
+changes the status of the competitor to "connected". This methodology could be improved by creating an admin panel 
+and implementing version control.
 
 
+#### ./search_files/
 
+On our platform user can look for the needed item on multiple sites at the same time. This module helps connect all
+the competitors scrapers our user has connected to his account and asynchronously work with them. 
 
+Libraries such as *asyncio* and *aiohttp* make a perfect duo in saving time searching here. 
+While the server waits the response from a competitors website, which sometimes takes a couple of seconds, instead of waiting 
+for no reason, server sends a request to the next website etc.
 
+- async_search.py - main search functionality
+- get_classes.py has the functions to find the right scrapers files and import scraper class into the async_search.py file
+- search_company - contains a Company class that helps find info about a company by its inn. Return value is a dict with the following info:
+   - inn
+   - website
+   - organization
+   - ogrn
+   - registration_date
+   - sphere
+   - address
+   - workers_number
+   - ceo
 
+### ./static/
+Stores all the images, js files and everything else that is needed to bring the user experience to the next level
+Each js file has a page to be working on. For homepage.js it is the "/" route. For the profile.js it is the "/profile"
+route etc.
 
+Mostly what js file do is sending ajax requests to the server when needed and updating information for a user.
+For example, "homepage.js" allows a user to change his website information if it's not connected yet or change the email
+reports will be sent to. However, if anyone tries to change their website when it's been connected,
+the server will never allow it. All the constraints have been written in parallel to the frontend part.
 
+### ./templates
+Stores all the jinja html templates, that are used by the main routes to display information. 
+the route "/price-looker" has 3 templates
+"./price-looker.html" is needed to show the user the prices of all compatitors for the same
+item when he tries to do so from the header.
+The "./price-looker-results.html" is used inside the "./price-looker_layout.html" to get the user new results
+sending the jinja template with the said results as a response to an ajax request. The request
+itself is sent by the "price_looker.js"
 
+### ./text_templates
+The contents are:
+- class_template.txt - used to write unfinished scrapers to a new file when website connection gets requested
+- request_connect_template.txt - is a template for a message that gets sent to Admin when a request connection gets sent
 
+The rest is two main files
+auth.py - is the file responsible for the user authentication process
+The routes in the file speak for themselves
+- "/signup"
+- "/login"
+- "/logout"
+- "/checklogin/<cur_login>" - checks if the login is already occupied by somebody else and cannot be taken
+- "/checkinn/<cur_inn>" - checks if the company has already registered and send a response back to the fronted about the results
 
+and server.py - where the main functional routes are stored. None of them can be accessed by a user if he is not loggged in.
+Here is the list of all the routes implemented in this project:
+- "/"
+- "/profile"
+- "/profile/load_item"
+- "/company-goods"
+- "/company-goods/refresh_all"
+- "/company-goods/delete-item"
+- "/competitor-monitoring"
+- "/comparison"
+- "/price-looker"
+- "/profile/delete_competitor/<com_inn>"
+- "/request_connection/<cp_inn>"
+- "/profile/change_web"
+- "/profile/change_email"
+- "/profile/link_items"
+- "/items_owned"
+- "/autoload_associations"
 
-
-source to get the select with filter https://www.youtube.com/watch?v=qNO37iMzmFY
-
+#- Notes to myself (workflow)
 
 Last possible features:
+
 Necessary 
 - make it so that on the profile there was the correct number of goods, competitors (DONE)
 - add connection though the price looker (DONE)
@@ -110,7 +196,7 @@ Necessary
 - show names of the items in the profile, Not links (DONE)
 - autoload associations (takes every user's item and looks for it on every competitor's site getting  items with a
 set similarity wiggle room) Need to get the needed similarity from the Competitors and items file (DONE)
-- filters by the color of the price on the comparison page
+- filters by the color of the price on the comparison page (DONE)
 - refine the code
 - refine the view of the pages
 - clear the db and test
@@ -122,9 +208,6 @@ Preferred
 
 
 
-
-
-
 Make profile and web links vital to work with
 
 
@@ -133,15 +216,8 @@ Profile (DONE)
    - displays: input link to request connection to the clients website
    - displays: request connection button
    - or add items manually
-   - 
- - 
+   -
 
-
-
-!remake the scraper tamplate
-! remove the ItemsConnection model and tables
-
-create new models !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 Search page:
 - need parsers for an item's page and a search page of the main competitors of stomart (done)
@@ -208,3 +284,4 @@ I did not start writing this from the very beginning!
 
 useful links
 https://www.digitalocean.com/community/tutorials/how-to-add-authentication-to-your-app-with-flask-login
+source to get the select with filter https://www.youtube.com/watch?v=qNO37iMzmFY
