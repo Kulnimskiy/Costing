@@ -333,6 +333,7 @@ def change_web_post():
 
 
 @main.get("/profile/change_web")
+@login_required
 def change_web_get():
     """ Changes user's website if the user has not requested a connection ever """
     user_id = current_user.get_id()
@@ -353,6 +354,7 @@ def change_web_get():
 
 
 @main.post("/profile/change_email")
+@login_required
 def change_email_post():
     user_id = current_user.get_id()
     new_email = EmailManager(request.form.get("new_email")).check()
@@ -404,6 +406,7 @@ def link_items():
 
 
 @main.route("/items_owned")
+@login_required
 def items_owned():
     """ Returns a list of items owned by user"""
     user_id = current_user.get_id()
@@ -418,6 +421,7 @@ def items_owned():
 
 
 @main.route("/autoload_associations", methods=["POST"])
+@login_required
 def autoload_associations():
     user_id = current_user.get_id()
     user_inn = current_user.company_inn

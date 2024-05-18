@@ -5,18 +5,24 @@ COSTING is a platform to spy on your competitors and keep track of their prices 
 First the user goes through the authentication process. The routes responsible for the authentication are located in 
 the auth.py file. There you are able to sign up, log in, and log out.
 
-## Story of oпшеrigin
+## Story of origin
 
-I thought it'd be useful for some guys who sell dental equipment
+One day, I landed an internship at a dental equipment company and dove headfirst into the world of 
+competitive analysis. They laid out the workflow for me on day one, including the task of scouring 
+competitors' websites to ensure our prices were always the best in the market. Little did I know, 
+I would be manually keeping tabs on prices and making strategic moves to stay ahead of the game. 
+It was a challenging but valuable experience that I knew would benefit the dental equipment sales team. 
+The manual labor involved in this task eventually inspired me to create a project that would automate 
+and streamline the process, making life easier for myself and others in the company.
 
 
 ## Project Design
 
-Pic of a project design 
+Pic of a project design (to be inserted later)
 
 ## Project Structure 
 
-Here will be a project schema
+![img.png](img.png)
 
 
 ### flask_session/
@@ -111,79 +117,95 @@ and implementing version control.
 
 #### ./search_files/
 
-On our platform user can look for the needed item on multiple sites at the same time. This module helps connect all
-the competitors scrapers our user has connected to his account and asynchronously work with them. 
+The platform allows users to simultaneously search for desired items on multiple websites. This feature 
+leverages a module that connects all the competitor scrapers linked to the user's account, enabling 
+asynchronous processing. Utilizing libraries such as *asyncio* and *aiohttp*optimizes the search 
+process by efficiently managing time.  
+ 
+The server initiates requests to competitors' websites and, while waiting for responses, seamlessly 
+switches to the next website to avoid unnecessary delays. The key components of the system include: 
+- async_search.py: the main search functionality 
+- get_classes.py: contains functions to identify and import the appropriate scraper class into async_search.py 
+- search_company: includes a Company class that retrieves information about a company based on 
+its identification number (INN). The returned dictionary includes details such as INN, website, organization, OGRN, registration date, sphere of operation, address, number of employees, and CEO information.
 
-Libraries such as *asyncio* and *aiohttp* make a perfect duo in saving time searching here. 
-While the server waits the response from a competitors website, which sometimes takes a couple of seconds, instead of waiting 
-for no reason, server sends a request to the next website etc.
-
-- async_search.py - main search functionality
-- get_classes.py has the functions to find the right scrapers files and import scraper class into the async_search.py file
-- search_company - contains a Company class that helps find info about a company by its inn. Return value is a dict with the following info:
-   - inn
-   - website
-   - organization
-   - ogrn
-   - registration_date
-   - sphere
-   - address
-   - workers_number
-   - ceo
-
-### ./static/
-Stores all the images, js files and everything else that is needed to bring the user experience to the next level
-Each js file has a page to be working on. For homepage.js it is the "/" route. For the profile.js it is the "/profile"
-route etc.
-
-Mostly what js file do is sending ajax requests to the server when needed and updating information for a user.
-For example, "homepage.js" allows a user to change his website information if it's not connected yet or change the email
-reports will be sent to. However, if anyone tries to change their website when it's been connected,
-the server will never allow it. All the constraints have been written in parallel to the frontend part.
+### ./static/ 
+The folder is used to store all images, JavaScript files, and other necessary resources to enhance 
+the user experience. Each JavaScript file is associated with a specific page it functions on. 
+For instance, homepage.js corresponds to the "/" route, while profile.js is linked to the "/profile" 
+route, and so forth. 
+ 
+The primary function of JavaScript files is to facilitate communication with the server through AJAX 
+requests as needed and update user information. For example, homepage.js enables users to modify their 
+website information if it is not yet linked or change the email address for reports. However, attempting 
+to alter a connected website will be blocked by the server. All constraints and validation rules are 
+implemented in conjunction with the frontend components to ensure consistency and data integrity.
 
 ### ./templates
-Stores all the jinja html templates, that are used by the main routes to display information. 
-the route "/price-looker" has 3 templates
-"./price-looker.html" is needed to show the user the prices of all compatitors for the same
-item when he tries to do so from the header.
-The "./price-looker-results.html" is used inside the "./price-looker_layout.html" to get the user new results
-sending the jinja template with the said results as a response to an ajax request. The request
-itself is sent by the "price_looker.js"
+The system stores all Jinja HTML templates utilized by the main routes to present information to users. Specifically, the 
+route "/price-looker" comprises three templates: 
+- "./price-looker.html": Displays competitors' prices for the same item when accessed from the header. 
+- "./price-looker-results.html": Embedded within "./price-looker_layout.html" to provide users with updated results, 
+sent as a response to an AJAX request.  
+- The AJAX request is initiated by "price_looker.js" to fetch the new results and render them using the Jinja template.
 
 ### ./text_templates
 The contents are:
 - class_template.txt - used to write unfinished scrapers to a new file when website connection gets requested
 - request_connect_template.txt - is a template for a message that gets sent to Admin when a request connection gets sent
 
-The rest is two main files
-auth.py - is the file responsible for the user authentication process
-The routes in the file speak for themselves
-- "/signup"
-- "/login"
-- "/logout"
-- "/checklogin/<cur_login>" - checks if the login is already occupied by somebody else and cannot be taken
-- "/checkinn/<cur_inn>" - checks if the company has already registered and send a response back to the fronted about the results
 
-and server.py - where the main functional routes are stored. None of them can be accessed by a user if he is not loggged in.
-Here is the list of all the routes implemented in this project:
-- "/"
-- "/profile"
-- "/profile/load_item"
-- "/company-goods"
-- "/company-goods/refresh_all"
-- "/company-goods/delete-item"
-- "/competitor-monitoring"
-- "/comparison"
-- "/price-looker"
-- "/profile/delete_competitor/<com_inn>"
-- "/request_connection/<cp_inn>"
-- "/profile/change_web"
-- "/profile/change_email"
-- "/profile/link_items"
-- "/items_owned"
-- "/autoload_associations"
+### Main block
 
-#- Notes to myself (workflow)
+In the project, there are two main files: 
+ 
+1. **auth.py**: This file is responsible for managing the user authentication process. It contains the following routes: 
+   - "/signup": Allows users to sign up for the platform 
+   - "/login": Enables users to log in to their accounts 
+   - "/logout": Logs the user out of the platform 
+   - "/checklogin/<cur_login>": Verifies if a login is already in use 
+   - "/checkinn/<cur_inn>": Checks if a company is already registered and provides feedback to the frontend 
+ 
+2. **server.py**: This file houses the primary functional routes, accessible only to logged-in users. The implemented 
+routes include: 
+   - "/": Homepage displaying basic user information from the companies_info table. Automatic updates occur if user 
+   data has not been refreshed in over 3 days. 
+   - "/profile": Displays service information such as the number of competitors, types of items sold, and items 
+   connected from competitors' websites. Users can manage connections and manually add items. 
+   - "/profile/load_item": Adds items from the user's or a competitor's website to the item list and updates prices. 
+   - "/company-goods": Shows the list of all added goods by the user. 
+   - "/company-goods/refresh_all": Retrieves up-to-date prices for all added items, excluding manually added ones. 
+   - "/company-goods/delete-item": Allows users to delete selected items. 
+   - "/competitor-monitoring": Manages competitors, adds new ones, and establishes connections with the user's profile. 
+   - "/comparison": Compares prices for all connected items, highlighting discrepancies in prices. 
+   - "/price-looker": Manually searches for items on chosen competitors' websites. Offers potential for optimization 
+   in implementation. 
+   - "/profile/delete_competitor/<com_inn>": Deletes a competitor from the list, with the scraper removed if not 
+   used by other users or changed in any way from the template. 
+   - "/request_connection/<cp_inn>": Requests connection with a competitor and notifies the responsible admin via email. 
+   - "/profile/change_web": Allows users to change their website if not previously connected. 
+   - "/profile/change_email": Enables users to update their email address. 
+   - "/profile/link_items": Connects two links for easy price comparison in "/comparison". 
+   - "/items_owned": Displays a list of items owned by the user from their website. 
+   - "/autoload_associations": Analyzes user-owned items and searches for similar items on competitors' websites 
+   based on various parameters. This is the part of the project that has some room for further enhancement and development.
+   
+
+
+### Assistance
+Additional files in the project support the functionalities of server.py and auth.py: 
+1. **systems.py**: Manages file creation and deletion processes. 
+2. **managers.py**: Validates and ensures the suitability of information. Includes: 
+   - *LoginManager*: Validates that all requirements are met. 
+   - *PasswordManager*: Ensures password compliance and security. 
+3. **helpers.py**: Contains additional functions and classes for various tasks such as working with dates, 
+handling situations where regular requests to competitor websites are blocked, and other utility functions.
+
+
+
+
+# Notes to myself (workflow tasks)
+IT's a place where i keep my notes and ideas to upgrade this project. There is always time for a little improvement
 
 Last possible features:
 
