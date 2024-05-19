@@ -183,6 +183,13 @@
             </div>
         </div>
     </div>
+    {% with messages = get_flashed_messages()%}
+    {% if messages%}
+        {% for message in messages%}
+        <h6 class="alert alert-danger">{{message}}</h6>
+        {%endfor%}
+        {%endif%}
+        {%endwith%}
     <div class="row mt-3">
         <div class="col">
             <div class="card bg-light mb-2 text-black">

@@ -46,6 +46,10 @@ class CompanyDB:
 
     @staticmethod
     def create_from_user(user_inn):
+        company = CompanyDB(user_inn).get()
+        if company:
+            logging.warning(f"THE COMPANY {user_inn} WAS ALREADY CREATED")
+            return False
         user: User = UserDB.get_from_inn(user_inn)
         if not user:
             logging.warning(f"COMPANY WASN'T CREATED FROM THE USER {user_inn}")

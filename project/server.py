@@ -1,7 +1,7 @@
 import time
 import logging
 from random import randint
-from flask import Blueprint, render_template, redirect, request, url_for
+from flask import Blueprint, render_template, redirect, request, url_for, flash
 from flask_login import login_required, current_user
 from project.database import CompanyDB, CompetitorDB, ItemDB, RelationsDB, ScraperDB, UserDB
 from project.emails import EmailTemplates
@@ -52,6 +52,7 @@ def get_profile():
 
     # get related items in the right format
     formatted_relations = RelationsDB.get_format_all(user_id, user_inn)
+    formatted_relations = formatted_relations if formatted_relations is not None else dict()
     user_as_cp = CompetitorDB(user_id, user_inn).get()
     num_connections = len([value for values in formatted_relations.values() for value in values])
     if not company_info:
@@ -86,7 +87,11 @@ def post_profile():
     item_link = UrlManager(request.form.get("item_link")).check()
     if not item_link:
         item_link = ItemDB.generate_url(user_id=user_id, company_inn=user_inn, item_name=item_name)
-    ItemDB(user_id=user_id, url=item_link).create(item_name=item_name, item_price=item_price)
+    adding = ItemDB(user_id=user_id, url=item_link).create(item_name=item_name, item_price=item_price)
+    if not adding:
+        flash("Item has not been added. You need to connect your website")
+        logging.warning("ITEM HAS NOT BEEN ADDED")
+        return redirect("/profile")
     logging.warning("ITEM HAS BEEN ADDED MANUALLY")
     return redirect("/profile")
 
@@ -221,6 +226,8 @@ def comparison():
     # get rid of the user from the competitors list
     crs = [cr for cr in all_crs if cr.competitor_inn != user_inn]
     all_items = ItemDB.get_format_all(user_id)
+    if not all_items:
+        return render_template("comparison.html", competitors=crs)
     own_items = list(filter(lambda x: InnManager(x["competitor_inn"]).check() == user_inn, all_items))
 
     items_info = RelationsDB.get_format_compare(user_id, user_inn)
