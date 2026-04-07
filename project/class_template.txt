@@ -13,7 +13,9 @@ class CLASS_NAME:
     SEARCH_URL = ""
 
     @staticmethod
-    async def search_relevant_items(item: str, session: aiohttp.ClientSession) -> Union[list, None]:
+    async def search_relevant_items(
+        item: str, session: aiohttp.ClientSession
+    ) -> Union[list, None]:
         try:
             logging.warning("Sent to {CLASS_NAME.BASE_URL}")
             req = await session.get(CLASS_NAME.SEARCH_URL.format(item))
@@ -25,7 +27,11 @@ class CLASS_NAME:
             check = operate(lambda: None)
             if not check:
                 logging.warning(f"BROWSER IS WORKING IN {CLASS_NAME.BASE_URL}")
-                res = get_web(CLASS_NAME.SEARCH_URL.format(item), "CHOOSE_YOUR_CHECK_CLASS", TIMEOUT)
+                res = get_web(
+                    CLASS_NAME.SEARCH_URL.format(item),
+                    "CHOOSE_YOUR_CHECK_CLASS",
+                    TIMEOUT,
+                )
                 doc = BeautifulSoup(res, "html.parser")
 
             items_found = operate(lambda: None)
@@ -44,7 +50,9 @@ class CLASS_NAME:
                 # links are provided with no base url
                 link = get_link(operate(lambda: None))
                 if not link:
-                    logging.warning(f"LINK FOR THE ITEM HASN'T BEEN FOUND. ITEM NAME: {name}")
+                    logging.warning(
+                        f"LINK FOR THE ITEM HASN'T BEEN FOUND. ITEM NAME: {name}"
+                    )
                     continue
 
                 # there often are old and new price. Get the new one
@@ -60,8 +68,10 @@ class CLASS_NAME:
             return None
 
     @staticmethod
-    async def get_item_info(link: str, session: aiohttp.ClientSession) -> Union[dict, None]:
-        if  CLASS_NAME.BASE_URL not in link:
+    async def get_item_info(
+        link: str, session: aiohttp.ClientSession
+    ) -> Union[dict, None]:
+        if CLASS_NAME.BASE_URL not in link:
             logging.warning(f"WRONG LINK PROVIDED FOR {CLASS_NAME.BASE_URL}")
             return None
         try:
@@ -82,7 +92,13 @@ class CLASS_NAME:
                 logging.warning(f"There is no items in {link}")
                 return None
 
-            price = operate(lambda: doc.find(class_="dpp-price_data__price").find(class_="current-price").text)
+            price = operate(
+                lambda: (
+                    doc.find(class_="dpp-price_data__price")
+                    .find(class_="current-price")
+                    .text
+                )
+            )
             price = check_price(price)
             return {"name": name, "price": price, "url": link}
         except Exception as error:

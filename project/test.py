@@ -9,10 +9,9 @@ from helpers import check_price, get_cur_date
 import random
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app = create_app()
     with app.app_context():
-
         start = perf_counter()
         # test ur code here
         date = get_cur_date()

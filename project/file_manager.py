@@ -5,7 +5,7 @@ from project.helpers import hash_inn, unhash_inn
 
 
 def read_file(path: str) -> Union[str, None]:
-    """ Get the text from the file on its path as a string """
+    """Get the text from the file on its path as a string"""
     try:
         text = ""
         with open(path, "r", encoding="UTF-8") as file:
@@ -33,7 +33,7 @@ def create_client_folder(user_inn: str) -> bool:
 
 
 def get_cls_template(new_cls_name: str, comp_inn: Union[str, int]) -> Union[str, None]:
-    """ Returns a new class tempate as a string text that can be writen to a new scraper """
+    """Returns a new class tempate as a string text that can be writen to a new scraper"""
     template = read_file(".\project\class_template.txt")
     if template:
         new_cls = template.replace("CLASS_NAME", new_cls_name)
@@ -43,7 +43,7 @@ def get_cls_template(new_cls_name: str, comp_inn: Union[str, int]) -> Union[str,
 
 
 def create_scraper_file(user_inn: str, comp_inn: str) -> Union[str, None]:
-    """ Returns the path where the scraper has been created"""
+    """Returns the path where the scraper has been created"""
     try:
         class_name = hash_inn(comp_inn)
         user_inn = str(user_inn)
@@ -59,7 +59,7 @@ def create_scraper_file(user_inn: str, comp_inn: str) -> Union[str, None]:
 
 
 def delete_empty_scraper(path: str, comp_inn: Union[str, int]) -> bool:
-    """ Deletes a scraper only if it's never been changed """
+    """Deletes a scraper only if it's never been changed"""
     class_name = hash_inn(comp_inn)
     template = get_cls_template(class_name, comp_inn)
     scraper = read_file(path)

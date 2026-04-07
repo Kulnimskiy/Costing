@@ -41,15 +41,19 @@ def signup():
         if password_confirm_ != password_:
             return render_template("signup.html", error="Passwords are different")
 
-        if not all([company_name_, company_inn_, login_, email_, password_, password_confirm_]):
+        if not all(
+            [company_name_, company_inn_, login_, email_, password_, password_confirm_]
+        ):
             return render_template("signup.html", error="Fill in all the fields")
 
         # create a new user if everything has been filled correctly
-        new_user = User(company_name=company_name_,
-                        company_inn=company_inn_,
-                        login=login_,
-                        email=email_,
-                        password=generate_password_hash(password_))
+        new_user = User(
+            company_name=company_name_,
+            company_inn=company_inn_,
+            login=login_,
+            email=email_,
+            password=generate_password_hash(password_),
+        )
 
         # add the user to the db
         db.session.add(new_user)

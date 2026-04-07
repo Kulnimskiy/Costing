@@ -38,7 +38,9 @@ def password_checker(password: str):
     upper_req = any(symbol.isupper() for symbol in password)
     lower_req = any(symbol.islower() for symbol in password)
     # alpha_req = any(symbol.isalpha() for symbol in password)  ## you don't need this as u have the upper and lower req
-    if all([no_space_req, length_req, number_req, upper_req, lower_req]):  # alpha_req is removed
+    if all(
+        [no_space_req, length_req, number_req, upper_req, lower_req]
+    ):  # alpha_req is removed
         return password
     return False
 
@@ -72,9 +74,13 @@ def get_cls_from_module(module_name):
     """get all the cls instances within a python file without the imported ones
     use module_name=sys.modules[__name__] to get classes form your file"""
 
-    cls_members = inspect.getmembers(module_name, inspect.isclass)  # get ALL the classes (class_name, class_object)
+    cls_members = inspect.getmembers(
+        module_name, inspect.isclass
+    )  # get ALL the classes (class_name, class_object)
     # remove the imported classes
-    cls_objects = [obj for name, obj in cls_members if obj.__dict__.get("BASE_URL", None)]
+    cls_objects = [
+        obj for name, obj in cls_members if obj.__dict__.get("BASE_URL", None)
+    ]
     return cls_objects
 
 
@@ -91,10 +97,10 @@ def operate(operation, info=None):
 
 
 def convert_to_rub(amount: (int, float), currency: str):
-    """convert currencies into Russian Ruble """
+    """convert currencies into Russian Ruble"""
     currency = currency.strip().upper()
     try:
-        data = requests.get('https://www.cbr-xml-daily.ru/latest.js').json()
+        data = requests.get("https://www.cbr-xml-daily.ru/latest.js").json()
         currency_rate = float(data["rates"][f"{currency}"])
         return int(amount / currency_rate)
     except Exception as error:
@@ -136,7 +142,7 @@ def get_cls_from_path(path):
         sys.modules["scraper"] = module
         spec.loader.exec_module(module)
         classes = get_cls_from_module(module)
-        sys.modules.pop('scraper')
+        sys.modules.pop("scraper")
         return classes
     except FileNotFoundError as e:
         print(e)
@@ -152,7 +158,13 @@ def check_price(price: str):
         return None
 
 
-def format_search_all_result(item, result: dict, competitors, min_price=None, max_price=None, ):
+def format_search_all_result(
+    item,
+    result: dict,
+    competitors,
+    min_price=None,
+    max_price=None,
+):
     for r in result:
         if r["price"] is None:
             r["price"] = 0
@@ -164,13 +176,17 @@ def format_search_all_result(item, result: dict, competitors, min_price=None, ma
         result = filter(lambda x: x["price"] >= min_price, result)
     if max_price:
         result = filter(lambda x: x["price"] <= max_price, result)
-    result = sorted(list(result), key=lambda r: (calculate_relevance(item, r["name"]), r["price"]), reverse=True)
+    result = sorted(
+        list(result),
+        key=lambda r: (calculate_relevance(item, r["name"]), r["price"]),
+        reverse=True,
+    )
     for r in result:
         if r["price"] == 0:
             r["price"] = "Not selling || Not found"
         else:
             r["price"] = decimal.Decimal(str(r["price"]))
-            r["price"] = '{0:,}'.format(r["price"]).replace(',', ' ')
+            r["price"] = "{0:,}".format(r["price"]).replace(",", " ")
     return result
 
 
@@ -197,7 +213,7 @@ def get_web(link, class_waiting_tag, timeout=50):
 
             # Stomart sees when this regime is used and says that we are bots
             chrome_options.add_argument("--headful")
-            chrome_options.page_load_strategy = 'none'
+            chrome_options.page_load_strategy = "none"
             driver = webdriver.Chrome(options=chrome_options)
             driver.get(link)  # This is a dummy website URL
             for i in range(timeout * 2):
@@ -229,9 +245,15 @@ def compare_names(a, b):
             counter += 1
     param3 = counter / len(models) if models else 0
     if param3:
-        return param3 * 0.5 + SequenceMatcher(None, a, b).ratio() * 0.3 + calculate_relevance(b, a) * 0.2
+        return (
+            param3 * 0.5
+            + SequenceMatcher(None, a, b).ratio() * 0.3
+            + calculate_relevance(b, a) * 0.2
+        )
     else:
-        return SequenceMatcher(None, a, b).ratio() * 0.6 + calculate_relevance(b, a) * 0.4
+        return (
+            SequenceMatcher(None, a, b).ratio() * 0.6 + calculate_relevance(b, a) * 0.4
+        )
 
 
 def get_item_model(item_name):
@@ -239,7 +261,7 @@ def get_item_model(item_name):
     if item_name:
         models = [word for word in item_name.split() if check_word(word)]
         if len(models) > 3:
-            models = [models[i] for i in range(len(models)-int(len(models)*0.3))]
+            models = [models[i] for i in range(len(models) - int(len(models) * 0.3))]
         if models:
             return " ".join(models)
     return None

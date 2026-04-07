@@ -33,10 +33,12 @@ def create_app():
 
     # auth routs will be processed here
     from project.auth import auth as auth_blueprint
+
     app.register_blueprint(auth_blueprint)
 
     # blueprint for the rest of the app
     from project.main import main as main_blueprint
+
     app.register_blueprint(main_blueprint)
 
     @app.after_request

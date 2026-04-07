@@ -8,7 +8,7 @@ from project.file_manager import read_file
 
 
 def send_connect_request(current_user, competitor) -> bool:
-    """ Send a message to the responsible admin to start working on the given scraper """
+    """Send a message to the responsible admin to start working on the given scraper"""
     context = ssl.create_default_context()  # Create a secure SSL context
     port = 465  # For SSL
     try:

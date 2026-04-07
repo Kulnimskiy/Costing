@@ -9,12 +9,15 @@ from project.credentials import TIMEOUT
 
 class Kkflgiggmj:
     """there was a DDos blocker. Need to actually open a browser to get the info here"""
+
     INN = 7728353396
     BASE_URL = "https://www.stomart.ru"
     SEARCH_URL = "https://www.stomart.ru/search/?q={}&send=Y&r=Y"
 
     @staticmethod
-    async def search_relevant_items(item: str, session: aiohttp.ClientSession) -> Union[list, None]:
+    async def search_relevant_items(
+        item: str, session: aiohttp.ClientSession
+    ) -> Union[list, None]:
         try:
             req = await session.get(Kkflgiggmj.SEARCH_URL.format(item), ssl=False)
             res = await req.text()
@@ -23,7 +26,9 @@ class Kkflgiggmj:
             # check if the page is loaded correctly. If not, try getting it through the browser
             check = operate(lambda: doc.find_all(class_="productColText"))
             if not check:
-                logging.warning(f"BROWSER IS WORKING IN {Kkflgiggmj.SEARCH_URL.format(item)}")
+                logging.warning(
+                    f"BROWSER IS WORKING IN {Kkflgiggmj.SEARCH_URL.format(item)}"
+                )
                 res = get_web(Kkflgiggmj.SEARCH_URL.format(item), "item", TIMEOUT)
                 doc = BeautifulSoup(res, "html.parser")
 
@@ -41,9 +46,17 @@ class Kkflgiggmj:
                     logging.warning(f"There is no name. Item has been skipped")
                     continue
 
-                link = get_link(operate(lambda: Kkflgiggmj.BASE_URL + str(item.find(class_="name")["href"])))
+                link = get_link(
+                    operate(
+                        lambda: (
+                            Kkflgiggmj.BASE_URL + str(item.find(class_="name")["href"])
+                        )
+                    )
+                )
                 if not link:
-                    logging.warning(f"LINK FOR THE ITEM HASN'T BEEN FOUND. ITEM NAME: " + name)
+                    logging.warning(
+                        f"LINK FOR THE ITEM HASN'T BEEN FOUND. ITEM NAME: " + name
+                    )
                     continue
 
                 # there often are old and new price. Get the new one
@@ -59,7 +72,9 @@ class Kkflgiggmj:
             return None
 
     @staticmethod
-    async def get_item_info(link: str, session: aiohttp.ClientSession) -> Union[dict, None]:
+    async def get_item_info(
+        link: str, session: aiohttp.ClientSession
+    ) -> Union[dict, None]:
         if Kkflgiggmj.BASE_URL not in link:
             logging.warning(f"WRONG LINK PROVIDED FOR {Kkflgiggmj.BASE_URL}")
             return None
@@ -91,7 +106,9 @@ class Kkflgiggmj:
 
 async def test_search(item):
     async with aiohttp.ClientSession() as session:
-        result = await Kkflgiggmj.search_relevant_items(item, session)  # link[1] is the url of the item
+        result = await Kkflgiggmj.search_relevant_items(
+            item, session
+        )  # link[1] is the url of the item
         return result
 
 
@@ -101,5 +118,5 @@ def run_test(item):
     print(results)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     run_test("стол")

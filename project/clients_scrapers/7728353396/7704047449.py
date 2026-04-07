@@ -13,7 +13,9 @@ class Kkdhdhkhhm:
     SEARCH_URL = "https://api.searchbooster.net/api/9ec1c177-2047-4f1c-b1f9-14a4a7fa9c25/search?query={}&skip=0&limit=24&groupByCategories=%7B%22active%22%3Atrue%2C%22size%22%3A10%2C%22skip%22%3A0%7D&client=shop.stomatorg.ru"
 
     @staticmethod
-    async def search_relevant_items(item: str, session: aiohttp.ClientSession) -> Union[list, None]:
+    async def search_relevant_items(
+        item: str, session: aiohttp.ClientSession
+    ) -> Union[list, None]:
         try:
             logging.warning(f"Sent to {Kkdhdhkhhm.BASE_URL}")
             req = await session.get(Kkdhdhkhhm.SEARCH_URL.format(item), ssl=False)
@@ -21,9 +23,11 @@ class Kkdhdhkhhm:
             logging.warning(f"Got from {Kkdhdhkhhm.BASE_URL}")
             items_lst = []
             for offer in res["offers"]:
-                found_item = {"name": offer.get("name", None),
-                              "price": offer.get("price", None),
-                              "url": offer.get("url", None)}
+                found_item = {
+                    "name": offer.get("name", None),
+                    "price": offer.get("price", None),
+                    "url": offer.get("url", None),
+                }
                 items_lst.append(found_item)
             return items_lst
         except Exception as error:
@@ -31,8 +35,10 @@ class Kkdhdhkhhm:
             return None
 
     @staticmethod
-    async def get_item_info(link: str, session: aiohttp.ClientSession) -> Union[dict, None]:
-        """ Get the name, price and link of a competitor's product via the provided web page """
+    async def get_item_info(
+        link: str, session: aiohttp.ClientSession
+    ) -> Union[dict, None]:
+        """Get the name, price and link of a competitor's product via the provided web page"""
         if Kkdhdhkhhm.BASE_URL not in link:
             logging.warning(f"WRONG LINK PROVIDED FOR {Kkdhdhkhhm.BASE_URL}")
             return None
@@ -54,7 +60,11 @@ class Kkdhdhkhhm:
                 logging.warning(f"There is no items in {link}")
                 return None
 
-            price = operate(lambda: doc.find(class_="element-stickyinfo-prices__curprice").get_text())
+            price = operate(
+                lambda: doc.find(
+                    class_="element-stickyinfo-prices__curprice"
+                ).get_text()
+            )
             price = check_price(price)
             return {"name": name, "price": price, "url": link}
         except Exception as error:
@@ -64,7 +74,9 @@ class Kkdhdhkhhm:
 
 async def test_search(item):
     async with aiohttp.ClientSession() as session:
-        result = await Kkdhdhkhhm.search_relevant_items(item, session)  # link[1] is the url of the item
+        result = await Kkdhdhkhhm.search_relevant_items(
+            item, session
+        )  # link[1] is the url of the item
         return result
 
 
@@ -74,5 +86,5 @@ def run_test(item):
     print(results)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     run_test("стул")

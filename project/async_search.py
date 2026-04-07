@@ -12,7 +12,9 @@ def get_tasks_items(user_id, item, session, comp_filter=None):
     if comp_filter is not None:
         for cls in classes:
             if unhash_inn(cls.__name__) in comp_filter:
-                tasks.append(asyncio.create_task(cls.search_relevant_items(item, session)))
+                tasks.append(
+                    asyncio.create_task(cls.search_relevant_items(item, session))
+                )
     else:
         for cls in classes:
             tasks.append(asyncio.create_task(cls.search_relevant_items(item, session)))
@@ -35,7 +37,9 @@ def get_tasks_links(user_id, links: list, session):
 async def search_all_items(user_id, item, comp_filter=None):
     async with aiohttp.ClientSession() as session:
         tasks = get_tasks_items(user_id, item, session, comp_filter)
-        responses = await asyncio.gather(*tasks)  # wait till all the tasks have brought the result
+        responses = await asyncio.gather(
+            *tasks
+        )  # wait till all the tasks have brought the result
         results = []
         for response in responses:
             if not response:
@@ -48,7 +52,9 @@ async def search_all_links(user_id, links: list):
     """gets a list of tuples [(comp1_inn, link), (comp2_inn, link)...] as an argument"""
     async with aiohttp.ClientSession() as session:
         tasks = get_tasks_links(user_id, links, session)
-        responses = await asyncio.gather(*tasks)  # wait till all the tasks have brought the result
+        responses = await asyncio.gather(
+            *tasks
+        )  # wait till all the tasks have brought the result
         results = []
         for response in responses:
             if not response:
@@ -69,10 +75,14 @@ async def search_link(user_id, comp_inn, link):
 
 
 async def search_item(user_id, comp_inn, item):
-    scr = db_get_scr_from_id(user_id, comp_inn)  # link[0] is the inn of the associated competitor
+    scr = db_get_scr_from_id(
+        user_id, comp_inn
+    )  # link[0] is the inn of the associated competitor
     if scr:
         async with aiohttp.ClientSession() as session:
-            result = await scr.search_relevant_items(item, session)  # link[1] is the url of the item
+            result = await scr.search_relevant_items(
+                item, session
+            )  # link[1] is the url of the item
             return result
     else:
         return None
@@ -108,18 +118,24 @@ def run_search_link(user_id, comp_id, link):
     return results
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     from project.app import create_app
     from project.helpers import unhash_inn
 
     app = create_app()
     with app.app_context():
-        goods = [("7801334382", "https://stomshop.pro/eighteeth-e-connect-s"),
-                 ("7704047449",
-                  "https://shop.stomatorg.ru/catalog/slepochnye_materialy_i_aksessuary/slepochnaya_massa_a_silikonovaya_betasil_putty_soft_a60_nabor_2_kh_300_ml_baza_2_kh_50_korrigiruyushch/"),
-                 ("6952008773", "https://dentikom.ru/catalog/air-motors/am-25-rm/"),
-                 ("7709847093",
-                  "https://dentex.ru/catalog/dental-equipment/perio-center/apparat-vector-paro/vector-paro/")]
+        goods = [
+            ("7801334382", "https://stomshop.pro/eighteeth-e-connect-s"),
+            (
+                "7704047449",
+                "https://shop.stomatorg.ru/catalog/slepochnye_materialy_i_aksessuary/slepochnaya_massa_a_silikonovaya_betasil_putty_soft_a60_nabor_2_kh_300_ml_baza_2_kh_50_korrigiruyushch/",
+            ),
+            ("6952008773", "https://dentikom.ru/catalog/air-motors/am-25-rm/"),
+            (
+                "7709847093",
+                "https://dentex.ru/catalog/dental-equipment/perio-center/apparat-vector-paro/vector-paro/",
+            ),
+        ]
         found = run_search_link(1, goods[1][0], goods[1][1])
         print(found)
         found = run_search_link(1, goods[3][0], goods[3][1])

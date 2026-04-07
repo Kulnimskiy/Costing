@@ -13,7 +13,9 @@ class Kkdmlhkdmg:
     SEARCH_URL = "https://dentex.ru/search/?q={}&area=everywhere&s="
 
     @staticmethod
-    async def search_relevant_items(item: str, session: aiohttp.ClientSession) -> Union[list, None]:
+    async def search_relevant_items(
+        item: str, session: aiohttp.ClientSession
+    ) -> Union[list, None]:
         """Get a list of relevant items from the competitor's website"""
         try:
             logging.warning(f"Sent to {Kkdmlhkdmg.BASE_URL}")
@@ -25,11 +27,19 @@ class Kkdmlhkdmg:
             # check if the page is loaded correctly. If not, try getting it through the browser
             check = operate(lambda: doc.find("div", class_="short-search"))
             if not check:
-                logging.warning(f"BROWSER IS WORKING IN {Kkdmlhkdmg.SEARCH_URL.format(item)}")
-                res = get_web(Kkdmlhkdmg.SEARCH_URL.format(item), "short-search", TIMEOUT)
+                logging.warning(
+                    f"BROWSER IS WORKING IN {Kkdmlhkdmg.SEARCH_URL.format(item)}"
+                )
+                res = get_web(
+                    Kkdmlhkdmg.SEARCH_URL.format(item), "short-search", TIMEOUT
+                )
                 doc = BeautifulSoup(res, "html.parser")
 
-            items_found = operate(lambda: doc.find("div", class_="short-search").find_all("div", class_="item-mini"))
+            items_found = operate(
+                lambda: doc.find("div", class_="short-search").find_all(
+                    "div", class_="item-mini"
+                )
+            )
             if not items_found:
                 logging.warning(f"There are no items in {Kkdmlhkdmg.BASE_URL}")
                 return None
@@ -37,15 +47,26 @@ class Kkdmlhkdmg:
             items_lst = []
             for item in items_found:
                 # give it the path to the name
-                name = operate(lambda: str(item.find("a", class_="cover-link")["title"]))
+                name = operate(
+                    lambda: str(item.find("a", class_="cover-link")["title"])
+                )
                 if not name:
                     logging.warning(f"There is no name. Item has been skipped")
                     continue
 
                 # links are provided with no base url
-                link = get_link(operate(lambda: Kkdmlhkdmg.BASE_URL + str(item.find("a", class_="cover-link")["href"])))
+                link = get_link(
+                    operate(
+                        lambda: (
+                            Kkdmlhkdmg.BASE_URL
+                            + str(item.find("a", class_="cover-link")["href"])
+                        )
+                    )
+                )
                 if not link:
-                    logging.warning(f"LINK FOR THE ITEM HASN'T BEEN FOUND. ITEM NAME: " + name)
+                    logging.warning(
+                        f"LINK FOR THE ITEM HASN'T BEEN FOUND. ITEM NAME: " + name
+                    )
                     continue
 
                 # there often are old and new price. Get the new one
@@ -61,8 +82,10 @@ class Kkdmlhkdmg:
             return None
 
     @staticmethod
-    async def get_item_info(link: str, session: aiohttp.ClientSession) -> Union[dict, None]:
-        """ Get the name, price and link of a competitor's product via the provided web page """
+    async def get_item_info(
+        link: str, session: aiohttp.ClientSession
+    ) -> Union[dict, None]:
+        """Get the name, price and link of a competitor's product via the provided web page"""
         if Kkdmlhkdmg.BASE_URL not in link:
             logging.warning(f"WRONG LINK PROVIDED FOR {Kkdmlhkdmg.BASE_URL}")
             return None
@@ -86,7 +109,9 @@ class Kkdmlhkdmg:
                 logging.warning(f"There is no items in {link}")
                 return None
 
-            price = operate(lambda: page.find(class_="price").find(class_="currency").text)
+            price = operate(
+                lambda: page.find(class_="price").find(class_="currency").text
+            )
             price = Kkdmlhkdmg.price_format(price)
             return {"name": name, "price": price, "url": link}
         except Exception as error:
@@ -108,7 +133,9 @@ class Kkdmlhkdmg:
 
 async def test_search(item):
     async with aiohttp.ClientSession() as session:
-        result = await Kkdmlhkdmg.search_relevant_items(item, session)  # link[1] is the url of the item
+        result = await Kkdmlhkdmg.search_relevant_items(
+            item, session
+        )  # link[1] is the url of the item
         return result
 
 
@@ -118,5 +145,5 @@ def run_test(item):
     print(results)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     run_test("стул")

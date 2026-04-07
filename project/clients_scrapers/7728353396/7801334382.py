@@ -18,14 +18,20 @@ class Kldegghglf:
         to make async requests to the api"""
         try:
             logging.warning(f"Sent to {Kldegghglf.BASE_URL}")
-            req = await session.get(Kldegghglf.SEARCH_URL.format(item), ssl=False)  # create a request coroutine
-            res = await req.json()  # wait till the future value gets replaced with the actual response
+            req = await session.get(
+                Kldegghglf.SEARCH_URL.format(item), ssl=False
+            )  # create a request coroutine
+            res = (
+                await req.json()
+            )  # wait till the future value gets replaced with the actual response
             logging.warning(f"Got from {Kldegghglf.BASE_URL}")
             items_lst = []
             for offer in res["offers"]:
-                found_item = {"name": offer.get("name", None),
-                              "price": offer.get("price", None),
-                              "url": offer.get("url", None)}
+                found_item = {
+                    "name": offer.get("name", None),
+                    "price": offer.get("price", None),
+                    "url": offer.get("url", None),
+                }
                 items_lst.append(found_item)
             return items_lst
         except Exception as error:
@@ -45,18 +51,35 @@ class Kldegghglf:
             doc = BeautifulSoup(doc, "html.parser")
 
             # check if the page is loaded correctly. If not, try getting it through the browser
-            check = operate(lambda: doc.find(class_="h2 text-center content-title content-title-copy-parent"))
+            check = operate(
+                lambda: doc.find(
+                    class_="h2 text-center content-title content-title-copy-parent"
+                )
+            )
             if not check:
-                res = get_web(link, "h2 text-center content-title content-title-copy-parent", TIMEOUT)
+                res = get_web(
+                    link,
+                    "h2 text-center content-title content-title-copy-parent",
+                    TIMEOUT,
+                )
                 doc = BeautifulSoup(res, "html.parser")
 
-            name = operate(lambda: doc.find(class_="h2 text-center content-title content-title-copy-parent").find(
-                "h1").get_text())
+            name = operate(
+                lambda: (
+                    doc.find(
+                        class_="h2 text-center content-title content-title-copy-parent"
+                    )
+                    .find("h1")
+                    .get_text()
+                )
+            )
             if not name:
                 logging.warning(f"There is no items in {link}")
                 return None
 
-            price = operate(lambda: doc.find(class_="autocalc-product-price").get_text())
+            price = operate(
+                lambda: doc.find(class_="autocalc-product-price").get_text()
+            )
             price = check_price(price)
             return {"name": name, "price": price, "url": link}
         except Exception as error:
@@ -66,7 +89,9 @@ class Kldegghglf:
 
 async def test_search(item):
     async with aiohttp.ClientSession() as session:
-        result = await Kldegghglf.search_relevant_items(item, session)  # link[1] is the url of the item
+        result = await Kldegghglf.search_relevant_items(
+            item, session
+        )  # link[1] is the url of the item
         return result
 
 
@@ -76,5 +101,5 @@ def run_test(item):
     print(results)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     run_test("стул")

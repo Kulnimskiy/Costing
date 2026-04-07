@@ -3,7 +3,14 @@ import random
 from sqlalchemy import func
 from datetime import datetime
 from project import db
-from project.models import Companies, Competitors, Scrapers, ItemsRecords, UsersItems, ItemsConnections
+from project.models import (
+    Companies,
+    Competitors,
+    Scrapers,
+    ItemsRecords,
+    UsersItems,
+    ItemsConnections,
+)
 from project.corpotate_scrapers.company_info_search import Company
 from project.file_manager import create_scraper_file, delete_empty_scraper
 from project.helpers import get_cls_from_path, get_cur_date, get_link
@@ -18,7 +25,9 @@ def load_company_data(_inn):
     cur_date = datetime.strptime(cur_date_str, "%Y-%m-%d %H:%M:%S")
     company = Companies.query.filter_by(_inn=_inn).first()
     if company:
-        last_load_date = datetime.strptime(company.info_loading_date, "%Y-%m-%d %H:%M:%S")
+        last_load_date = datetime.strptime(
+            company.info_loading_date, "%Y-%m-%d %H:%M:%S"
+        )
         days_passed = (cur_date - last_load_date).days
         if days_passed >= days_between_reload:
             # update the company info
@@ -47,16 +56,19 @@ def load_company_data(_inn):
 
     # if the company hasn't been added yet, we add it
     company_info = Company(_inn).get_full_info()
-    new_company = Companies(_inn=company_info["inn"],
-                            website=company_info["website"],
-                            organization=company_info["organization"],
-                            ogrn=company_info["ogrn"],
-                            registration_date=company_info["registration_date"],
-                            sphere=company_info["sphere"],
-                            address=company_info["address"],
-                            workers_number=company_info["workers_number"],
-                            ceo=company_info["ceo"],
-                            info_loading_date=cur_date_str)
+    new_company = Companies(
+        _inn=company_info["inn"],
+        website=company_info["website"],
+        organization=company_info["organization"],
+        ogrn=company_info["ogrn"],
+        registration_date=company_info["registration_date"],
+        sphere=company_info["sphere"],
+        address=company_info["address"],
+        workers_number=company_info["workers_number"],
+        ceo=company_info["ceo"],
+        info_loading_date=cur_date_str,
+    )
+
     db.session.add(new_company)
 
     # also we add it to the list of competitors so that it could be connected
@@ -72,15 +84,19 @@ def create_competitor(data_source, user_id, comp_inn, comp_nickname=None, websit
     if website:
         if "http" not in website and "https" not in website:
             website = "https://" + website
-    new_competitor = Competitors(user_id=user_id,
-                                 competitor_inn=comp_inn,
-                                 competitor_nickname=comp_nickname,
-                                 competitor_website=website)
+    new_competitor = Competitors(
+        user_id=user_id,
+        competitor_inn=comp_inn,
+        competitor_nickname=comp_nickname,
+        competitor_website=website,
+    )
     return new_competitor
 
 
 def db_add_competitor(user_id, comp_inn, comp_nickname=None, website=None):
-    competitor_already_added = Competitors.query.filter_by(competitor_inn=comp_inn, user_id=user_id).first()
+    competitor_already_added = Competitors.query.filter_by(
+        competitor_inn=comp_inn, user_id=user_id
+    ).first()
     if competitor_already_added:
         print(competitor_already_added.__dict__)
         print("Competitor is already in the table")
@@ -89,14 +105,18 @@ def db_add_competitor(user_id, comp_inn, comp_nickname=None, website=None):
     company_exists = Companies.query.filter_by(_inn=comp_inn).first()
     if company_exists:
         print("The company exists already in the table")
-        new_competitor = create_competitor(company_exists, user_id, comp_inn, comp_nickname, website)
+        new_competitor = create_competitor(
+            company_exists, user_id, comp_inn, comp_nickname, website
+        )
         db.session.add(new_competitor)
         db.session.commit()
         return 0
     print("adding a company")
     # if there is no company no competitor with this inn and
     company = load_company_data(comp_inn)
-    new_competitor = create_competitor(company, user_id, comp_inn, comp_nickname, website)
+    new_competitor = create_competitor(
+        company, user_id, comp_inn, comp_nickname, website
+    )
     db.session.add(new_competitor)
     db.session.commit()
 
@@ -104,7 +124,9 @@ def db_add_competitor(user_id, comp_inn, comp_nickname=None, website=None):
 def db_get_competitors(user_id, connection_status=""):
     """connection status can be 'disconnected', 'connected','requested'. Only those are in the db"""
     if connection_status:
-        return Competitors.query.filter_by(user_id=user_id, connection_status=connection_status).all()
+        return Competitors.query.filter_by(
+            user_id=user_id, connection_status=connection_status
+        ).all()
     return Competitors.query.filter_by(user_id=user_id).all()
 
 
@@ -155,12 +177,14 @@ def db_add_scraper(user_inn, comp_inn: str):
 
 
 def db_get_scr_from_id(user_id, comp_inn=None, path=False):
-    """ If competitor's inn is not provided, it returns a list of all the scrapers connected
+    """If competitor's inn is not provided, it returns a list of all the scrapers connected
     to the user by their id. Else it returns a scraper for a specific competitor"""
     if comp_inn:
         competitor = db_get_competitor(user_id, comp_inn)
         if competitor:
-            scr_path = Scrapers.query.filter_by(company_inn=comp_inn).first().scraper_path
+            scr_path = (
+                Scrapers.query.filter_by(company_inn=comp_inn).first().scraper_path
+            )
             if path:
                 return scr_path
             if competitor.connection_status == "connected":
@@ -200,11 +224,13 @@ def db_add_item(user_id, company_inn, link):
             if not item["price"]:
                 item["price"] = 0
             print("Not checked today. Last time is", last_date)
-            item = ItemsRecords(item_name=item["name"],
-                                company_inn=company_inn,
-                                price=item["price"],
-                                date=date,
-                                link=link)
+            item = ItemsRecords(
+                item_name=item["name"],
+                company_inn=company_inn,
+                price=item["price"],
+                date=date,
+                link=link,
+            )
             db.session.add(item)
     else:
         item = async_search.run_search_link(user_id, company_inn, link)
@@ -214,11 +240,13 @@ def db_add_item(user_id, company_inn, link):
         if not item["price"]:
             item["price"] = 0
         print("Has never been added. Adding...")
-        item = ItemsRecords(item_name=item["name"],
-                            company_inn=company_inn,
-                            price=item["price"],
-                            date=date,
-                            link=link)
+        item = ItemsRecords(
+            item_name=item["name"],
+            company_inn=company_inn,
+            price=item["price"],
+            date=date,
+            link=link,
+        )
         db.session.add(item)
     connection_exists = UsersItems.query.filter_by(user_id=user_id, link=link).first()
     if not connection_exists:
@@ -240,20 +268,24 @@ def db_add_item_mnl(user_id, company_inn, item_name, price, link):
         else:
             item = {"name": item_name, "price": price, "url": link}
             print("Not checked today. Last time is", last_date)
-            item = ItemsRecords(item_name=item["name"],
-                                company_inn=company_inn,
-                                price=item["price"],
-                                date=date,
-                                link=link)
+            item = ItemsRecords(
+                item_name=item["name"],
+                company_inn=company_inn,
+                price=item["price"],
+                date=date,
+                link=link,
+            )
             db.session.add(item)
     else:
         item = {"name": item_name, "price": price, "url": link}
         print("Has never been added. Adding...")
-        item = ItemsRecords(item_name=item["name"],
-                            company_inn=company_inn,
-                            price=item["price"],
-                            date=date,
-                            link=link)
+        item = ItemsRecords(
+            item_name=item["name"],
+            company_inn=company_inn,
+            price=item["price"],
+            date=date,
+            link=link,
+        )
         db.session.add(item)
     connection_exists = UsersItems.query.filter_by(user_id=user_id, link=link).first()
     if not connection_exists:
@@ -272,11 +304,9 @@ def db_add_refreshed_item(item_name, company_inn, price, link, date):
             return
     if not price:
         price = 0
-    item = ItemsRecords(item_name=item_name,
-                        company_inn=company_inn,
-                        price=price,
-                        date=date,
-                        link=link)
+    item = ItemsRecords(
+        item_name=item_name, company_inn=company_inn, price=price, date=date, link=link
+    )
     db.session.add(item)
     db.session.commit()
 
@@ -296,7 +326,11 @@ def db_get_items(user_id):
             item_refined["item_id"] = item.connection_id
             item_refined["name"] = last_check.item_name
             item_refined["competitor_inn"] = int(last_check.company_inn)
-            item_refined["competitor"] = Companies.query.filter_by(_inn=last_check.company_inn).first().organization
+            item_refined["competitor"] = (
+                Companies.query.filter_by(_inn=last_check.company_inn)
+                .first()
+                .organization
+            )
             item_refined["last_price"] = last_check.price
             item_refined["last_date"] = last_check.date
             item_refined["price_change"] = last_check.price - prev_check.price
@@ -322,7 +356,9 @@ def db_get_item(user_id, item_link):
     item_refined["item_id"] = item.connection_id
     item_refined["name"] = last_check.item_name
     item_refined["competitor_inn"] = int(last_check.company_inn)
-    item_refined["competitor"] = Companies.query.filter_by(_inn=last_check.company_inn).first().organization
+    item_refined["competitor"] = (
+        Companies.query.filter_by(_inn=last_check.company_inn).first().organization
+    )
     item_refined["last_price"] = last_check.price
     item_refined["last_date"] = last_check.date
     item_refined["price_change"] = last_check.price - prev_check.price
@@ -335,7 +371,11 @@ def db_get_item(user_id, item_link):
 def db_get_item_records(link):
     item_records = ItemsRecords.query.filter_by(link=link).all()
     if item_records:
-        item_records = sorted(item_records, key=(lambda x: (x.date[-4:], x.date[-7:-5], x.date[:-8])), reverse=True)
+        item_records = sorted(
+            item_records,
+            key=(lambda x: (x.date[-4:], x.date[-7:-5], x.date[:-8])),
+            reverse=True,
+        )
         return item_records
     return None
 
@@ -346,12 +386,16 @@ def db_refresh_all_items(user_id):
 
 
 def db_delete_item_connection(user_id, connection_id):
-    item_connection = UsersItems.query.filter_by(user_id=user_id, connection_id=connection_id)
+    item_connection = UsersItems.query.filter_by(
+        user_id=user_id, connection_id=connection_id
+    )
     if item_connection.first():
         date = get_cur_date()
         link = item_connection.first().link
         print(link)
-        item_last_record = ItemsRecords.query.filter_by(date=date, link=item_connection.first().link)
+        item_last_record = ItemsRecords.query.filter_by(
+            date=date, link=item_connection.first().link
+        )
         item_last_record.delete()
         item_connection.delete()
         db.session.commit()
@@ -393,7 +437,9 @@ def db_get_item_link_new(user_id, company_inn, item_name):
     # recognize if the item has ever been added
     item_link = get_link(db_get_user_website(user_id, company_inn))
     item_name = item_name.strip()
-    exist = ItemsRecords.query.filter_by(item_name=item_name, company_inn=company_inn).first()
+    exist = ItemsRecords.query.filter_by(
+        item_name=item_name, company_inn=company_inn
+    ).first()
     if exist:
         return exist.link
     item_id = db.session.query(func.max(ItemsRecords.item_id)).scalar()
@@ -402,7 +448,9 @@ def db_get_item_link_new(user_id, company_inn, item_name):
 
 
 def db_get_item_connection(user_id, user_link, comp_inn):
-    linked_items = ItemsConnections.query.filter_by(user_id=user_id, item_link=user_link).all()
+    linked_items = ItemsConnections.query.filter_by(
+        user_id=user_id, item_link=user_link
+    ).all()
     for item in linked_items:
         if str(db_get_inn(user_id, item.connected_item_link)) == str(comp_inn):
             return item
@@ -414,17 +462,22 @@ def db_get_users_connections(user_id):
 
 
 def db_add_item_connection(user_id, item_link, connected_item_link, comp_inn):
-    exists = ItemsConnections.query.filter_by(user_id=user_id, item_link=item_link,
-                                              connected_item_link=connected_item_link).first()
+    exists = ItemsConnections.query.filter_by(
+        user_id=user_id, item_link=item_link, connected_item_link=connected_item_link
+    ).first()
     if exists:
         return False
-    exists = db_get_item_connection(user_id=user_id, user_link=item_link, comp_inn=comp_inn)
+    exists = db_get_item_connection(
+        user_id=user_id, user_link=item_link, comp_inn=comp_inn
+    )
     if exists:
-        print('ex.............................')
+        print("ex.............................")
         exists.connection_item_link = connected_item_link
         db.session.commit()
         return True
-    new_connection = ItemsConnections(user_id=user_id, item_link=item_link, connected_item_link=connected_item_link)
+    new_connection = ItemsConnections(
+        user_id=user_id, item_link=item_link, connected_item_link=connected_item_link
+    )
     db.session.add(new_connection)
     db.session.commit()
     return True
@@ -447,8 +500,9 @@ def db_get_inn(user_id, link: str):
 
 
 def db_delete_connection(user_id, item_link, linked_item_link):
-    exists = ItemsConnections.query.filter_by(user_id=user_id, item_link=item_link,
-                                              connected_item_link=linked_item_link)
+    exists = ItemsConnections.query.filter_by(
+        user_id=user_id, item_link=item_link, connected_item_link=linked_item_link
+    )
     if exists.first():
         exists.delete()
         db.session.commit()
