@@ -15,7 +15,6 @@ COPY pyproject.toml uv.lock* /app/
 # Upgrade pip and install dependencies
 RUN pip install --upgrade pip
 RUN pip install uv
-RUN uv use python3
 RUN uv sync
 
 # Copy the rest of the project
