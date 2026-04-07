@@ -34,6 +34,19 @@ class Company:
             except Exception as e:
                 return None
 
+        if not self.page:
+            return {
+                "inn": self.inn,
+                "website": "",
+                "organization": "",
+                "ogrn": self.inn,
+                "registration_date": "",
+                "sphere": "",
+                "address": "",
+                "workers_number": 0,
+                "ceo": "",
+            }
+
         company_info = {
             "inn": self.inn,
             "website": operate(look, "Веб-сайт"),
