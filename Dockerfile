@@ -19,6 +19,3 @@ RUN uv sync
 
 # Copy the rest of the project
 COPY . /app
-
-# Expose port 5000
-EXPOSE 8000
