@@ -18,15 +18,17 @@ def read_file(path: str) -> Union[str, None]:
 
 
 def create_client_folder(user_inn: str) -> bool:
-    """ When the client first registers, their folder is created to store their scrapers """
-    dir_name = str(user_inn)
-    parent_path = ".\project\clients_scrapers"
-    path = os.path.join(parent_path, dir_name)
+    """Create a folder for a client to store their scrapers"""
+
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    parent_path = os.path.join(base_dir, "clients_scrapers")
+    path = os.path.join(parent_path, str(user_inn))
+
     try:
-        os.mkdir(path)
+        os.makedirs(path, exist_ok=True)
         return True
-    except FileExistsError as error:
-        logging.warning(f"CLIENTS FOLDER {user_inn} NOT CREATED. ERROR:{error}")
+    except Exception as error:
+        logging.error(f"CLIENTS FOLDER {user_inn} NOT CREATED. ERROR: {error}")
         return False
 
 
