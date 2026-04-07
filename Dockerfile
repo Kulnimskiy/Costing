@@ -4,6 +4,9 @@ FROM python:3.11-slim
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
+# Install dependencies WITHOUT uv trying to install Python
+ENV UV_SYSTEM_PYTHON=1
+
 WORKDIR /app
 
 # Install system dependencies
