@@ -4,9 +4,9 @@ services:
   web:
     build: .
     container_name: flask_app
-    command: uv run gunicorn "project:create_app()" --bind 0.0.0.0:8000
+    command: uv run gunicorn "project:create_app()" --bind 0.0.0.0:8080
     ports:
-      - "8000:8080"
+      - "8080:8080"
     volumes:
       - .:/app  # Mount code for live reload (optional)
     environment:
