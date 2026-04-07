@@ -1,24 +1,21 @@
-# Use official Python image
 FROM python:3.11-slim
 
-# Set environment variables
+# Environment
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
-# Set working directory
 WORKDIR /app
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y build-essential curl && rm -rf /var/lib/apt/lists/*
 
-# Copy pyproject.toml and lock file first (for caching)
+# Copy pyproject.toml first for caching
 COPY pyproject.toml uv.lock* /app/
 
-# Install uv and dependencies
+# Upgrade pip and install dependencies
 RUN pip install --upgrade pip
 RUN pip install uv
-
-# Install project dependencies
+RUN uv use python3
 RUN uv sync
 
 # Copy the rest of the project
