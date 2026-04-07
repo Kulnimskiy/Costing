@@ -19,9 +19,11 @@ class Stomshop:
             print("1 got")
             items_lst = []
             for the_offer in req["offers"]:
-                found_item = {"name": the_offer.get("name", None),
-                              "price": the_offer.get("price", None),
-                              "url": the_offer.get("url", None)}
+                found_item = {
+                    "name": the_offer.get("name", None),
+                    "price": the_offer.get("price", None),
+                    "url": the_offer.get("url", None),
+                }
                 items_lst.append(found_item)
             return items_lst
         except (requests.exceptions.RequestException, AttributeError) as e:
@@ -37,15 +39,23 @@ class Stomshop:
             req = requests.get(link).text
             doc = BeautifulSoup(req, "html.parser")
             name = operate(
-                lambda: doc.find(class_="h2 text-center content-title content-title-copy-parent").find(
-                    "h1").get_text())
+                lambda: (
+                    doc.find(
+                        class_="h2 text-center content-title content-title-copy-parent"
+                    )
+                    .find("h1")
+                    .get_text()
+                )
+            )
 
             # when there is no such item
             if not name:
                 print("There is no items")
                 return None
 
-            price = operate(lambda: doc.find(class_="autocalc-product-price").get_text())
+            price = operate(
+                lambda: doc.find(class_="autocalc-product-price").get_text()
+            )
             price = operate(lambda: int("".join([i for i in price if i.isdigit()])))
             return {"name": name, "price": price, "url": link}
         except (requests.exceptions.RequestException, AttributeError, ValueError) as e:
@@ -64,9 +74,11 @@ class Stomatorg:
             req = requests.get(base_url).json()
             items_lst = []
             for the_offer in req["offers"]:
-                found_item = {"name": the_offer.get("name", None),
-                              "price": the_offer.get("price", None),
-                              "url": the_offer.get("url", None)}
+                found_item = {
+                    "name": the_offer.get("name", None),
+                    "price": the_offer.get("price", None),
+                    "url": the_offer.get("url", None),
+                }
                 items_lst.append(found_item)
             return items_lst
         except (requests.exceptions.RequestException, AttributeError) as e:
@@ -88,7 +100,11 @@ class Stomatorg:
                 print("There is no items")
                 return None
 
-            price = operate(lambda: doc.find(class_="element-stickyinfo-prices__curprice").get_text())
+            price = operate(
+                lambda: doc.find(
+                    class_="element-stickyinfo-prices__curprice"
+                ).get_text()
+            )
             price = operate(lambda: int("".join([i for i in price if i.isdigit()])))
             return {"name": name, "price": price, "url": link}
         except (requests.exceptions.RequestException, AttributeError, ValueError) as e:
@@ -118,7 +134,12 @@ class Dentikom:
                 price = operate(lambda: str(thing.find("div", class_="price").text))
                 price = operate(lambda: price.strip().split("\n")[0])
                 price = operate(lambda: int("".join([i for i in price if i.isdigit()])))
-                link = operate(lambda: Dentikom.BASE_URL + str(thing.find(class_="name")["href"]).strip())
+                link = operate(
+                    lambda: (
+                        Dentikom.BASE_URL
+                        + str(thing.find(class_="name")["href"]).strip()
+                    )
+                )
                 found_items.append({"name": name, "price": price, "url": link})
             return found_items
         except (requests.exceptions.RequestException, AttributeError) as e:
@@ -134,14 +155,24 @@ class Dentikom:
             req = requests.get(link).text
             doc = BeautifulSoup(req, "html.parser")
             name = operate(
-                lambda: doc.find(class_="detail-product-page in-basket").find(
-                    "h1").get_text())
+                lambda: (
+                    doc.find(class_="detail-product-page in-basket")
+                    .find("h1")
+                    .get_text()
+                )
+            )
 
             # when there is no such item
             if not name:
                 print("There is no items")
                 return None
-            price = operate(lambda: doc.find(class_="dpp-price_data__price").find(class_="current-price").text)
+            price = operate(
+                lambda: (
+                    doc.find(class_="dpp-price_data__price")
+                    .find(class_="current-price")
+                    .text
+                )
+            )
             price = operate(lambda: int("".join([i for i in price if i.isdigit()])))
             return {"name": name, "price": price, "link": link}
         except (requests.exceptions.RequestException, AttributeError, ValueError) as e:
@@ -165,12 +196,19 @@ class Dentex:
             items = catalog.find_all("div", class_="item-mini")
             found_items = []
             for thing in items:
-                name = operate(lambda: str(thing.find("a", class_="cover-link")["title"]))
+                name = operate(
+                    lambda: str(thing.find("a", class_="cover-link")["title"])
+                )
 
                 # get the new price if there are 2 of them
                 price = operate(lambda: str(thing.find("div", class_="price").text))
                 price_int = Dentex.price_format(price)
-                link = operate(lambda: Dentex.BASE_URL + str(thing.find("a", class_="cover-link")["href"]))
+                link = operate(
+                    lambda: (
+                        Dentex.BASE_URL
+                        + str(thing.find("a", class_="cover-link")["href"])
+                    )
+                )
                 found_items.append({"name": name, "price": price_int, "url": link})
             return found_items
         except (requests.exceptions.RequestException, AttributeError) as e:
@@ -194,7 +232,9 @@ class Dentex:
             if not name:
                 print("There is no items")
                 return None
-            price = operate(lambda: page.find(class_="price").find(class_="currency").text)
+            price = operate(
+                lambda: page.find(class_="price").find(class_="currency").text
+            )
             price_int = Dentex.price_format(price)
             return {"name": name, "price": price_int, "url": link}
         except (requests.exceptions.RequestException, AttributeError, ValueError) as e:
@@ -227,10 +267,10 @@ def operate(operation, info=None):
 
 
 def convert_to_rub(amount: (int, float), currency: str):
-    """convert currencies into Russian Ruble """
+    """convert currencies into Russian Ruble"""
     currency = currency.strip().upper()
     try:
-        data = requests.get('https://www.cbr-xml-daily.ru/latest.js').json()
+        data = requests.get("https://www.cbr-xml-daily.ru/latest.js").json()
         currency_rate = float(data["rates"][f"{currency}"])
         return int(amount / currency_rate)
     except (KeyError, AttributeError, requests.exceptions.RequestException) as e:

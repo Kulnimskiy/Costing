@@ -85,7 +85,7 @@ def operate(operation, info=None):
             result = operation(info)
             return result
         return operation()
-    except (AttributeError, TypeError, ValueError) as e:
+    except Exception as e:
         print(e)
         return None
 

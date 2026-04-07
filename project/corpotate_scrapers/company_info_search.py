@@ -15,7 +15,7 @@ class Company:
             _source_url = f"https://checko.ru/search?query={self.inn}"
             req = requests.get(_source_url).text
             doc = BeautifulSoup(req, "html.parser")
-            not_successful = doc.body.findAll(class_="mt-4", string='Ничего не найдено')
+            not_successful = doc.body.findAll(class_="mt-4", string="Ничего не найдено")
             if not_successful:
                 print("Компания не найдена", not_successful)
                 return None
@@ -25,18 +25,30 @@ class Company:
 
     def get_full_info(self):
         def look(info):
-            return self.page.find(string=re.compile(f".*\{info}.*")).parent.next_sibling.next_sibling.text
+            try:
+                return self.page.find(
+                    string=re.compile(f".*\{info}.*")
+                ).parent.next_sibling.next_sibling.text
 
-        company_info = {"inn": self.inn,
-                        "website": operate(look, "Веб-сайт"),
-                        "organization": operate(lambda: self.page.find("h1", class_="organization-name").text),
-                        "ogrn": operate(lambda: self.page.find(id="copy-ogrn").text),
-                        "registration_date": DateFormat(operate(look, "Дата регистрации")),
-                        "sphere": operate(look, "Вид деятельности"),
-                        "address": operate(look, "Юридический адрес"),
-                        "workers_number": operate(lambda info: look(info).split()[0],
-                                                  "Среднесписочная численность работников"),
-                        "ceo": operate(lambda: self.page.find("img", width="92")["title"])}
+            except Exception as e:
+                return None
+
+        company_info = {
+            "inn": self.inn,
+            "website": operate(look, "Веб-сайт"),
+            "organization": operate(
+                lambda: self.page.find("h1", class_="organization-name").text
+            ),
+            "ogrn": operate(lambda: self.page.find(id="copy-ogrn").text),
+            "registration_date": DateFormat(operate(look, "Дата регистрации")),
+            "sphere": operate(look, "Вид деятельности"),
+            "address": operate(look, "Юридический адрес"),
+            "workers_number": operate(
+                lambda info: look(info).split()[0],
+                "Среднесписочная численность работников",
+            ),
+            "ceo": operate(lambda: self.page.find("img", width="92")["title"]),
+        }
         return company_info
 
 
@@ -62,7 +74,8 @@ class DateFormat:
                 "сентября": "09",
                 "октября": "10",
                 "ноября": "11",
-                "декабря": "12"}
+                "декабря": "12",
+            }
             date = date.split()
             day = date[0]
             month = date[1]

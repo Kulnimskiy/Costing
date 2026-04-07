@@ -36,31 +36,35 @@ def index():
     # get the info about the user from the obj current_user like current_user._id
     _inn = current_user.company_inn
     user_id = current_user.get_id()
-    company_info = load_company_data(_inn)
-    if company_info:
-        requested_connection = db_get_competitor(user_id=user_id, com_inn=_inn)
 
-        # The user can change the website if he hasn't requested the connection yet
-        if requested_connection:
-            website = {
-                "link": get_link(requested_connection.competitor_website),
-                "status": requested_connection.connection_status,
-            }
-            return render_template(
-                "homepage.html",
-                user=current_user,
-                company_info=company_info,
-                website=website,
-            )
-        website = {"link": get_link(company_info.website), "status": "disconnected"}
+    company_info = load_company_data(_inn)
+    if not company_info:
+        return render_template(
+            "homepage.html", user=current_user, company_info=company_info
+        )
+
+    requested_connection = db_get_competitor(user_id=user_id, com_inn=_inn)
+
+    # The user can change the website if he hasn't requested the connection yet
+    if requested_connection:
+        website = {
+            "link": get_link(requested_connection.competitor_website),
+            "status": requested_connection.connection_status,
+        }
         return render_template(
             "homepage.html",
             user=current_user,
             company_info=company_info,
             website=website,
         )
+
+    website = {"link": get_link(company_info.website), "status": "disconnected"}
+
     return render_template(
-        "homepage.html", user=current_user, company_info=company_info
+        "homepage.html",
+        user=current_user,
+        company_info=company_info,
+        website=website,
     )
 
 
