@@ -15,10 +15,11 @@ class Company:
             _source_url = f"https://checko.ru/search?query={self.inn}"
             req = requests.get(_source_url).text
             doc = BeautifulSoup(req, "html.parser")
-            not_successful = doc.body.findAll(class_="mt-4", string="Ничего не найдено")
+            not_successful = doc.body.findAll(class_="mt-4", string="мы не смогли ничего найти по вашему запросу")
             if not_successful:
                 print("Компания не найдена", not_successful)
                 return None
+
             return doc
         except requests.exceptions.RequestException as e:  # This is the correct syntax
             raise SystemExit(e)
