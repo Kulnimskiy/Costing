@@ -56,6 +56,8 @@ coverage.xml
 *.sublime-project
 *.sublime-workspace
 
+flask_session/
+
 # Mac / Linux / Windows
 .DS_Store
 Thumbs.db
