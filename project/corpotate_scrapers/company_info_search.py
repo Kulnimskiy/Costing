@@ -107,37 +107,44 @@ class Company:
         return company_info
 
 class DateFormat:
-    def __init__(self, date):
-        self.date = date
+    def __init__(self, date_str):
+        self.date = self.__format_date(date_str)
+
+    def __str__(self):
+        return self.date.isoformat() if self.date else ""
 
     def __repr__(self):
-        return self.__format_date(self.date)
+        return str(self)
 
     @staticmethod
-    def __format_date(date: str):
+    def __format_date(date_str: str):
+        """Convert a Russian date like '7 июня 2004' to datetime.date"""
+        if not date_str:
+            return None
+
+        months = {
+            "января": 1,
+            "февраля": 2,
+            "марта": 3,
+            "апреля": 4,
+            "мая": 5,
+            "июня": 6,
+            "июля": 7,
+            "августа": 8,
+            "сентября": 9,
+            "октября": 10,
+            "ноября": 11,
+            "декабря": 12,
+        }
+
         try:
-            months = {
-                "января": "01",
-                "февраля": "02",
-                "марта": "03",
-                "апреля": "04",
-                "мая": "05",
-                "июня": "06",
-                "июля": "07",
-                "августа": "08",
-                "сентября": "09",
-                "октября": "10",
-                "ноября": "11",
-                "декабря": "12",
-            }
-            date = date.split()
-            day = date[0]
-            month = date[1]
-            year = date[2]
-            month = months[month]
-            return "-".join([i.strip() for i in [day, month, year]])
-        except (ValueError, KeyError, AttributeError, IndexError) as e:
-            logging.warning(e)
+            parts = date_str.strip().split()
+            day = int(parts[0])
+            month = months[parts[1].lower()]
+            year = int(parts[2])
+            return date(year, month, day)
+        except (ValueError, KeyError, IndexError, AttributeError) as e:
+            logging.warning(f"Date parsing failed for '{date_str}': {e}")
             return None
 
 
