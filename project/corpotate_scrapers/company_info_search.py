@@ -1,8 +1,10 @@
+import logging
 import re
 import requests
 from bs4 import BeautifulSoup
+from datetime import date, datetime
+
 from project.helpers import operate, safe_text, safe_attr
-import logging
 
 
 class Company:
