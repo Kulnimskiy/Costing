@@ -22,7 +22,7 @@ class Companies(db.Model):
     website = db.Column(db.String(200), nullable=True)
     organization = db.Column(db.String(200), nullable=True)
     ogrn = db.Column(db.String(20))  # store as string, not integer
-    registration_date = db.Column(db.String(200), nullable=True)
+    registration_date = db.Column(db.Date, nullable=True)
     sphere = db.Column(db.String(400), nullable=True)
     address = db.Column(db.String(400), nullable=True)
     workers_number = db.Column(db.Integer(), default=0)
