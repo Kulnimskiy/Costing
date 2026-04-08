@@ -102,7 +102,7 @@ class Company:
             "website": operate(look, "Веб-сайт"),
             "organization": safe_text(self.page.find("h1", class_="organization-name")),
             "ogrn": safe_text(self.page.find(id="copy-ogrn")),
-            "registration_date": DateFormat(operate(look, "Дата регистрации")),
+            "registration_date": DateFormat(operate(look, "Дата регистрации")).date,
             "sphere": operate(look, "Вид деятельности"),
             "address": operate(look, "Юридический адрес"),
             "workers_number": safe_workers_number("Среднесписочная численность работников"),
