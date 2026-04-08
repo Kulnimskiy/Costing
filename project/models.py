@@ -18,16 +18,16 @@ class User(UserMixin, db.Model):
 
 
 class Companies(db.Model):
-    _inn = db.Column("inn", db.Integer, primary_key=True)
-    website = db.Column(db.String(200))
-    organization = db.Column(db.String(200))
-    ogrn = db.Column(db.Integer())
-    registration_date = db.Column(db.String(100))
-    sphere = db.Column(db.String(400))
-    address = db.Column(db.String(400))
-    workers_number = db.Column(db.Integer())
-    ceo = db.Column(db.String(100))
-    info_loading_date = db.Column(db.String(100))
+    _inn = db.Column("inn", db.String(20), primary_key=True)  # INN can be 10-12 digits
+    website = db.Column(db.String(200), nullable=True)
+    organization = db.Column(db.String(200), nullable=True)
+    ogrn = db.Column(db.String(20))  # store as string, not integer
+    registration_date = db.Column(db.Date, nullable=True)  # store as date object
+    sphere = db.Column(db.String(400), nullable=True)
+    address = db.Column(db.String(400), nullable=True)
+    workers_number = db.Column(db.Integer(), default=0)
+    ceo = db.Column(db.String(100), nullable=True)
+    info_loading_date = db.Column(db.DateTime, nullable=True)
 
 
 class Competitors(db.Model):
