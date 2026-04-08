@@ -10,19 +10,31 @@ class Company:
         self.inn = inn
         self.page = self.get_info_page()
 
+
     def get_info_page(self):
+        url = f"https://checko.ru/search?query={self.inn}"
+
         try:
-            _source_url = f"https://checko.ru/search?query={self.inn}"
-            req = requests.get(_source_url).text
-            doc = BeautifulSoup(req, "html.parser")
-            not_successful = doc.body.findAll(class_="mt-4", string="Увы, мы не смогли ничего найти по вашему запросу.")
-            if not_successful:
-                print("Компания не найдена", not_successful)
+            response = requests.get(url, timeout=10)
+            response.raise_for_status()
+
+            doc = BeautifulSoup(response.text, "html.parser")
+
+            # Check if company not found
+            not_found = doc.find(
+                class_="mt-4",
+                string="Увы, мы не смогли ничего найти по вашему запросу."
+            )
+
+            if not_found:
+                logging.warning(f"Company not found for INN: {self.inn}")
                 return None
 
             return doc
-        except requests.exceptions.RequestException as e:  # This is the correct syntax
-            raise SystemExit(e)
+
+        except requests.exceptions.RequestException as e:
+            logging.error(f"Request failed for INN {self.inn}: {e}")
+            return None
 
     def get_full_info(self):
         def look(info):
