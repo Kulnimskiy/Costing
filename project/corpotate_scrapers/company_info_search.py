@@ -1,7 +1,7 @@
 import re
 import requests
 from bs4 import BeautifulSoup
-from project.helpers import operate, safe_text
+from project.helpers import operate, safe_text, safe_attr
 import logging
 
 

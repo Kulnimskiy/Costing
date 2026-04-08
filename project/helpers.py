@@ -108,6 +108,14 @@ def safe_text(element):
         logging.warning(f"safe_text failed: {e}")
         return None
 
+def safe_attr(element, attr):
+    """Return an attribute of a BeautifulSoup element safely."""
+    try:
+        return element.get(attr) if element and element.has_attr(attr) else None
+    except Exception as e:
+        logging.warning(f"safe_attr failed: {e}")
+        return None
+
 def convert_to_rub(amount: (int, float), currency: str):
     """convert currencies into Russian Ruble"""
     currency = currency.strip().upper()
