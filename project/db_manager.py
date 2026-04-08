@@ -37,7 +37,8 @@ def load_company_data(_inn):
             # if there is new info about a website, we change it
             if company_info["website"]:
                 company.website = company_info["website"]
-            company.organization = company_info["organization"]
+
+            company.organization = int(company_info["organization"])
             company.ogrn = company_info["ogrn"]
             company.registration_date = company_info["registration_date"]
             company.sphere = company_info["sphere"]

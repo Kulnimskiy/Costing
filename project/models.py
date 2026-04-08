@@ -21,7 +21,7 @@ class Companies(db.Model):
     _inn = db.Column("inn", db.Integer, primary_key=True)
     website = db.Column(db.String(200))
     organization = db.Column(db.String(200))
-    ogrn = db.Column(db.String(20))
+    ogrn = db.Column(db.Integer())
     registration_date = db.Column(db.String(100))
     sphere = db.Column(db.String(400))
     address = db.Column(db.String(400))
