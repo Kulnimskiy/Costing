@@ -85,16 +85,28 @@ def get_cls_from_module(module_name):
 
 
 def operate(operation, info=None):
-    """function to process the result from parsing"""
+    """
+    Safely execute a parsing operation.
+
+    - operation: callable
+    - info: optional input for operation
+    Returns: result or None if error
+    """
     try:
-        if info:
-            result = operation(info)
-            return result
+        if info is not None:
+            return operation(info)
         return operation()
     except Exception as e:
-        print(e)
+        logging.warning(f"operate() failed: {e}")
         return None
 
+def safe_text(element):
+    """Get text from BeautifulSoup element safely"""
+    try:
+        return element.text.strip() if element else None
+    except Exception as e:
+        logging.warning(f"safe_text failed: {e}")
+        return None
 
 def convert_to_rub(amount: (int, float), currency: str):
     """convert currencies into Russian Ruble"""
