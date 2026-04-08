@@ -18,65 +18,51 @@ from project import async_search
 
 
 def load_company_data(_inn):
-    """Uses a parser to get data from the web if the last load of the date
-    happened more than 2 days ago and updates the data in the db"""
+    """Uses a parser to get data from the web if the last load was more than 3 days ago and updates the DB"""
     days_between_reload = 3
-    cur_date_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    cur_date = datetime.strptime(cur_date_str, "%Y-%m-%d %H:%M:%S")
+    cur_date = datetime.now()
     company = Companies.query.filter_by(_inn=_inn).first()
+
     if company:
-        last_load_date = datetime.strptime(
-            company.info_loading_date, "%Y-%m-%d %H:%M:%S"
-        )
-        days_passed = (cur_date - last_load_date).days
-        if days_passed >= days_between_reload:
-            # update the company info
-            company_info = Company(_inn).get_full_info()
-            company.inn = company_info["inn"]
+        last_load_date = company.info_loading_date
+        if last_load_date:  # may be None for new rows
+            days_passed = (cur_date - last_load_date).days
+            if days_passed < days_between_reload:
+                return company
 
-            # if there is new info about a website, we change it
-            if company_info["website"]:
-                company.website = company_info["website"]
-
-            company.organization = company_info["organization"]
-            company.ogrn = company_info["ogrn"]
-            company.registration_date = company_info["registration_date"]
-            company.sphere = company_info["sphere"]
-            company.address = company_info["address"]
-            company.workers_number = company_info["workers_number"]
-            company.ceo = company_info["ceo"]
-            company.info_loading_date = str(cur_date)
-            db.session.commit()
-
-            # need to get that again after the commit
-            company = Companies.query.filter_by(_inn=_inn).first()
-            # print("CHANGE", company.__dict__)
-            return company
-        # print("GET", company.__dict__)
+        # update the company info
+        company_info = Company(_inn).get_full_info()
+        company._inn = company_info["inn"]
+        company.website = company_info["website"]
+        company.organization = company_info["organization"]
+        company.ogrn = company_info["ogrn"]
+        company.registration_date = company_info["registration_date"]  # datetime.date
+        company.sphere = company_info["sphere"]
+        company.address = company_info["address"]
+        company.workers_number = company_info["workers_number"]
+        company.ceo = company_info["ceo"]
+        company.info_loading_date = cur_date  # store as datetime object
+        db.session.commit()
         return company
 
-    # if the company hasn't been added yet, we add it
+    # Company does not exist yet, create new
     company_info = Company(_inn).get_full_info()
     new_company = Companies(
         _inn=company_info["inn"],
         website=company_info["website"],
         organization=company_info["organization"],
         ogrn=company_info["ogrn"],
-        registration_date=company_info["registration_date"],
+        registration_date=company_info["registration_date"],  # datetime.date object
         sphere=company_info["sphere"],
         address=company_info["address"],
         workers_number=company_info["workers_number"],
         ceo=company_info["ceo"],
-        info_loading_date=cur_date_str,
+        info_loading_date=cur_date,  # store as datetime object
     )
 
     db.session.add(new_company)
-
-    # also we add it to the list of competitors so that it could be connected
-    # db_add_competitor()
     db.session.commit()
-    company = Companies.query.filter_by(_inn=_inn).first()
-    return company
+    return new_company
 
 
 def create_competitor(data_source, user_id, comp_inn, comp_nickname=None, website=None):
